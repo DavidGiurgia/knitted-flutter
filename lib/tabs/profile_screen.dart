@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:heroicons/heroicons.dart';
-import 'package:zic_flutter/core/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/profile_header.dart';
 
@@ -14,19 +15,21 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
         actions: [
           CustomButton(
-            onPressed: () => print("HeroIcon pressed!"),
+            onPressed: () => print("add post pressed!"),
             isIconOnly: true,
             heroIcon: HeroIcons.plus,
             type: ButtonType.light,
             size: ButtonSize.large,
           ),
           CustomButton(
-            onPressed: () => print("HeroIcon pressed!"),
+            onPressed: () => userProvider.logout(),
             isIconOnly: true,
             heroIcon: HeroIcons.bars3,
             size: ButtonSize.large,
@@ -35,12 +38,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await Future.delayed(Duration(seconds: 2));
-          setState(() {});
+          await userProvider.loadUser();
         },
         child: ListView(
           children: [
-            ProfileHeader(onEditCover: () {}, onEditAvatar: () {}, fullName: "Giurgia David",),
+            ProfileHeader(onEditCover: () {}, onEditAvatar: () {}, user: userProvider.user,),
             const SizedBox(height: 28),
             Padding(
               padding: const EdgeInsets.all(18),
@@ -48,25 +50,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    ' John Doe',
+                    userProvider.user?.fullname ?? "Unknown",
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'I love Football, Volley and others',
+                    userProvider.user?.bio ??
+                        userProvider.user?.email ??
+                        "No email",
                     style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 10),
                   CustomButton(
-                    onPressed: () => print("Edit Profile pressed!"),
+                    onPressed: () => userProvider.logout(),
                     text: 'Edit Profile',
                     isFullWidth: true,
                     type: ButtonType.bordered,
                     size: ButtonSize.small,
-                    bgColor:
-                        AppTheme.isDark(context)
-                            ? AppTheme.grey400
-                            : AppTheme.grey700,
                   ),
                 ],
               ),

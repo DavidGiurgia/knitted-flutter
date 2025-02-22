@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zic_flutter/auth/login_screen.dart';
-import 'package:zic_flutter/core/services/auth_service.dart';
+import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/tabs/tabs_layout.dart';
 
 class AuthWrapper extends StatelessWidget {
@@ -8,19 +9,12 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: AuthService.isLoggedIn(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    final userProvider = context.watch<UserProvider>();
 
-        if (snapshot.data == true) {
-          return const TabsLayout(); // Dacă e logat, merge la home
-        } else {
-          return const LoginScreen(); // Altfel, rămâne la Login
-        }
-      },
-    );
+    if (userProvider.user == null) {
+      return const LoginScreen();
+    } else {
+      return const TabsLayout();
+    }
   }
 }

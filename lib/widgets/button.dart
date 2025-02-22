@@ -55,7 +55,7 @@ class CustomButton extends StatelessWidget {
     double fontSize = _getFontSize();
 
     // Culoare și stil
-    final Color primaryColor = bgColor ?? AppTheme.primaryColor;
+    final Color primaryColor = bgColor ?? (AppTheme.isDark(context) ? AppTheme.grey200 : AppTheme.grey800);
     final Color textColor =
         type == ButtonType.solid ? Colors.white : primaryColor;
     final Color borderColor = primaryColor;

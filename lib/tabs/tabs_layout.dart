@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
+import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/app_theme.dart';
+import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/tabs/chats_screen.dart';
 import 'package:zic_flutter/tabs/groups_screen.dart';
 import 'package:zic_flutter/tabs/home_screen.dart';
 import 'package:zic_flutter/tabs/profile_screen.dart';
 import 'package:zic_flutter/tabs/search_screen.dart';
 import 'package:heroicons/heroicons.dart';
-import 'package:zic_flutter/widgets/avvvatar.dart';
 
 class TabsLayout extends StatefulWidget {
   const TabsLayout({super.key});
@@ -25,6 +27,11 @@ class _TabsLayoutState extends State<TabsLayout> {
     GroupsScreen(),
     ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -50,6 +57,9 @@ class _TabsLayoutState extends State<TabsLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final String? avatarUrl = userProvider.user?.avatarUrl;
+
     return SafeArea(
       child: Scaffold(
         body: _screens[_selectedIndex],
@@ -89,13 +99,53 @@ class _TabsLayoutState extends State<TabsLayout> {
                 child: InkWell(
                   onTap: () => _onItemTapped(4),
                   child: Center(
-                    child: CustomAvatar(
-                      name: 'Giurgia David',
-                      size: 32.0,
-                      textColor: Colors.white,
-                      borderColor: AppTheme.primaryColor,
-                      borderWidth: 1.0,
-                      withRing: _selectedIndex == 4,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (_selectedIndex ==
+                            4) // Inelul apare doar când e pe tab-ul profile
+                          Container(
+                            width: 40, // Dimensiunea inelului
+                            height: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color:
+                                    AppTheme.primaryColor, // Culoarea inelului
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+
+                        // Avatarul real
+                        AdvancedAvatar(
+                          size: 32, // Dimensiune avatar
+                          image:
+                              avatarUrl != null
+                                  ? NetworkImage(avatarUrl)
+                                  : null,
+                          autoTextSize: true,
+                          name:
+                              userProvider.user?.fullname ??
+                              "uk", // Inițiale fallback
+                          style: TextStyle(
+                            color:
+                                _selectedIndex == 4
+                                    ? AppTheme.primaryColor
+                                    : (AppTheme.isDark(context)
+                                        ? Colors.white
+                                        : Colors.black),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                AppTheme.isDark(context)
+                                    ? AppTheme.grey800
+                                    : AppTheme.grey200,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

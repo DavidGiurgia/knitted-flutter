@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 import 'package:zic_flutter/auth/register_screen.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/services/auth_service.dart';
+import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/tabs/tabs_layout.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/input.dart';
@@ -23,6 +24,8 @@ class _LoginScreenState extends State<LoginScreen> {
   static const String assetName = 'lib/assets/images/ZIC-logo.svg';
 
   void _login() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
     setState(() => _loading = true);
 
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -33,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    bool success = await AuthService.login(
+    bool success = await userProvider.login(
       _emailController.text.trim(),
       _passwordController.text.trim(),
     );
@@ -58,12 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String code = _codeController.text.trim();
     if (code.length != 7) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Please enter a valid code.",
-            style: TextStyle(color: Colors.red),
-          ),
-        ),
+        const SnackBar(content: Text("Please enter a valid code.")),
       );
       return;
     }
@@ -82,13 +80,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 color: AppTheme.primaryColor,
                 padding: const EdgeInsets.all(32),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Joining a private group?",
                       style: TextStyle(
-                        fontSize: 28, // Text mai mare
+                        fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.backgroundColor(context),
                       ),
@@ -118,7 +115,6 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(28, 60, 28, 28),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
@@ -158,6 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: _login,
                           text: 'Login',
                           isFullWidth: true,
+                          bgColor: AppTheme.primaryColor,
                         ),
                     const SizedBox(height: 60),
                     CustomButton(
@@ -171,6 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       text: "Create new account",
                       isFullWidth: true,
                       type: ButtonType.light,
+                      bgColor: AppTheme.primaryColor,
                     ),
                   ],
                 ),
