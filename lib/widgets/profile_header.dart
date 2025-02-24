@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
+import 'package:zic_flutter/screens/shared/profile_photo.dart';
 
 class ProfileHeader extends StatelessWidget {
   final User? user;
 
-  const ProfileHeader({
-    super.key,
-    required this.user,
-  });
+  const ProfileHeader({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +57,12 @@ class ProfileHeader extends StatelessWidget {
           bottom: -30, // Suprapunere peste cover
           left: 40,
           child: GestureDetector(
-            onTap: (){},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfilePhoto()),
+              );
+            },
             child: Container(
               padding: const EdgeInsets.all(4), // Bordura albă
               decoration: BoxDecoration(

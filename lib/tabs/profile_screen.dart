@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:heroicons/heroicons.dart';
 import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/screens/post/create_post.dart';
 import 'package:zic_flutter/screens/settings/settings_and_activity.dart';
+import 'package:zic_flutter/screens/shared/edit_profile.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/profile_header.dart';
 
@@ -23,7 +25,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text('Profile'),
         actions: [
           CustomButton(
-            onPressed: () => print("add post pressed!"),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreatePost()),
+              );
+            },
             isIconOnly: true,
             heroIcon: HeroIcons.plus,
             type: ButtonType.light,
@@ -33,7 +40,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SettingsAndActivity()),
+                PageRouteBuilder(
+                  pageBuilder:
+                      (context, animation, secondaryAnimation) =>
+                          SettingsAndActivity(),
+                  transitionsBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                    child,
+                  ) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+
+                    var tween = Tween(
+                      begin: begin,
+                      end: end,
+                    ).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    );
+                  },
+                ),
               );
             },
             isIconOnly: true,
@@ -68,7 +100,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 10),
                   CustomButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => EditProfile()),
+                      );
+                    },
                     text: 'Edit Profile',
                     isFullWidth: true,
                     type: ButtonType.bordered,
