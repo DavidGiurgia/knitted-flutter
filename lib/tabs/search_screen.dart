@@ -16,7 +16,8 @@ class SearchScreen extends StatefulWidget {
   _SearchScreenState createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends State<SearchScreen>{
+    //with AutomaticKeepAliveClientMixin<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<User> _searchResults = [];
   List<User> _recentSearches = [];
@@ -38,6 +39,9 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchController.dispose();
     super.dispose();
   }
+
+  // @override
+  // bool get wantKeepAlive => true;
 
   void _onSearchTextChanged() {
     if (_searchController.text.isEmpty) {
@@ -97,54 +101,62 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppTheme.isDark(context) ? AppTheme.grey950 : Colors.white,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8.0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              decoration: BoxDecoration(
-                color:
-                    AppTheme.isDark(context)
-                        ? Colors.grey.shade900
-                        : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  HeroIcon(
-                    HeroIcons.magnifyingGlass,
-                    style: HeroIconStyle.outline,
-                    color: Colors.grey.shade500,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: _onSearchChanged,
-                      style: const TextStyle(
+    //super.build(context); // Required for AutomaticKeepAliveClientMixin
+    return Scaffold(
+      backgroundColor:
+          AppTheme.isDark(context) ? AppTheme.grey950 : Colors.white,
+      appBar: AppBar(
+        titleSpacing: 0,
+
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            decoration: BoxDecoration(
+              color:
+                  AppTheme.isDark(context)
+                      ? Colors.grey.shade900
+                      : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                HeroIcon(
+                  HeroIcons.magnifyingGlass,
+                  style: HeroIconStyle.outline,
+                  color: Colors.grey.shade500,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    //autofocus: true,
+                    controller: _searchController,
+                    onChanged: _onSearchChanged,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      decoration: TextDecoration.none,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: "Search",
+                      hintStyle: TextStyle(
                         fontSize: 14,
-                        decoration: TextDecoration.none,
+                        color: Colors.grey.shade500,
                       ),
-                      decoration: InputDecoration(
-                        hintText: "Search",
-                        hintStyle: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade500,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                        isDense: true,
-                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                      isDense: true,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
+        ),
+      ),
+
+      body: Column(
+        children: [
           Expanded(
             child:
                 _loading

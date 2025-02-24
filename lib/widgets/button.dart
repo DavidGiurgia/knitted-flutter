@@ -17,6 +17,8 @@ class CustomButton extends StatelessWidget {
   final IconData? icon;
   final HeroIcons? heroIcon;
   final double borderRadius;
+  final bool isLoading;
+  final HeroIconStyle? iconStyle;
 
   const CustomButton({
     super.key,
@@ -30,10 +32,17 @@ class CustomButton extends StatelessWidget {
     this.icon,
     this.heroIcon,
     this.borderRadius = 12.0,
+    this.isLoading = false,
+    this.iconStyle = HeroIconStyle.outline,
   });
 
   @override
   Widget build(BuildContext context) {
+    //if loading
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     // Dacă este icon-only, returnează direct un IconButton
     if (isIconOnly) {
       return IconButton(
@@ -45,8 +54,17 @@ class CustomButton extends StatelessWidget {
         onPressed: onPressed,
         icon:
             heroIcon != null
-                ? HeroIcon(heroIcon!, size: _getFontSize())
-                : Icon(icon, size: _getFontSize()),
+                ? HeroIcon(
+                  heroIcon!,
+                  size: _getFontSize(),
+                  color: bgColor ?? AppTheme.foregroundColor(context),
+                  style: iconStyle,
+                )
+                : Icon(
+                  icon,
+                  size: _getFontSize(),
+                  color: bgColor ?? AppTheme.foregroundColor(context),
+                ),
       );
     }
 
@@ -55,17 +73,35 @@ class CustomButton extends StatelessWidget {
     double fontSize = _getFontSize();
 
     // Culoare și stil
-    final Color primaryColor = bgColor ?? (AppTheme.isDark(context) ? AppTheme.grey200 : AppTheme.grey800);
+    final Color primaryColor = bgColor ?? AppTheme.foregroundColor(context);
     final Color textColor =
-        type == ButtonType.solid ? Colors.white : primaryColor;
+        type == ButtonType.solid
+            ? AppTheme.backgroundColor(context)
+            : primaryColor;
     final Color borderColor = primaryColor;
-    final Color backgroundColor =
-        type == ButtonType.solid ? primaryColor : Colors.transparent;
+    final Color? backgroundColor =
+        type == ButtonType.solid ? bgColor : Colors.transparent;
 
     // Construiește conținutul butonului
-    Widget buttonContent = Text(
-      text ?? "",
-      style: TextStyle(fontSize: fontSize),
+    Widget buttonContent = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null || heroIcon != null)
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child:
+                heroIcon != null
+                    ? HeroIcon(
+                      heroIcon!,
+                      size: fontSize,
+                      color: textColor,
+                      style: HeroIconStyle.mini,
+                    )
+                    : Icon(icon, size: fontSize + 4, color: textColor),
+          ),
+        if (text != null)
+          Text(text!, style: TextStyle(fontSize: fontSize, color: textColor)),
+      ],
     );
 
     // Returnează butonul potrivit tipului

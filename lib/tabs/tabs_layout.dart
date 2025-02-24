@@ -19,6 +19,7 @@ class TabsLayout extends StatefulWidget {
 
 class _TabsLayoutState extends State<TabsLayout> {
   int _selectedIndex = 0;
+  final PageController _pageController = PageController();
 
   final List<Widget> _screens = [
     HomeScreen(),
@@ -28,12 +29,16 @@ class _TabsLayoutState extends State<TabsLayout> {
     ProfileScreen(),
   ];
 
-  @override
-  void initState() {
-    super.initState();
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    _pageController.jumpToPage(
+      index,
+    );
   }
 
-  void _onItemTapped(int index) {
+  void _onPageChanged(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -62,10 +67,25 @@ class _TabsLayoutState extends State<TabsLayout> {
 
     return SafeArea(
       child: Scaffold(
-        body: _screens[_selectedIndex],
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          children: _screens,
+        ),
         bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: AppTheme.backgroundColor(context),
+            border: Border(
+              top: BorderSide(
+                width: 0.5,
+                color:
+                    AppTheme.isDark(context)
+                        ? Colors.grey.shade900
+                        : Colors.grey.shade100,
+              ),
+            ),
+          ),
           height: 64, // Înălțimea fixă a barei de navigație
-          color: AppTheme.isDark(context) ? Colors.black : Colors.white,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -105,14 +125,14 @@ class _TabsLayoutState extends State<TabsLayout> {
                         if (_selectedIndex ==
                             4) // Inelul apare doar când e pe tab-ul profile
                           Container(
-                            width: 40, // Dimensiunea inelului
-                            height: 40,
+                            width: 35, // Dimensiunea inelului
+                            height: 35,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color:
                                     AppTheme.primaryColor, // Culoarea inelului
-                                width: 1.5,
+                                width: 3,
                               ),
                             ),
                           ),
@@ -130,11 +150,9 @@ class _TabsLayoutState extends State<TabsLayout> {
                               "uk", // Inițiale fallback
                           style: TextStyle(
                             color:
-                                _selectedIndex == 4
-                                    ? AppTheme.primaryColor
-                                    : (AppTheme.isDark(context)
-                                        ? Colors.white
-                                        : Colors.black),
+                                AppTheme.isDark(context)
+                                    ? Colors.white
+                                    : Colors.black,
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: BoxDecoration(

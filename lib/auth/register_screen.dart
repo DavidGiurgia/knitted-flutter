@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zic_flutter/auth/login_screen.dart';
-import 'package:zic_flutter/core/api/auth.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/tabs/tabs_layout.dart';
 

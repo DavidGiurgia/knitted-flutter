@@ -16,8 +16,14 @@ class AppTheme {
   static const Color grey950 = Color(0xFF0A0A0A);
 
   // Background color depending on theme
-  static Color? backgroundColor(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark ? grey900 : grey100;
+  static Color backgroundColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? grey950
+        : Colors.white;
+  }
+
+  static Color foregroundColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark ? grey100 : grey900;
   }
 
   static bool isDark(BuildContext context) {
@@ -52,6 +58,5 @@ class AppTheme {
       onSecondary: Colors.black,
       onSurface: grey100,
     ),
-    
   );
 }

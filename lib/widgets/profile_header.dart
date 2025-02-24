@@ -4,14 +4,10 @@ import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
 
 class ProfileHeader extends StatelessWidget {
-  final VoidCallback onEditCover;
-  final VoidCallback onEditAvatar;
   final User? user;
 
   const ProfileHeader({
     super.key,
-    required this.onEditCover,
-    required this.onEditAvatar,
     required this.user,
   });
 
@@ -37,33 +33,33 @@ class ProfileHeader extends StatelessWidget {
           ),
         ),
 
-        // Buton de edit pentru cover
-        Positioned(
-          top: 12,
-          right: 12,
-          child: GestureDetector(
-            onTap: onEditCover,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.camera_alt,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-        ),
+        // // Buton de edit pentru cover
+        // Positioned(
+        //   top: 12,
+        //   right: 12,
+        //   child: GestureDetector(
+        //     onTap: onEditCover,
+        //     child: Container(
+        //       padding: const EdgeInsets.all(8),
+        //       decoration: BoxDecoration(
+        //         color: Colors.black54,
+        //         borderRadius: BorderRadius.circular(8),
+        //       ),
+        //       child: const Icon(
+        //         Icons.camera_alt,
+        //         color: Colors.white,
+        //         size: 20,
+        //       ),
+        //     ),
+        //   ),
+        // ),
 
         // Avatar (suprapus peste cover)
         Positioned(
           bottom: -30, // Suprapunere peste cover
           left: 40,
           child: GestureDetector(
-            onTap: onEditAvatar,
+            onTap: (){},
             child: Container(
               padding: const EdgeInsets.all(4), // Bordura albă
               decoration: BoxDecoration(
