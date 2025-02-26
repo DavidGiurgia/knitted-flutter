@@ -23,7 +23,7 @@ class _TabsLayoutState extends State<TabsLayout> {
 
   final List<Widget> _screens = [
     HomeScreen(),
-    SearchScreen(),
+    SearchScreen(withLeading: false),
     ChatsScreen(),
     GroupsScreen(),
     ProfileScreen(),
@@ -33,9 +33,7 @@ class _TabsLayoutState extends State<TabsLayout> {
     setState(() {
       _selectedIndex = index;
     });
-    _pageController.jumpToPage(
-      index,
-    );
+    _pageController.jumpToPage(index);
   }
 
   void _onPageChanged(int index) {

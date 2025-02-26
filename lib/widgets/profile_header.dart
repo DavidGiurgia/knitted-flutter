@@ -16,17 +16,33 @@ class ProfileHeader extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         // Cover Image
-        Container(
-          width: double.infinity,
-          height: 160, // Înălțimea Cover Image
-          decoration: BoxDecoration(
-            color:
-                AppTheme.isDark(context)
-                    ? AppTheme.grey800
-                    : AppTheme.grey200, // Placeholder
-            image: DecorationImage(
-              image: NetworkImage(user!.coverUrl),
-              fit: BoxFit.cover,
+        GestureDetector(
+          onTap: () {
+            if (user?.coverUrl != "") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => ProfilePhoto(
+                        isAvatar: false,
+                        imagePath: user!.coverUrl,
+                      ),
+                ),
+              );
+            }
+          },
+          child: Container(
+            width: double.infinity,
+            height: 160, // Înălțimea Cover Image
+            decoration: BoxDecoration(
+              color:
+                  AppTheme.isDark(context)
+                      ? AppTheme.grey800
+                      : AppTheme.grey200, // Placeholder
+              image: DecorationImage(
+                image: NetworkImage(user!.coverUrl),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ),
@@ -58,10 +74,18 @@ class ProfileHeader extends StatelessWidget {
           left: 40,
           child: GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfilePhoto()),
-              );
+              if (user?.avatarUrl != "") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => ProfilePhoto(
+                          isAvatar: true,
+                          imagePath: user!.avatarUrl,
+                        ),
+                  ),
+                );
+              }
             },
             child: Container(
               padding: const EdgeInsets.all(4), // Bordura albă

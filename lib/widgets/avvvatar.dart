@@ -13,7 +13,7 @@ class CustomAvatar extends StatelessWidget {
   final bool withRing;
 
   const CustomAvatar({
-    Key? key,
+    super.key,
     required this.name,
     this.size = 50.0,
     this.textColor = Colors.white,
@@ -21,7 +21,7 @@ class CustomAvatar extends StatelessWidget {
     this.borderColor = Colors.transparent,
     this.borderWidth = 2.0,
     this.withRing = false,
-  }) : super(key: key);
+  });
 
 
   @override

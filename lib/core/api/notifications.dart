@@ -25,7 +25,7 @@ class NotificationService {
       }
     } catch (error) {
       print("Error creating notification: $error");
-      throw error;
+      rethrow;
     }
   }
 
@@ -42,7 +42,7 @@ class NotificationService {
       }
     } catch (error) {
       print("Error fetching notifications: $error");
-      throw error;
+      rethrow;
     }
   }
 
@@ -52,14 +52,14 @@ class NotificationService {
       final response = await http.patch(
         Uri.parse('$baseUrl/$notificationId/read'),
       );
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
         throw Exception('Failed to mark notification as read');
       }
     } catch (error) {
       print("Error marking notification as read: $error");
-      throw error;
+      rethrow;
     }
   }
 
@@ -76,7 +76,7 @@ class NotificationService {
       }
     } catch (error) {
       print("Error deleting notification: $error");
-      throw error;
+      rethrow;
     }
   }
 
@@ -93,7 +93,7 @@ class NotificationService {
       }
     } catch (error) {
       print("Error marking all notifications as read: $error");
-      throw error;
+      rethrow;
     }
   }
 }

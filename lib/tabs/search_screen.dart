@@ -7,17 +7,20 @@ import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/shared/user_profile_screen.dart';
+import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final bool withLeading;
+
+  const SearchScreen({super.key, this.withLeading = true});
 
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen>{
-    //with AutomaticKeepAliveClientMixin<SearchScreen> {
+class _SearchScreenState extends State<SearchScreen> {
+  //with AutomaticKeepAliveClientMixin<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<User> _searchResults = [];
   List<User> _recentSearches = [];
@@ -107,6 +110,7 @@ class _SearchScreenState extends State<SearchScreen>{
           AppTheme.isDark(context) ? AppTheme.grey950 : Colors.white,
       appBar: AppBar(
         titleSpacing: 0,
+        automaticallyImplyLeading: widget.withLeading,
 
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
@@ -210,7 +214,12 @@ class _SearchScreenState extends State<SearchScreen>{
                                   User user = _recentSearches[index];
                                   return UserListTile(
                                     user: user,
-                                    onRemove: () => _removeRecent(user),
+                                    actionWidget: CustomButton(
+                                      heroIcon: HeroIcons.xMark,
+                                      onPressed: () => _removeRecent(user),
+                                      isIconOnly: true,
+                                      size: ButtonSize.small,
+                                    ),
                                     onTap:
                                         () => Navigator.of(context).push(
                                           MaterialPageRoute(
@@ -221,7 +230,6 @@ class _SearchScreenState extends State<SearchScreen>{
                                             },
                                           ),
                                         ),
-                                    showRemoveButton: true,
                                   );
                                 },
                               ),
@@ -241,7 +249,6 @@ class _SearchScreenState extends State<SearchScreen>{
                         User user = _searchResults[index];
                         return UserListTile(
                           user: user,
-                          onRemove: () {},
                           onTap:
                               () => {
                                 _addToRecent(user),
@@ -254,7 +261,6 @@ class _SearchScreenState extends State<SearchScreen>{
                                   ),
                                 ),
                               },
-                          showRemoveButton: false,
                         );
                       },
                     ),

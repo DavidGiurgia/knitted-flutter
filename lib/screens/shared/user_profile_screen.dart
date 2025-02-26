@@ -5,8 +5,11 @@ import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/screens/shared/edit_profile.dart';
+import 'package:zic_flutter/screens/shared/friends_section.dart';
 import 'package:zic_flutter/tabs/search_screen.dart';
 import 'package:zic_flutter/widgets/button.dart';
+import 'package:zic_flutter/widgets/friendship_status_button.dart';
 import 'package:zic_flutter/widgets/profile_header.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -18,119 +21,28 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  bool isLoading = false;
+  List<User> friends = [];
 
-  Future<void> handleFriendRequest(String action) async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-    setState(() => isLoading = true);
-
-    try {
-      if (action == "add") {
-        await FriendsService.request(userProvider.user!.id, widget.user.id);
-      } else if (action == "cancel") {
-        await FriendsService.cancelFriendRequest(
-          userProvider.user!.id,
-          widget.user.id,
-        );
-      } else if (action == "accept") {
-        await FriendsService.acceptFriendRequest(
-          userProvider.user!.id,
-          widget.user.id,
-        );
-      } else if (action == "remove") {
-        await FriendsService.removeFriend(
-          userProvider.user!.id,
-          widget.user.id,
-        );
-      } else if (action == "block") {
-        await FriendsService.blockUser(userProvider.user!.id, widget.user.id);
-      } else if (action == "unblock") {
-        await FriendsService.unblockUser(userProvider.user!.id, widget.user.id);
-      }
-
-      setState(() => isLoading = false);
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
-    } finally {
-      await userProvider.loadUser();
-      setState(() => isLoading = false);
-    }
+  @override
+  void initState() {
+    super.initState();
+    loadFriends();
   }
 
-  void showFriendOptions() {
-    showModalBottomSheet(
-      backgroundColor:
-          AppTheme.isDark(context) ? AppTheme.grey800 : Colors.white,
-      context: context,
-      builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 24),
-            Text(
-              widget.user.fullname,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.foregroundColor(context),
-              ),
-            ),
-            Divider(
-              color:
-                  AppTheme.isDark(context)
-                      ? AppTheme.grey700
-                      : AppTheme.grey200,
-            ),
-            ListTile(
-              leading: Icon(Icons.person_remove),
-              title: Text('Unfriend'),
-              onTap: () {
-                handleFriendRequest("remove");
-                Navigator.pop(context);
-              },
-            ),
+  Future<void> loadFriends() async {
+    final List<User> fetchedFriends = await FriendsService.fetchUserFriends(widget.user.id);
 
-            ListTile(
-              leading: Icon(Icons.block, color: Colors.red),
-              title: Text('Block', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                handleFriendRequest("block");
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.report, color: Colors.red),
-              title: Text('Report', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
+    setState(() {
+      friends = fetchedFriends;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
-    final bool isFriend = userProvider.user!.friendsIds.contains(
-      widget.user.id,
-    );
-    final bool hasSentRequest = userProvider.user!.sentRequests.contains(
-      widget.user.id,
-    );
-    final bool hasIncomingRequest = userProvider.user!.friendRequests.contains(
-      widget.user.id,
-    );
-    final bool isBlocked = userProvider.user!.blockedUsers.contains(
-      widget.user.id,
-    );
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor(context),
       appBar: AppBar(
         title: Text(widget.user.fullname),
         actions: [
@@ -138,21 +50,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             icon: HeroIcon(
               HeroIcons.magnifyingGlass,
               size: 24,
-              color:
-                  AppTheme.isDark(context)
-                      ? AppTheme.grey100
-                      : AppTheme.grey950,
+              color: AppTheme.isDark(context) ? AppTheme.grey100 : AppTheme.grey950,
             ),
-            onPressed:
-                () => {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return SearchScreen();
-                      },
-                    ),
-                  ),
-                },
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return SearchScreen();
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -175,66 +83,36 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    widget.user.bio.isNotEmpty
-                        ? widget.user.bio
-                        : widget.user.email,
+                    widget.user.bio.isNotEmpty ? widget.user.bio : widget.user.email,
                     style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      if (widget.user.id != userProvider.user?.id)
+                      if (widget.user.id == userProvider.user?.id)
                         Expanded(
                           child: CustomButton(
-                            isLoading: isLoading,
-                            onPressed:
-                                isFriend
-                                    ? showFriendOptions
-                                    : () => handleFriendRequest(
-                                      hasSentRequest
-                                          ? "cancel"
-                                          : hasIncomingRequest
-                                          ? "accept"
-                                          : isBlocked
-                                          ? "unblock"
-                                          : "add",
-                                    ),
-                            text:
-                                isFriend
-                                    ? "Friends"
-                                    : hasSentRequest
-                                    ? "Cancel Request"
-                                    : hasIncomingRequest
-                                    ? "Accept Request"
-                                    : isBlocked
-                                    ? "Unblock"
-                                    : "Add Friend",
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProfileScreen(),
+                                ),
+                              );
+                            },
+                            text: 'Edit Profile',
                             isFullWidth: true,
-                            type:
-                                isFriend ||
-                                        hasSentRequest ||
-                                        hasIncomingRequest ||
-                                        isBlocked
-                                    ? ButtonType.bordered
-                                    : ButtonType.solid,
-
+                            type: ButtonType.bordered,
                             size: ButtonSize.small,
-                            icon:
-                                isFriend
-                                    ? Icons.how_to_reg_rounded
-                                    : (!hasIncomingRequest &&
-                                        !hasSentRequest &&
-                                        !isBlocked)
-                                    ? Icons.person_add
-                                    : null,
-                            bgColor:
-                                isFriend || isBlocked
-                                    ? AppTheme.foregroundColor(context)
-                                    : AppTheme.primaryColor,
                           ),
                         ),
-                      if (isFriend) const SizedBox(width: 6),
-                      if (isFriend)
+                      if (widget.user.id != userProvider.user?.id)
+                        Expanded(
+                          child: FriendshipStatusButton(user: widget.user),
+                        ),
+                      if (userProvider.user!.friendsIds.contains(widget.user.id))
+                        const SizedBox(width: 6),
+                      if (userProvider.user!.friendsIds.contains(widget.user.id))
                         Expanded(
                           child: CustomButton(
                             onPressed: () {},
@@ -246,6 +124,51 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         ),
                     ],
                   ),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FriendsSection(user: widget.user),
+                        ),
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Friends",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              "${friends.length}",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.isDark(context) ? Colors.grey.shade300 : Colors.grey.shade700,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "friends",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppTheme.isDark(context) ? Colors.grey.shade400 : Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Additional content
                 ],
               ),
             ),

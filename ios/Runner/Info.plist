@@ -29,6 +29,12 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
+	<key>NSCameraUsageDescription</key>
+<string>We need access to your camera to take pictures for your profile.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to select profile pictures.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>We need access to your microphone for video recording.</string>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>

@@ -10,6 +10,6 @@ class GroupsScreen extends StatefulWidget {
 class _GroupsScreenState extends State<GroupsScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: Text('Groups')));
+    return Scaffold(appBar: AppBar(title: Text('Groups'), automaticallyImplyLeading: false,));
   }
 }

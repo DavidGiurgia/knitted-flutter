@@ -51,6 +51,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
             ),
           ),
           SliverAppBar(
+            automaticallyImplyLeading: false,
             pinned: true,
             backgroundColor: AppTheme.backgroundColor(context),
             title:

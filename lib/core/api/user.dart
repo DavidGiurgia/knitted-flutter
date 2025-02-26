@@ -21,17 +21,42 @@ class UserService {
   }
 
   static Future<List<User>> searchUser(String searchText, String userId) async {
-  final url = Uri.parse('$baseUrl/users/search/$searchText?userId=$userId');
-  try {
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => User.fromJson(json)).toList();
+    final url = Uri.parse('$baseUrl/users/search/$searchText?userId=$userId');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => User.fromJson(json)).toList();
+      }
+    } catch (e) {
+      print("Error searching users: $e");
     }
-  } catch (e) {
-    print("Error searching users: $e");
+    return [];
   }
-  return [];
-}
 
+  static Future<void> updateUser(
+    String userId,
+    String bio,
+    String avatarUrl,
+    String avatarPublicId,
+    String coverUrl,
+    String coverPublicId,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/update/$userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'bio': bio,
+          'avatarUrl': avatarUrl,
+          'avatarPublicId': avatarPublicId,
+          'coverUrl': coverUrl,
+          'coverPublicId': coverPublicId,
+        }),
+      );
+    } catch (error) {
+      print("Error updating user: $error");
+      rethrow;
+    }
+  }
 }

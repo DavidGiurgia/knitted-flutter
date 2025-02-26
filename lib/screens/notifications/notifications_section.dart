@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/api/notifications.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
@@ -36,9 +37,26 @@ class _NotificationsSectionState extends State<NotificationsSection> {
     }
   }
 
-  void _handleNotificationAction(Map<String, dynamic> notification) {
-    print("Action clicked for ${notification['type']}");
-    // Poți implementa acțiuni specifice pentru fiecare notificare (Accept, Join, etc.)
+  Future<void> _handleNotificationAction(
+    NotificationType type,
+    String? senderId,
+  ) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    switch (type) {
+      case NotificationType.friendRequest:
+        await FriendsService.acceptFriendRequest(
+          userProvider.user!.id,
+          senderId!,
+        );
+        break;
+      case NotificationType.groupInvitation:
+        // Handle group invitation
+        break;
+      case NotificationType.friendRequestAccepted:
+        // TODO: Handle this case.
+        break;
+    }
+    await userProvider.loadUser();
   }
 
   @override
@@ -48,6 +66,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       appBar: AppBar(
         title: Text("Notifications"),
         backgroundColor: AppTheme.backgroundColor(context),
+        
       ),
       body: RefreshIndicator(
         onRefresh: _fetchNotifications,
@@ -60,9 +79,11 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                     final notification = notifications[index];
                     return NotificationItem(
                       notification: notification,
-                      onAction: () => _handleNotificationAction(notification),
+                      onAction: _handleNotificationAction,
                     );
                   },
+                  addAutomaticKeepAlives: true,
+                  
                 ),
       ),
     );

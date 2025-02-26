@@ -33,11 +33,11 @@ class AppTheme {
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: primaryColor,
-    scaffoldBackgroundColor: grey100,
+    scaffoldBackgroundColor: Colors.white,
     fontFamily: 'Poppins',
     colorScheme: ColorScheme.light(
       primary: primaryColor,
-      secondary: Color(0xFF3B4E68), // 🔹 aici vreau culoarea #3B4E68
+      secondary: Color(0xFF3B4E68),
       surface: Colors.white,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
@@ -48,15 +48,15 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primaryColor: primaryColor,
-    scaffoldBackgroundColor: grey900,
+    scaffoldBackgroundColor: grey950,
     fontFamily: 'Poppins',
     colorScheme: ColorScheme.dark(
       primary: primaryColor,
-      secondary: Color(0xFF253141), // 🔹 aici vreau culoarea #253141
+      secondary: Color(0xFF253141),
       surface: Colors.black,
       onPrimary: Colors.black,
       onSecondary: Colors.black,
-      onSurface: grey100,
+      onSurface: Colors.white,
     ),
   );
 }

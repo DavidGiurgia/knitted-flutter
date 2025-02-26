@@ -4,7 +4,7 @@ import 'package:zic_flutter/core/app_theme.dart';
 
 enum ButtonType { solid, light, bordered }
 
-enum ButtonSize { small, medium, large }
+enum ButtonSize { xs, small, medium, large }
 
 class CustomButton extends StatelessWidget {
   final String? text;
@@ -170,6 +170,8 @@ class CustomButton extends StatelessWidget {
         return 56;
       case ButtonSize.medium:
         return 48;
+      case ButtonSize.xs:
+        return 32;
     }
   }
 
@@ -181,6 +183,8 @@ class CustomButton extends StatelessWidget {
         return 24;
       case ButtonSize.medium:
         return 20;
+      case ButtonSize.xs:
+        return 16;
     }
   }
 }

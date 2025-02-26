@@ -10,9 +10,9 @@ class User {
   final List<String> sentRequests;
   final List<String> blockedUsers;
   final String avatarUrl;
-  final String avatarDeleteUrl;
+  final String avatarPublicId;
   final String coverUrl;
-  final String coverDeleteUrl;
+  final String coverPublicId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -28,9 +28,9 @@ class User {
     required this.sentRequests,
     required this.blockedUsers,
     required this.avatarUrl,
-    required this.avatarDeleteUrl,
+    required this.avatarPublicId,
     required this.coverUrl,
-    required this.coverDeleteUrl,
+    required this.coverPublicId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -49,9 +49,9 @@ class User {
       sentRequests: List<String>.from(json['sentRequests'] ?? []),
       blockedUsers: List<String>.from(json['blockedUsers'] ?? []),
       avatarUrl: json['avatarUrl'] ?? '',
-      avatarDeleteUrl: json['avatarDeleteUrl'] ?? '',
+      avatarPublicId: json['avatarPublicId'] ?? '',
       coverUrl: json['coverUrl'] ?? '',
-      coverDeleteUrl: json['coverDeleteUrl'] ?? '',
+      coverPublicId: json['coverPublicId'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
     );
@@ -71,9 +71,9 @@ class User {
       'sentRequests': sentRequests,
       'blockedUsers': blockedUsers,
       'avatarUrl': avatarUrl,
-      'avatarDeleteUrl': avatarDeleteUrl,
+      'avatarPublicId': avatarPublicId,
       'coverUrl': coverUrl,
-      'coverDeleteUrl': coverDeleteUrl,
+      'coverPublicId': coverPublicId,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
