@@ -8,7 +8,12 @@ import 'package:zic_flutter/widgets/button.dart';
 
 class FriendshipStatusButton extends StatefulWidget {
   final User user;
-  const FriendshipStatusButton({super.key, required this.user});
+  final bool isCompact;
+  const FriendshipStatusButton({
+    super.key,
+    required this.user,
+    this.isCompact = false,
+  });
 
   @override
   State<FriendshipStatusButton> createState() => _FriendshipStatusButtonState();
@@ -66,28 +71,34 @@ class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 24),
-            Text(
-              widget.user.fullname,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.foregroundColor(context),
+            // cum sa fac un handler in centru sus pentru 'tragere sheet'
+            Container(
+              width: 40,
+              height: 5,
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-            Divider(
-              color:
-                  AppTheme.isDark(context)
-                      ? AppTheme.grey700
-                      : AppTheme.grey200,
-            ),
+
             ListTile(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 26,
                 vertical: 0,
               ),
-              leading: Icon(Icons.person_remove),
-              title: Text('Unfriend'),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.person_remove_rounded),
+              ),
+              title: Text(
+                'Unfriend',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+              ),
               onTap: () {
                 handleFriendRequest("remove");
                 Navigator.pop(context);
@@ -99,8 +110,22 @@ class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
                 horizontal: 26,
                 vertical: 0,
               ),
-              leading: Icon(Icons.block, color: Colors.red),
-              title: Text('Block', style: TextStyle(color: Colors.red)),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.block, color: Colors.red),
+              ),
+              title: Text(
+                'Block',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
               onTap: () {
                 handleFriendRequest("block");
                 Navigator.pop(context);
@@ -111,8 +136,22 @@ class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
                 horizontal: 26,
                 vertical: 0,
               ),
-              leading: Icon(Icons.report, color: Colors.red),
-              title: Text('Report', style: TextStyle(color: Colors.red)),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.report, color: Colors.red),
+              ),
+              title: Text(
+                'Report',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
               },
@@ -139,44 +178,67 @@ class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
       widget.user.id,
     );
 
-    return CustomButton(
-      isLoading: isLoading,
-      onPressed: isFriend
-          ? showFriendOptions
-          : () => handleFriendRequest(
-                hasSentRequest
-                    ? "cancel"
+    if (userProvider.user?.id == widget.user.id) {
+      return SizedBox.shrink(); //Text("You");
+    }
+
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: widget.isCompact ? 110 : double.infinity,
+      ),
+      child: CustomButton(
+        isLoading: isLoading,
+        onPressed:
+            isFriend
+                ? showFriendOptions
+                : () => handleFriendRequest(
+                  hasSentRequest
+                      ? "cancel"
+                      : hasIncomingRequest
+                      ? "accept"
+                      : isBlocked
+                      ? "unblock"
+                      : "add",
+                ),
+        text:
+            widget.isCompact
+                ? isFriend
+                    ? "Friends"
+                    : hasSentRequest
+                    ? "Requested"
                     : hasIncomingRequest
-                        ? "accept"
-                        : isBlocked
-                            ? "unblock"
-                            : "add",
-              ),
-      text: isFriend
-          ? "Friends"
-          : hasSentRequest
-              ? "Cancel Request"
-              : hasIncomingRequest
-                  ? "Accept Request"
-                  : isBlocked
-                      ? "Unblock"
-                      : "Add Friend",
-      isFullWidth: true,
-      type: isFriend ||
-              hasSentRequest ||
-              hasIncomingRequest ||
-              isBlocked
-          ? ButtonType.bordered
-          : ButtonType.solid,
-      size: ButtonSize.small,
-      icon: isFriend
-          ? Icons.how_to_reg_rounded
-          : (!hasIncomingRequest && !hasSentRequest && !isBlocked)
-              ? Icons.person_add
-              : null,
-      bgColor: isFriend || isBlocked
-          ? AppTheme.foregroundColor(context)
-          : AppTheme.primaryColor,
+                    ? "Accept"
+                    : isBlocked
+                    ? "Unblock"
+                    : "Add"
+                : isFriend
+                ? "Friends"
+                : hasSentRequest
+                ? "Cancel request"
+                : hasIncomingRequest
+                ? "Accept request"
+                : isBlocked
+                ? "Unblock"
+                : "Add friend",
+        isFullWidth: true,
+        type:
+            isFriend || hasSentRequest || hasIncomingRequest || isBlocked
+                ? ButtonType.bordered
+                : ButtonType.solid,
+        size: widget.isCompact ? ButtonSize.xs : ButtonSize.small,
+        icon:
+            widget.isCompact
+                ? null
+                : isFriend
+                ? Icons.how_to_reg_rounded
+                : (!hasIncomingRequest && !hasSentRequest && !isBlocked)
+                ? Icons.person_add
+                : null,
+        bgColor:
+            isFriend || isBlocked
+                ? AppTheme.foregroundColor(context)
+                : AppTheme.primaryColor,
+      ),
     );
   }
 }

@@ -93,14 +93,14 @@ class FriendsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    //final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     return ListView.builder(
       itemCount: friends.length,
       itemBuilder: (context, index) {
         return UserListTile(
           user: friends[index],
-          //actionWidget: FriendshipStatusButton(user: userProvider.user!),
+          actionWidget: FriendshipStatusButton(user: friends[index], isCompact: true),
           onTap:
               () => {
                 Navigator.push(

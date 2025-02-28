@@ -19,9 +19,10 @@ class UserListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final String avatarUrl = user.avatarUrl.isNotEmpty ? user.avatarUrl : 'https://example.com/default-avatar.png';
     return ListTile(
+      titleAlignment: ListTileTitleAlignment.center,
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       leading: AdvancedAvatar(
-        size: 46,
+        size: 52,
         image: NetworkImage(avatarUrl),
         autoTextSize: true,
         name: user.fullname,
@@ -38,7 +39,7 @@ class UserListTile extends StatelessWidget {
         user.username,
         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
       ),
-      subtitle: Text(user.fullname, style: TextStyle(fontSize: 18, color: Colors.grey.shade500)),
+      subtitle: Text(user.fullname, style: TextStyle(fontSize: 16, color: Colors.grey.shade500)),
       trailing: actionWidget,
       onTap: onTap,
     );

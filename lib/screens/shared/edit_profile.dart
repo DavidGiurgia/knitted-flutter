@@ -337,8 +337,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     SizedBox(height: 8),
                     TextField(
                       controller: _bioController,
-                      maxLines: 4,
+                      maxLines: null,
+                      //expands: true,
                       decoration: InputDecoration(
+                        
                         hintText: 'Describe yourself...',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),

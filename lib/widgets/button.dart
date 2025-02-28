@@ -100,7 +100,13 @@ class CustomButton extends StatelessWidget {
                     : Icon(icon, size: fontSize + 4, color: textColor),
           ),
         if (text != null)
-          Text(text!, style: TextStyle(fontSize: fontSize, color: textColor)),
+          Flexible(
+            child: Text(
+              text!,
+              style: TextStyle(fontSize: fontSize, color: textColor),
+              overflow: TextOverflow.ellipsis, // Evită overflow-ul
+            ),
+          ),
       ],
     );
 
@@ -117,7 +123,7 @@ class CustomButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(borderRadius),
             ),
-            padding: EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: size == ButtonSize.xs ? 6 : 16),
           ),
           child: buttonContent,
         );
@@ -132,7 +138,7 @@ class CustomButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(borderRadius),
             ),
-            padding: EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: size == ButtonSize.xs ? 6 : 16),
           ),
           child: buttonContent,
         );
@@ -144,7 +150,7 @@ class CustomButton extends StatelessWidget {
           style: TextButton.styleFrom(
             foregroundColor: textColor,
             backgroundColor: Colors.transparent,
-            padding: EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: size == ButtonSize.xs ? 6 : 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(borderRadius),
             ),
@@ -164,27 +170,27 @@ class CustomButton extends StatelessWidget {
   // Metode pentru a obține dimensiunea în funcție de ButtonSize
   double _getHeight() {
     switch (size) {
+      case ButtonSize.xs:
+        return 36;
       case ButtonSize.small:
         return 36;
       case ButtonSize.large:
         return 56;
       case ButtonSize.medium:
         return 48;
-      case ButtonSize.xs:
-        return 32;
     }
   }
 
   double _getFontSize() {
     switch (size) {
+      case ButtonSize.xs:
+        return 14;
       case ButtonSize.small:
         return 16;
       case ButtonSize.large:
         return 24;
       case ButtonSize.medium:
         return 20;
-      case ButtonSize.xs:
-        return 16;
     }
   }
 }

@@ -113,15 +113,15 @@ class _SearchScreenState extends State<SearchScreen> {
         automaticallyImplyLeading: widget.withLeading,
 
         title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color:
                   AppTheme.isDark(context)
                       ? Colors.grey.shade900
                       : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
@@ -129,22 +129,21 @@ class _SearchScreenState extends State<SearchScreen> {
                   HeroIcons.magnifyingGlass,
                   style: HeroIconStyle.outline,
                   color: Colors.grey.shade500,
-                  size: 16,
+                  size: 18,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
-                    //autofocus: true,
                     controller: _searchController,
                     onChanged: _onSearchChanged,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 15,
                       decoration: TextDecoration.none,
                     ),
                     decoration: InputDecoration(
-                      hintText: "Search",
+                      hintText: "Search ",
                       hintStyle: TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
                         color: Colors.grey.shade500,
                       ),
                       border: InputBorder.none,

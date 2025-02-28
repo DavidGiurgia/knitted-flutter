@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:heroicons/heroicons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
+import 'package:zic_flutter/screens/chats/new_chat_section.dart';
+import 'package:zic_flutter/screens/chats/new_temporary_chat_section.dart';
+import 'package:zic_flutter/widgets/bottom_sheet.dart';
 import 'package:zic_flutter/widgets/button.dart';
-import 'package:zic_flutter/widgets/join_group_input.dart';
+import 'package:zic_flutter/widgets/temporary_chats_section.dart';
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
@@ -12,61 +15,95 @@ class ChatsScreen extends StatefulWidget {
 }
 
 class _ChatsScreenState extends State<ChatsScreen> {
-  final TextEditingController _codeController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
-  bool _isSearching = false;
 
   void _onSearchChanged(String query) async {
     // Handle search query changes
   }
 
-  void _toggleSearch() {
-    setState(() {
-      _isSearching = !_isSearching;
-    });
+  void _showBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return CustomBottomSheet(
+          title: "Start a New Chat",
+          options: [
+            SheetOption(
+              title: "Quick Chat",
+              subtitle:
+                  "A temporary conversation where no data is saved, and your identity remains hidden.",
+              icon: HeroIcons.clock,
+              iconColor: AppTheme.primaryColor,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NewTemporaryChatSection()),
+                );
+              },
+            ),
+            SheetOption(
+              title: "Regular Chat",
+              subtitle: "Stay connected with your friends.",
+              icon: HeroIcons.chatBubbleLeftRight,
+              iconColor: Colors.blue,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NewChatSection()),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: AppTheme.backgroundColor(context),
+        title: Text("Chats"),
+        actions: [
+          CustomButton(
+            onPressed: () => _showBottomSheet(context),
+            isIconOnly: true,
+            heroIcon: HeroIcons.pencilSquare,
+            iconStyle: HeroIconStyle.mini,
+            type: ButtonType.light,
+            size: ButtonSize.large,
+          ),
+        ],
+      ),
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(
+          SliverToBoxAdapter(child: TemporaryChatsSection()),
+          SliverFillRemaining(
             child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              color: AppTheme.primaryColor,
-              child: Column(
-                children: [
-                  JoinGroupInput(controller: _codeController, onJoin: () {}),
-                  SizedBox(height: 8),
-                  // Container(
-                  //   height: 60,
-                  //   decoration: BoxDecoration(
-                  //     // Add your desired decoration here
-                  //   ),
-                  // ),
-                ],
-              ),
-            ),
-          ),
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            pinned: true,
-            backgroundColor: AppTheme.backgroundColor(context),
-            title:
-                _isSearching
-                    ? Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 10,
-                      ),
+              color: AppTheme.backgroundColor(context),
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color:
                             AppTheme.isDark(context)
                                 ? Colors.grey.shade900
                                 : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
@@ -74,12 +111,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
                             HeroIcons.magnifyingGlass,
                             style: HeroIconStyle.outline,
                             color: Colors.grey.shade500,
-                            size: 16,
+                            size: 18,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: TextField(
-                              //autofocus: true,
+                              autofocus: false,
                               controller: _searchController,
                               onChanged: _onSearchChanged,
                               style: const TextStyle(
@@ -89,7 +126,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                               decoration: InputDecoration(
                                 hintText: "Search",
                                 hintStyle: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 15,
                                   color: Colors.grey.shade500,
                                 ),
                                 border: InputBorder.none,
@@ -100,44 +137,9 @@ class _ChatsScreenState extends State<ChatsScreen> {
                           ),
                         ],
                       ),
-                    )
-                    : Text("Chats"),
-            leading:
-                _isSearching
-                    ? IconButton(
-                      icon: Icon(Icons.arrow_back),
-                      onPressed: _toggleSearch,
-                    )
-                    : null,
-            actions:
-                _isSearching
-                    ? []
-                    : [
-                      CustomButton(
-                        onPressed: () => print("add post pressed!"),
-                        isIconOnly: true,
-                        heroIcon: HeroIcons.pencilSquare,
-                        iconStyle: HeroIconStyle.mini,
-                        type: ButtonType.light,
-                        size: ButtonSize.large,
-                      ),
-                      CustomButton(
-                        onPressed: _toggleSearch,
-                        isIconOnly: true,
-                        heroIcon: HeroIcons.magnifyingGlass,
-                        iconStyle: HeroIconStyle.mini,
-                        type: ButtonType.light,
-                        size: ButtonSize.large,
-                      ),
-                    ],
-          ),
-          SliverFillRemaining(
-            child: Container(
-              color: AppTheme.backgroundColor(context),
-              child: Column(
-                children: [
-                  // Your chat content goes here
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

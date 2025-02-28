@@ -183,7 +183,7 @@ class _NotificationItemState extends State<NotificationItem> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AdvancedAvatar(
-              size: 46,
+              size: 52,
               image: NetworkImage(avatarUrl),
               autoTextSize: true,
               name: sender?.fullname,
