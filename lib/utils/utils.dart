@@ -1,31 +1,29 @@
 import 'dart:math';
 import 'package:intl/intl.dart';
+import 'package:zic_flutter/core/api/room_service.dart';
 
-// Function to generate a unique join code
 Future<String> generateUniqueJoinCode() async {
   bool isUnique = false;
   String joinCode = "";
+  int maxAttempts = 10; // Limităm numărul de încercări
+  int attempts = 0;
 
-  while (!isUnique) {
-    // Generate a 7-digit code
+  while (!isUnique && attempts < maxAttempts) {
     joinCode = (1000000 + Random().nextInt(9000000)).toString();
-    // Implement your logic to check if the code is unique
-    isUnique = await checkCode(joinCode);
+    isUnique = await RoomService.checkCode(joinCode);
+    attempts++;
   }
+
+  if (!isUnique) {
+    throw Exception(
+      "Failed to generate a unique join code after $maxAttempts attempts.",
+    );
+  }
+
   return joinCode;
 }
-
-// Function to check if the code is unique (Placeholder implementation)
-Future<bool> checkCode(String joinCode) async {
-  // Implement your logic to check if the code is unique
-  // For now, we'll return true to simulate uniqueness
-  return Future.value(true);
-}
-
 // Function to format the date string
-String multiFormatDateString(String timestamp) {
-  int timestampNum = (DateTime.parse(timestamp).millisecondsSinceEpoch / 1000).round();
-  DateTime date = DateTime.fromMillisecondsSinceEpoch(timestampNum * 1000);
+String multiFormatDateString(DateTime date) { // Change to DateTime
   DateTime now = DateTime.now();
 
   Duration diff = now.difference(date);
@@ -35,7 +33,7 @@ String multiFormatDateString(String timestamp) {
   double diffInDays = diffInHours / 24;
 
   if (diffInDays >= 30) {
-    return formatDateString(timestamp);
+    return formatDateString(date); // Pass DateTime
   } else if (diffInDays >= 1 && diffInDays < 2) {
     return '${diffInDays.floor()} day ago';
   } else if (diffInDays >= 2 && diffInDays < 30) {
@@ -50,15 +48,13 @@ String multiFormatDateString(String timestamp) {
 }
 
 // Function to format the date string (Placeholder implementation)
-String formatDateString(String timestamp) {
-  DateTime date = DateTime.parse(timestamp);
+String formatDateString(DateTime date) { // Change to DateTime
   final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
   return formatter.format(date);
 }
 
 // Function to format the date string with custom options
-String formatDateStringWithOptions(String dateString) {
-  DateTime date = DateTime.parse(dateString);
+String formatDateStringWithOptions(DateTime date) { // Change to DateTime
   final DateFormat dateFormatter = DateFormat('MMM d, yyyy');
   final DateFormat timeFormatter = DateFormat('h:mm a');
 
@@ -67,3 +63,5 @@ String formatDateStringWithOptions(String dateString) {
 
   return '$formattedDate at $time';
 }
+
+

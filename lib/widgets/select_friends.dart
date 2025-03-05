@@ -34,7 +34,7 @@ class _SelectFriendsState extends State<SelectFriends> {
     setState(() => isLoading = true);
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      friends = await FriendsService.fetchUserFriends(userProvider.user!.id);
+      friends = await FriendsService.getUserFriends(userProvider.user!.id);
       filteredFriends = friends;
     } catch (error) {
       print("Error fetching friends: $error");
@@ -69,7 +69,7 @@ class _SelectFriendsState extends State<SelectFriends> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return  Column(
       children: [
         /// Search Input
         Padding(

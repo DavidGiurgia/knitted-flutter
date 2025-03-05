@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
 import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/api/notifications.dart';
+import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/api/user.dart';
 import 'package:zic_flutter/core/app_theme.dart';
+import 'package:zic_flutter/core/models/notification.dart';
 import 'package:zic_flutter/core/models/user.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/shared/user_profile_screen.dart';
 import 'package:zic_flutter/utils/utils.dart';
 import 'package:zic_flutter/widgets/button.dart';
 
-enum NotificationType { friendRequest, friendRequestAccepted, groupInvitation }
-
 class NotificationItem extends StatefulWidget {
-  final Map<String, dynamic> notification;
-  final Function(NotificationType type, String? senderId)? onAction;
+  final NotificationModel notification;
+  final VoidCallback onAction;
 
   const NotificationItem({
     super.key,
     required this.notification,
-    this.onAction,
+    required this.onAction,
   });
 
   @override
@@ -27,10 +27,9 @@ class NotificationItem extends StatefulWidget {
 }
 
 class _NotificationItemState extends State<NotificationItem> {
-  Map<String, dynamic>? metadata;
   bool isLoading = true;
   User? sender;
-  NotificationType? type;
+  bool isRoomStilActive = false;
 
   @override
   void initState() {
@@ -39,41 +38,23 @@ class _NotificationItemState extends State<NotificationItem> {
   }
 
   Future<void> _fetchNotificationMetadata() async {
-    await NotificationService.markNotificationAsRead(
-      widget.notification['_id'],
-    );
+    await NotificationService.markNotificationAsRead(widget.notification.id);
     try {
-      setState(() {
-        type = _getNotificationType(widget.notification['type']);
-      });
-
-      final data = widget.notification['data'];
-
-      final userId = data['senderId'] ?? data["acceptedBy"];
-      if (userId != null && userId != "zic_team") {
-        final user = await UserService.fetchUserById(userId);
-        setState(() => sender = user);
-        print("sender found: $sender");
+      final senderId = widget.notification.senderId;
+      if (senderId != "zic_team") {
+        final fetchedSender = await UserService.fetchUserById(senderId);
+        final room = await RoomService.getRoomById(
+          widget.notification.data['chatRoomId'] ?? "",
+        );
+        setState(() => isRoomStilActive = room != null);
+        setState(() => sender = fetchedSender);
       } else {
-        print("sender id not valid");
+        print("sender id is not an user");
       }
     } catch (e) {
       print("Error fetching notification metadata: $e");
     } finally {
       setState(() => isLoading = false);
-    }
-  }
-
-  NotificationType _getNotificationType(String type) {
-    switch (type) {
-      case 'friend_request':
-        return NotificationType.friendRequest;
-      case 'friend_request_accepted':
-        return NotificationType.friendRequestAccepted;
-      case 'group_invitation':
-        return NotificationType.groupInvitation;
-      default:
-        throw Exception('Unknown notification type');
     }
   }
 
@@ -94,7 +75,7 @@ class _NotificationItemState extends State<NotificationItem> {
                 ),
                 onTap: () async {
                   await NotificationService.deleteNotification(
-                    widget.notification['_id'],
+                    widget.notification.id,
                   );
                   // Implement delete functionality
                   Navigator.pop(context);
@@ -111,9 +92,9 @@ class _NotificationItemState extends State<NotificationItem> {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     final String timestamp = multiFormatDateString(
-      widget.notification['createdAt'],
+      widget.notification.createdAt,
     );
-    final bool isRead = widget.notification['read'] ?? false;
+    final bool isRead = widget.notification.read;
     final String avatarUrl = sender?.avatarUrl ?? '';
     final bool hasIncomingRequest = userProvider.user!.friendRequests.contains(
       sender?.id,
@@ -123,14 +104,13 @@ class _NotificationItemState extends State<NotificationItem> {
     String message = "You have a new notification.";
     Widget? actionButton;
 
-    switch (type) {
+    switch (widget.notification.type) {
       case NotificationType.friendRequest:
         message = "${sender?.fullname} sent you a friend request.";
         actionButton =
             hasIncomingRequest
                 ? CustomButton(
-                  onPressed:
-                      () async => await widget.onAction!(type!, sender?.id),
+                  onPressed: widget.onAction,
                   text: "Accept",
                   type: ButtonType.bordered,
                   size: ButtonSize.small,
@@ -141,19 +121,18 @@ class _NotificationItemState extends State<NotificationItem> {
       case NotificationType.friendRequestAccepted:
         message = "${sender?.fullname} accepted your friend request.";
         break;
-      case NotificationType.groupInvitation:
+      case NotificationType.chatInvitation:
         message =
-            "You have been invited to join ${widget.notification['data']['groupName']}.";
-        actionButton = CustomButton(
-          onPressed: () => widget.onAction!(type!, null),
-          text: "Join",
-          type: ButtonType.solid,
-          size: ButtonSize.small,
-          bgColor: AppTheme.primaryColor,
-        );
-        break;
-      default:
-        message = "You have a new notification.";
+            "${sender?.fullname} has been invited you to join a temporary chat: ${widget.notification.data['chatRoomTopic']}.";
+        if (isRoomStilActive) {
+          actionButton = CustomButton(
+            onPressed: widget.onAction,
+            text: "Join",
+            type: ButtonType.solid,
+            size: ButtonSize.small,
+            bgColor: AppTheme.primaryColor,
+          );
+        }
         break;
     }
 
@@ -225,7 +204,7 @@ class _NotificationItemState extends State<NotificationItem> {
                 ],
               ),
             ),
-            if(actionButton!= null) actionButton, 
+            if (actionButton != null) actionButton,
           ],
         ),
       ),

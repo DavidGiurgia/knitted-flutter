@@ -20,7 +20,7 @@ class UserProvider extends ChangeNotifier {
   bool get isLoggedIn => _user != null;
 
   // 🔹 Încarcă userul curent (de la API)
-  Future<void> loadUser() async {
+   Future<void> loadUser() async {
     var userData = await ApiService.getCurrentUserFromApi();
     setUser(userData!);
     notifyListeners(); // Notifică UI-ul că s-a schimbat user-ul

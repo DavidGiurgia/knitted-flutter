@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:heroicons/heroicons.dart';
+import 'package:provider/provider.dart';
+import 'package:zic_flutter/core/api/room_participants.dart';
+import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
+import 'package:zic_flutter/core/models/chat_room.dart';
+import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/screens/chats/chats_section.dart';
 import 'package:zic_flutter/screens/chats/new_chat_section.dart';
+import 'package:zic_flutter/screens/chats/new_message_section.dart';
 import 'package:zic_flutter/screens/chats/new_temporary_chat_section.dart';
+import 'package:zic_flutter/screens/chats/temporary_chat_room.dart';
 import 'package:zic_flutter/widgets/bottom_sheet.dart';
 import 'package:zic_flutter/widgets/button.dart';
-import 'package:zic_flutter/widgets/temporary_chats_section.dart';
+import 'package:zic_flutter/widgets/join_room_input.dart';
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
@@ -16,15 +24,89 @@ class ChatsScreen extends StatefulWidget {
 
 class _ChatsScreenState extends State<ChatsScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _codeController = TextEditingController();
+  List<Room> rooms = [];
+  bool _isCodeInputVisible = false;
 
-  void _onSearchChanged(String query) async {
-    // Handle search query changes
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadRooms();
+    });
   }
+
+  Future<void> _loadRooms() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user;
+
+    if (user == null) {
+      print("User is null - skipping room loading");
+      return;
+    }
+    try {
+      final roomParticipants = await RoomParticipantsService.findByUserId(
+        user.id,
+      );
+      List<Room> loadedRooms = [];
+      for (var participant in roomParticipants) {
+        final room = await RoomService.getRoomById(participant.roomId);
+        if (room != null) {
+          loadedRooms.add(room);
+        }
+      }
+      if (mounted) {
+        setState(() {
+          rooms = loadedRooms;
+        });
+      }
+    } catch (e) {
+      print("Error loading rooms: $e");
+    }
+  }
+
+  void _onJoin() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final code = _codeController.text.trim();
+    if (code.isEmpty) {
+      return;
+    }
+    Room? temporaryRoom = await RoomService.getRoomByCode(code);
+    if (temporaryRoom == null || userProvider.user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sorry, there is no such room active right now!'),
+        ),
+      );
+      return;
+    }
+    if (!rooms.any((room) => room.id == temporaryRoom.id) &&
+        userProvider.user != null) {
+      final success = await RoomParticipantsService.create(
+        userProvider.user!.id,
+        temporaryRoom.id,
+      );
+      if (success != null) {
+        setState(() {
+          rooms.add(temporaryRoom);
+        });
+      }
+    }
+    _codeController.clear();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TemporaryChatRoom(room: temporaryRoom),
+      ),
+    );
+  }
+
+  
 
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
@@ -32,29 +114,51 @@ class _ChatsScreenState extends State<ChatsScreen> {
           title: "Start a New Chat",
           options: [
             SheetOption(
-              title: "Quick Chat",
+              title: "Temporary Room",
               subtitle:
-                  "A temporary conversation where no data is saved, and your identity remains hidden.",
-              icon: HeroIcons.clock,
-              iconColor: AppTheme.primaryColor,
+                  "Start a short-lived chat with no saved messages and anonymous participation.",
+              icon: HeroIcons.hashtag,
+              iconColor: AppTheme.foregroundColor(context),
+              iconStyle: HeroIconStyle.micro,
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => NewTemporaryChatSection()),
+                  MaterialPageRoute(
+                    builder: (context) => const NewTemporaryChatSection(),
+                  ),
                 );
               },
             ),
             SheetOption(
-              title: "Regular Chat",
-              subtitle: "Stay connected with your friends.",
-              icon: HeroIcons.chatBubbleLeftRight,
-              iconColor: Colors.blue,
+              title: "Group chat",
+              subtitle: "Create a group chat with your friends.",
+              icon: HeroIcons.users,
+              iconColor: AppTheme.foregroundColor(context),
+              iconStyle: HeroIconStyle.micro,
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => NewChatSection()),
+                  MaterialPageRoute(
+                    builder: (context) => const NewChatSection(),
+                  ),
+                );
+              },
+            ),
+            SheetOption(
+              title: "New message",
+              subtitle: "Stay connected with your friends.",
+              icon: HeroIcons.chatBubbleLeftRight,
+              iconColor: AppTheme.foregroundColor(context),
+              iconStyle: HeroIconStyle.solid,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NewMessageSection(),
+                  ),
                 );
               },
             ),
@@ -69,9 +173,24 @@ class _ChatsScreenState extends State<ChatsScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: AppTheme.backgroundColor(context),
-        title: Text("Chats"),
+        title: const Text('Chats'),
         actions: [
+          CustomButton(
+            onPressed: () {
+              setState(() {
+                _isCodeInputVisible = !_isCodeInputVisible;
+              });
+            },
+            isIconOnly: true,
+            heroIcon: HeroIcons.hashtag,
+            iconStyle: HeroIconStyle.micro,
+            type: ButtonType.light,
+            size: ButtonSize.large,
+            bgColor:
+                _isCodeInputVisible
+                    ? AppTheme.primaryColor
+                    : null, // Schimbă culoarea
+          ),
           CustomButton(
             onPressed: () => _showBottomSheet(context),
             isIconOnly: true,
@@ -82,69 +201,47 @@ class _ChatsScreenState extends State<ChatsScreen> {
           ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: TemporaryChatsSection()),
-          SliverFillRemaining(
-            child: Container(
-              color: AppTheme.backgroundColor(context),
-              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color:
-                            AppTheme.isDark(context)
-                                ? Colors.grey.shade900
-                                : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          HeroIcon(
-                            HeroIcons.magnifyingGlass,
-                            style: HeroIconStyle.outline,
-                            color: Colors.grey.shade500,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              autofocus: false,
-                              controller: _searchController,
-                              onChanged: _onSearchChanged,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                decoration: TextDecoration.none,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: "Search",
-                                hintStyle: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.grey.shade500,
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.zero,
-                                isDense: true,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+      body: RefreshIndicator(
+        onRefresh: _loadRooms,
+        child: CustomScrollView(
+          slivers: [
+            if (_isCodeInputVisible) // Afișează input-ul doar dacă este vizibil
+              SliverToBoxAdapter(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 24,
+                  ),
+                  color: AppTheme.primaryColor,
+                  child: JoinTemporaryRoomInput(
+                    controller: _codeController,
+                    onJoin: _onJoin,
+                  ),
                 ),
               ),
+            SliverFillRemaining(
+              child: ChatsSection(
+                rooms: rooms,
+                searchController: _searchController,
+                onSearchChanged: (query) {},
+                onCreatePressed: () => _showBottomSheet(context),
+                onJoinPressed: () {
+                  setState(() {
+                    _isCodeInputVisible = true;
+                  });
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }

@@ -9,6 +9,7 @@ Widget buildSheetOption(
   required String subtitle,
   required HeroIcons icon,
   required Color iconColor,
+  required HeroIconStyle iconStyle,
   required VoidCallback onTap,
 }) {
   return GestureDetector(
@@ -33,12 +34,12 @@ Widget buildSheetOption(
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.2),
+              color: iconColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: HeroIcon(
               icon,
-              style: HeroIconStyle.solid,
+              style: iconStyle,
               color: iconColor,
               size: 24,
             ),

@@ -1,26 +1,37 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:zic_flutter/core/models/notification.dart';
 
 class NotificationService {
-  static String apiUrl = dotenv.env['BASE_URL'] ?? "http://192.168.0.103:8000";// URL-ul API-ului backend
+  static String apiUrl =
+      dotenv.env['BASE_URL'] ??
+      "http://192.168.0.103:8000"; // URL-ul API-ului backend
   static final String baseUrl = "$apiUrl/notifications";
 
   // Creează o notificare
-  static Future<Map<String, dynamic>> createNotification(String userId, String type, Map<String, dynamic> data) async {
+  static Future<Map<String, dynamic>> createNotification(
+    String senderId,
+    String receiverId,
+
+    String type,
+    Map<String, dynamic> data,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse(baseUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'userId': userId,
-          'type': type,  // Include tipul notificării
-          'data': data   // Include datele flexibile pentru notificare
+          'senderId': senderId,
+          'receiverId': receiverId,
+          'type': type, // Include tipul notificării
+          'data': data, // Include datele flexibile pentru notificare
         }),
       );
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 || response.statusCode < 300) {
         return jsonDecode(response.body);
       } else {
+        print(response.statusCode);
         throw Exception('Failed to create notification');
       }
     } catch (error) {
@@ -29,16 +40,19 @@ class NotificationService {
     }
   }
 
-  // Obține notificările unui utilizator
-  static Future<List<dynamic>> fetchNotifications(String userId, {bool unreadOnly = false}) async {
+ static Future<List<NotificationModel>> fetchNotifications(
+    String userId, {
+    bool unreadOnly = false,
+  }) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/$userId?unreadOnly=$unreadOnly'),
       );
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final List<dynamic> jsonData = jsonDecode(response.body); // Decode into a List
+        return jsonData.map((json) => NotificationModel.fromJson(json)).toList(); // Parse each item
       } else {
-        throw Exception('Failed to fetch notifications');
+        throw Exception('Failed to fetch notifications. Status Code: ${response.statusCode}'); // Include status code in exception
       }
     } catch (error) {
       print("Error fetching notifications: $error");
@@ -47,7 +61,9 @@ class NotificationService {
   }
 
   // Marchează o notificare ca citită
-  static Future<Map<String, dynamic>> markNotificationAsRead(String notificationId) async {
+  static Future<Map<String, dynamic>> markNotificationAsRead(
+    String notificationId,
+  ) async {
     try {
       final response = await http.patch(
         Uri.parse('$baseUrl/$notificationId/read'),
@@ -64,11 +80,11 @@ class NotificationService {
   }
 
   // Șterge o notificare
-  static Future<Map<String, dynamic>> deleteNotification(String notificationId) async {
+  static Future<Map<String, dynamic>> deleteNotification(
+    String notificationId,
+  ) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/$notificationId'),
-      );
+      final response = await http.delete(Uri.parse('$baseUrl/$notificationId'));
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
@@ -81,7 +97,9 @@ class NotificationService {
   }
 
   // Marchează toate notificările unui utilizator ca citite
-  static Future<Map<String, dynamic>> markAllNotificationsAsRead(String userId) async {
+  static Future<Map<String, dynamic>> markAllNotificationsAsRead(
+    String userId,
+  ) async {
     try {
       final response = await http.patch(
         Uri.parse('$baseUrl/$userId/markAllRead'),

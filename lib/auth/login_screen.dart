@@ -7,7 +7,7 @@ import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/tabs/tabs_layout.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/input.dart';
-import 'package:zic_flutter/widgets/join_group_input.dart';
+import 'package:zic_flutter/widgets/join_room_input.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -103,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    JoinGroupInput(
+                    JoinTemporaryRoomInput(
                       controller: _codeController,
                       onJoin: _joinGroup,
                     ),

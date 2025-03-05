@@ -1,0 +1,258 @@
+import 'package:flutter/material.dart';
+import 'package:heroicons/heroicons.dart';
+import 'package:provider/provider.dart';
+import 'package:zic_flutter/core/api/friends.dart';
+import 'package:zic_flutter/core/api/room_service.dart';
+import 'package:zic_flutter/core/app_theme.dart';
+import 'package:zic_flutter/core/models/chat_room.dart';
+import 'package:zic_flutter/core/models/user.dart';
+import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/screens/chats/chat_room.dart';
+import 'package:zic_flutter/screens/chats/new_chat_section.dart';
+import 'package:zic_flutter/widgets/search_input.dart';
+import 'package:zic_flutter/widgets/user_list_tile.dart';
+
+class NewMessageSection extends StatefulWidget {
+  const NewMessageSection({super.key});
+
+  @override
+  State<NewMessageSection> createState() => _NewMessageSectionState();
+}
+
+class _NewMessageSectionState extends State<NewMessageSection> {
+  bool isLoading = false;
+  final TextEditingController searchController = TextEditingController();
+  List<User> friends = [];
+  List<User> filteredFriends = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFriends();
+  }
+
+  void _loadFriends() async {
+    setState(() => isLoading = true);
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      friends = await FriendsService.getUserFriends(userProvider.user!.id);
+      filteredFriends = friends;
+    } catch (error) {
+      print("Error fetching friends: $error");
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      filteredFriends =
+          friends
+              .where(
+                (friend) =>
+                    friend.fullname.toLowerCase().contains(query.toLowerCase()),
+              )
+              .toList();
+    });
+  }
+
+  void handleCreateRoom(User friend) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final currentUser = userProvider.user;
+    if (currentUser == null) {
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    // Generarea participantKeys
+    final participantsIds = [currentUser.id, friend.id];
+    participantsIds.sort(); // Sortarea ID-urilor
+    final participantsKeys = participantsIds.join('-');
+
+    try {
+      // Creare obiect Room
+      final newRoomData = Room(
+        type: 'permanent',
+        creatorId: currentUser.id,
+        topic: 'New chat',
+        allowJoinCode: false,
+        id: '', // id-ul va fi generat de backend
+        participantsKeys: participantsKeys,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Creare camera
+      final room = await RoomService.createRoom(newRoomData);
+      if (room == null) {
+        print("Failed to create room");
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+
+      // Adaugare participanti
+      final success = await RoomService.addParticipantsToRoom(room.id, [
+        friend.id,
+      ]);
+      if (!success) {
+        print("Failed to add participants");
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ChatRoomSection(room: room)),
+      );
+    } catch (error) {
+      print("Error creating room: $error");
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(title: const Text("New message")),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NewChatSection(),
+                    ),
+                  ),
+              child: Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color:
+                        AppTheme.isDark(context)
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade300,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Large colored icon
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.foregroundColor(
+                          context,
+                        ).withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: HeroIcon(
+                        HeroIcons.users,
+                        style: HeroIconStyle.micro,
+                        color: AppTheme.foregroundColor(context),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    // Title and subtitle
+                    Expanded(
+                      child: Text(
+                        "Group chat",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Selectorul de prieteni
+            SizedBox(
+              height:
+                  MediaQuery.of(context).size.height * 0.8, // Adjust as needed
+              child: Column(
+                children: [
+                  /// Search Input
+                  SearchInput(
+                    controller: searchController,
+                    onChanged: _onSearchChanged,
+                  ),
+
+                  /// Suggested Friends List
+                  if (searchController.text.isEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Suggested Friends",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  Expanded(
+                    child:
+                        isLoading
+                            ? Center(child: CircularProgressIndicator())
+                            : filteredFriends.isEmpty
+                            ? Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Center(
+                                child: Text(
+                                  "No results found",
+                                  style: TextStyle(color: Colors.grey.shade500),
+                                ),
+                              ),
+                            )
+                            : ListView.builder(
+                              padding: EdgeInsets.zero,
+                              itemCount: filteredFriends.length,
+                              itemBuilder: (context, index) {
+                                final friend = filteredFriends[index];
+                                return UserListTile(
+                                  user: friend,
+                                  onTap: () {
+                                    handleCreateRoom(friend);
+                                  }, // set friend and create room
+                                );
+                              },
+                            ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

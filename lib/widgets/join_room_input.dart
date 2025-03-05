@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:heroicons/heroicons.dart';
 
-class JoinGroupInput extends StatelessWidget {
+class JoinTemporaryRoomInput extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onJoin;
 
-  const JoinGroupInput({
+  const JoinTemporaryRoomInput({
     super.key,
     required this.controller,
     required this.onJoin,

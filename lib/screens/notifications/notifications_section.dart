@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/api/notifications.dart';
+import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
+import 'package:zic_flutter/core/models/chat_room.dart';
+import 'package:zic_flutter/core/models/notification.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/screens/chats/temporary_chat_room.dart';
 import 'package:zic_flutter/widgets/notifincations/notification.dart';
 
 class NotificationsSection extends StatefulWidget {
@@ -14,7 +18,7 @@ class NotificationsSection extends StatefulWidget {
 }
 
 class _NotificationsSectionState extends State<NotificationsSection> {
-  List<dynamic> notifications = [];
+  List<NotificationModel> notifications = [];
   bool isLoading = false;
 
   @override
@@ -27,7 +31,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     setState(() => isLoading = true);
     try {
-      List<dynamic> fetchedNotifications =
+      List<NotificationModel> fetchedNotifications =
           await NotificationService.fetchNotifications(userProvider.user!.id);
       setState(() => notifications = fetchedNotifications);
     } catch (e) {
@@ -38,22 +42,32 @@ class _NotificationsSectionState extends State<NotificationsSection> {
   }
 
   Future<void> _handleNotificationAction(
-    NotificationType type,
-    String? senderId,
+     NotificationModel notification
   ) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    switch (type) {
+    switch (notification.type) {
       case NotificationType.friendRequest:
         await FriendsService.acceptFriendRequest(
           userProvider.user!.id,
-          senderId!,
+          notification.senderId,
         );
         break;
-      case NotificationType.groupInvitation:
-        // Handle group invitation
+      case NotificationType.chatInvitation:
+        final Room? room = await RoomService.getRoomById(notification.data['chatRoomId']);
+        if (room != null) {
+          
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TemporaryChatRoom(room: room),
+            ),
+          );
+        } else {
+          print("Error: Room not found");
+        }
         break;
       case NotificationType.friendRequestAccepted:
-        // TODO: Handle this case.
+        
         break;
     }
     await userProvider.loadUser();
@@ -66,7 +80,6 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       appBar: AppBar(
         title: Text("Notifications"),
         backgroundColor: AppTheme.backgroundColor(context),
-        
       ),
       body: RefreshIndicator(
         onRefresh: _fetchNotifications,
@@ -79,11 +92,10 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                     final notification = notifications[index];
                     return NotificationItem(
                       notification: notification,
-                      onAction: _handleNotificationAction,
+                      onAction: () => _handleNotificationAction(notification),
                     );
                   },
                   addAutomaticKeepAlives: true,
-                  
                 ),
       ),
     );

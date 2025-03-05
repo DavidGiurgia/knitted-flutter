@@ -30,7 +30,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<void> loadFriends() async {
-    final List<User> fetchedFriends = await FriendsService.fetchUserFriends(widget.user.id);
+    final List<User> fetchedFriends = await FriendsService.getUserFriends(widget.user.id);
 
     setState(() {
       friends = fetchedFriends;

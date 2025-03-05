@@ -210,7 +210,7 @@ class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
                     ? "Accept"
                     : isBlocked
                     ? "Unblock"
-                    : "Add"
+                    : "Add friend"
                 : isFriend
                 ? "Friends"
                 : hasSentRequest

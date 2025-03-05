@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
 import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/app_theme.dart';
@@ -23,6 +22,7 @@ class _FriendsSectionState extends State<FriendsSection>
   TabController? _tabController;
   List<User> friends = [];
   List<User> mutualFriends = [];
+  List<User> suggestedUsers = []; 
   bool showMutualTab = false;
 
   @override
@@ -30,8 +30,9 @@ class _FriendsSectionState extends State<FriendsSection>
     super.initState();
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     showMutualTab = widget.user?.id != userProvider.user?.id;
-    _tabController = TabController(length: showMutualTab ? 2 : 1, vsync: this);
+    _tabController = TabController(length: showMutualTab ? 3 : 2, vsync: this);
     loadFriends(userProvider.user?.id);
+    loadSuggestedUsers(userProvider.user?.id);
   }
 
   @override
@@ -43,7 +44,7 @@ class _FriendsSectionState extends State<FriendsSection>
   Future<void> loadFriends(userId) async {
     if (widget.user == null || userId == null) return;
 
-    final fetchedFriends = await FriendsService.fetchUserFriends(
+    final fetchedFriends = await FriendsService.getUserFriends(
       widget.user!.id,
     );
     List<User> fetchedMutualFriends = [];
@@ -60,6 +61,15 @@ class _FriendsSectionState extends State<FriendsSection>
     });
   }
 
+  Future<void> loadSuggestedUsers(userId) async {
+    if (userId == null) return;
+
+    final fetchedSuggestedUsers = await FriendsService.getRecommendedUsers(userId);
+    setState(() {
+      suggestedUsers = fetchedSuggestedUsers;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,6 +82,7 @@ class _FriendsSectionState extends State<FriendsSection>
           tabs: [
             if (showMutualTab) Tab(text: "${mutualFriends.length} mutual"),
             Tab(text: "${friends.length} friends"),
+            Tab(text: "Suggested"),
           ],
         ),
       ),
@@ -80,6 +91,7 @@ class _FriendsSectionState extends State<FriendsSection>
         children: [
           if (showMutualTab) FriendsList(friends: mutualFriends),
           FriendsList(friends: friends),
+          FriendsList(friends: suggestedUsers),
         ],
       ),
     );
@@ -89,7 +101,7 @@ class _FriendsSectionState extends State<FriendsSection>
 class FriendsList extends StatelessWidget {
   final List<User> friends;
 
-  const FriendsList({Key? key, required this.friends}) : super(key: key);
+  const FriendsList({super.key, required this.friends});
 
   @override
   Widget build(BuildContext context) {

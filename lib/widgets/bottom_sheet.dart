@@ -8,6 +8,7 @@ class SheetOption {
   final String subtitle;
   final HeroIcons icon;
   final Color iconColor;
+  final HeroIconStyle iconStyle;
   final VoidCallback onTap;
 
   SheetOption({
@@ -15,6 +16,7 @@ class SheetOption {
     required this.subtitle,
     required this.icon,
     required this.iconColor,
+    required this.iconStyle,
     required this.onTap,
   });
 }
@@ -47,18 +49,22 @@ class CustomBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Divider(
-            color: AppTheme.isDark(context) ? AppTheme.grey700 : AppTheme.grey200,
+            color:
+                AppTheme.isDark(context) ? AppTheme.grey700 : AppTheme.grey200,
           ),
           const SizedBox(height: 12),
           // Options
-          ...options.map((option) => buildSheetOption(
-                context,
-                title: option.title,
-                subtitle: option.subtitle,
-                icon: option.icon,
-                iconColor: option.iconColor,
-                onTap: option.onTap,
-              )),
+          ...options.map(
+            (option) => buildSheetOption(
+              context,
+              title: option.title,
+              subtitle: option.subtitle,
+              icon: option.icon,
+              iconColor: option.iconColor,
+              iconStyle: option.iconStyle,
+              onTap: option.onTap,
+            ),
+          ),
           const SizedBox(height: 12),
         ],
       ),

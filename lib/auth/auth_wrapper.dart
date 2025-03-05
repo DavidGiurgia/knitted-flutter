@@ -7,7 +7,7 @@ import 'package:zic_flutter/tabs/tabs_layout.dart';
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
-  @override
+   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
 
