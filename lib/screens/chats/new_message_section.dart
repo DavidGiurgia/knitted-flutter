@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/models/chat_room.dart';
 import 'package:zic_flutter/core/models/user.dart';
+import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/screens/chats/new_chat_section.dart';
@@ -62,59 +62,25 @@ class _NewMessageSectionState extends State<NewMessageSection> {
     if (currentUser == null) {
       return;
     }
+    //log
+    print("Room will be created");
 
     setState(() {
       isLoading = true;
     });
-
-    // Generarea participantKeys
-    final participantsIds = [currentUser.id, friend.id];
-    participantsIds.sort(); // Sortarea ID-urilor
-    final participantsKeys = participantsIds.join('-');
-
-    try {
-      // Creare obiect Room
-      final newRoomData = Room(
-        type: 'permanent',
-        creatorId: currentUser.id,
-        topic: 'New chat',
-        allowJoinCode: false,
-        id: '', // id-ul va fi generat de backend
-        participantsKeys: participantsKeys,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-
-      // Creare camera
-      final room = await RoomService.createRoom(newRoomData);
-      if (room == null) {
-        print("Failed to create room");
-        setState(() {
-          isLoading = false;
-        });
-        return;
-      }
-
-      // Adaugare participanti
-      final success = await RoomService.addParticipantsToRoom(room.id, [
-        friend.id,
-      ]);
-      if (!success) {
-        print("Failed to add participants");
-        setState(() {
-          isLoading = false;
-        });
-        return;
-      }
-
+    final room = await RoomService.createRoomWithFriend(
+      currentUser.id,
+      friend.id,
+    );
+    if (room != null) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => ChatRoomSection(room: room)),
       );
-    } catch (error) {
-      print("Error creating room: $error");
+      Provider.of<ChatRoomsProvider>(context, listen: false).loadRooms(context);
+    } else {
+      print("Failed to create room");
     }
-
     setState(() {
       isLoading = false;
     });

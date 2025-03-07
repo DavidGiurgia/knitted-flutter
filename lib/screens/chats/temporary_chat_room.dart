@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
-import 'package:zic_flutter/widgets/chat_header.dart';
+import 'package:zic_flutter/screens/chats/chat_room_body.dart';
+import 'package:zic_flutter/widgets/chats/chat_header.dart';
 
-class TemporaryChatRoom extends StatefulWidget {
+class TemporaryChatRoomSection extends StatelessWidget {
   final Room room;
 
-  const TemporaryChatRoom({super.key, required this.room});
-  @override
-  State<TemporaryChatRoom> createState() => _TemporaryChatRoomState();
-}
+  const TemporaryChatRoomSection({super.key, required this.room});
 
-class _TemporaryChatRoomState extends State<TemporaryChatRoom> {
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
-        actionsPadding: EdgeInsets.all(0),
-        title: Row(children: [ChatHeader(room: widget.room)]),
+        actionsPadding: const EdgeInsets.all(0),
+        title: Row(children: [ChatHeader(room: room)]),
       ),
+      body: ChatRoomBody(room: room),
     );
   }
 }

@@ -19,40 +19,30 @@ class TabsLayout extends StatefulWidget {
 
 class _TabsLayoutState extends State<TabsLayout> {
   int _selectedIndex = 0;
-  final PageController _pageController = PageController();
 
   final List<Widget> _screens = [
-    HomeScreen(),
-    SearchScreen(withLeading: false),
-    ChatsScreen(),
-    GroupsScreen(),
-    ProfileScreen(),
+    const HomeScreen(),
+    const SearchScreen(withLeading: false),
+    const ChatsScreen(),
+    const GroupsScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    _pageController.jumpToPage(index);
-  }
-
-  void _onPageChanged(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
   }
 
   HeroIcon _getIcon(HeroIcons icon, int index) {
-    final Color iconColor =
-        _selectedIndex == index
-            ? AppTheme.primaryColor
-            : AppTheme.isDark(context)
+    final Color iconColor = _selectedIndex == index
+        ? AppTheme.primaryColor
+        : AppTheme.isDark(context)
             ? AppTheme.grey100
             : AppTheme.grey900;
     return HeroIcon(
       icon,
-      style:
-          _selectedIndex == index ? HeroIconStyle.solid : HeroIconStyle.outline,
+      style: _selectedIndex == index ? HeroIconStyle.solid : HeroIconStyle.outline,
       color: iconColor,
       size: 32,
     );
@@ -65,9 +55,8 @@ class _TabsLayoutState extends State<TabsLayout> {
 
     return SafeArea(
       child: Scaffold(
-        body: PageView(
-          controller: _pageController,
-          onPageChanged: _onPageChanged,
+        body: IndexedStack(
+          index: _selectedIndex,
           children: _screens,
         ),
         bottomNavigationBar: Container(
@@ -76,14 +65,13 @@ class _TabsLayoutState extends State<TabsLayout> {
             border: Border(
               top: BorderSide(
                 width: 0.5,
-                color:
-                    AppTheme.isDark(context)
-                        ? Colors.grey.shade900
-                        : Colors.grey.shade100,
+                color: AppTheme.isDark(context)
+                    ? Colors.grey.shade900
+                    : Colors.grey.shade100,
               ),
             ),
           ),
-          height: 64, // Înălțimea fixă a barei de navigație
+          height: 64,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -120,44 +108,33 @@ class _TabsLayoutState extends State<TabsLayout> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        if (_selectedIndex ==
-                            4) // Inelul apare doar când e pe tab-ul profile
+                        if (_selectedIndex == 4)
                           Container(
-                            width: 35, // Dimensiunea inelului
+                            width: 35,
                             height: 35,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color:
-                                    AppTheme.primaryColor, // Culoarea inelului
+                                color: AppTheme.primaryColor,
                                 width: 3,
                               ),
                             ),
                           ),
-
-                        // Avatarul real
                         AdvancedAvatar(
-                          size: 32, // Dimensiune avatar
-                          image:
-                              avatarUrl != null
-                                  ? NetworkImage(avatarUrl)
-                                  : null,
+                          size: 32,
+                          image: avatarUrl != null ? NetworkImage(avatarUrl) : null,
                           autoTextSize: true,
-                          name:
-                              userProvider.user?.fullname ??
-                              "uk", // Inițiale fallback
+                          name: userProvider.user?.fullname ?? "uk",
                           style: TextStyle(
-                            color:
-                                AppTheme.isDark(context)
-                                    ? Colors.white
-                                    : Colors.black,
+                            color: AppTheme.isDark(context)
+                                ? Colors.white
+                                : Colors.black,
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: BoxDecoration(
-                            color:
-                                AppTheme.isDark(context)
-                                    ? AppTheme.grey800
-                                    : AppTheme.grey200,
+                            color: AppTheme.isDark(context)
+                                ? AppTheme.grey800
+                                : AppTheme.grey200,
                             shape: BoxShape.circle,
                           ),
                         ),

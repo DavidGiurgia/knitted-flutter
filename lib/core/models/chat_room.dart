@@ -6,7 +6,7 @@ class Room {
 
   final String? joinCode;
   final bool allowJoinCode;
-  final String? participantsKeys;
+  final String? participantsKey;
 
   final DateTime? expiresAt;
   final DateTime createdAt;
@@ -19,7 +19,7 @@ class Room {
     this.creatorId,
     this.joinCode,
     required this.allowJoinCode,
-    this.participantsKeys,
+    this.participantsKey,
     this.expiresAt,
     required this.createdAt,
     required this.updatedAt,
@@ -29,11 +29,11 @@ class Room {
     return Room(
       id: json['_id'] ?? '',
       type: json['type'] ?? 'permanent',
-      topic: json['topic'] ?? 'New chat',
+      topic: json['topic'] ?? '',
       creatorId: json['creatorId'],
       joinCode: json['joinCode'],
       allowJoinCode: json['allowJoinCode'] ?? true,
-      participantsKeys: json['participantsKeys'],
+      participantsKey: json['participantsKey'],
       expiresAt:
           json['expiresAt'] != null
               ? DateTime.tryParse(json['expiresAt'])
@@ -51,7 +51,7 @@ class Room {
       'creatorId': creatorId,
       'joinCode': joinCode,
       'allowJoinCode': allowJoinCode,
-      'participantsKeys': participantsKeys,
+      'participantsKey': participantsKey,
       'expiresAt': expiresAt?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),

@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:zic_flutter/auth/auth_wrapper.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
+import 'package:zic_flutter/core/providers/friends_provider.dart';
+import 'package:zic_flutter/core/providers/search_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 
 Future<void> main() async {
@@ -14,8 +17,19 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()..loadUser()), // Încarcă userul la startup
+        ChangeNotifierProvider(create: (_) => ChatRoomsProvider()),
+        ChangeNotifierProvider(create: (_) => FriendsProvider()),
+        ChangeNotifierProxyProvider2<ChatRoomsProvider, FriendsProvider, SearchProvider>(
+          create: (context) => SearchProvider([], []),
+          update: (context, chatRoomsProvider, friendsProvider, previousSearchProvider) {
+            return SearchProvider(
+              chatRoomsProvider.rooms,
+              friendsProvider.friends,
+            );
+          },
+        ),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }

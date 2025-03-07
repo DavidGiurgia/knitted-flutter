@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
+import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/widgets/button.dart';
@@ -40,10 +41,10 @@ class _NewChatSectionState extends State<NewChatSection> {
       final newRoomData = Room(
         type: 'permanent',
         creatorId: currentUser.id,
-        topic:
-            nameController.text.isNotEmpty ? nameController.text : 'New chat',
+        topic: nameController.text.isNotEmpty ? nameController.text : '',
         allowJoinCode: false,
         id: '', // id-ul va fi generat de backend
+        participantsKey: "group",
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -75,6 +76,8 @@ class _NewChatSectionState extends State<NewChatSection> {
         context,
         MaterialPageRoute(builder: (context) => ChatRoomSection(room: room)),
       );
+
+      Provider.of<ChatRoomsProvider>(context, listen: false).loadRooms(context);
     } catch (error) {
       print("Error creating room: $error");
     }

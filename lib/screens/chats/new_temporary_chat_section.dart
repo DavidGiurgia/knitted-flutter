@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
+import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/invite_friends_section.dart';
 import 'package:zic_flutter/utils/utils.dart';
@@ -67,7 +68,7 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
         joinCode: joinCode,
         allowJoinCode: allowJoinCode,
         expiresAt: expiresAt,
-        id: '', 
+        id: '',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -82,6 +83,10 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
             builder: (context) => InviteFriendsSection(room: room),
           ),
         );
+        Provider.of<ChatRoomsProvider>(
+          context,
+          listen: false,
+        ).loadRooms(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

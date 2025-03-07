@@ -59,7 +59,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TemporaryChatRoom(room: room),
+              builder: (context) => TemporaryChatRoomSection(room: room),
             ),
           );
         } else {

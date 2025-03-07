@@ -20,7 +20,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  //with AutomaticKeepAliveClientMixin<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<User> _searchResults = [];
   List<User> _recentSearches = [];
@@ -42,9 +41,6 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchController.dispose();
     super.dispose();
   }
-
-  // @override
-  // bool get wantKeepAlive => true;
 
   void _onSearchTextChanged() {
     if (_searchController.text.isEmpty) {
@@ -87,7 +83,20 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _addToRecent(User user) async {
     await RecentSearchService.addRecentSearch(userId, user.id);
-    _fetchRecentSearches();
+    setState(() {
+      _recentSearches.add(user);
+      _moveToTop(user);
+    });
+  }
+
+  void _moveToTop(User user) async {
+    //await RecentSearchService.moveRecentSearchToTop(userId, user.id);
+    setState(() {
+      _recentSearches = [
+        user,
+        ..._recentSearches.where((u) => u.id != user.id),
+      ];
+    });
   }
 
   void _clearRecent() async {
@@ -104,7 +113,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor:
           AppTheme.isDark(context) ? AppTheme.grey950 : Colors.white,
@@ -220,15 +228,18 @@ class _SearchScreenState extends State<SearchScreen> {
                                       size: ButtonSize.small,
                                     ),
                                     onTap:
-                                        () => Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (BuildContext context) {
-                                              return UserProfileScreen(
-                                                user: user,
-                                              );
-                                            },
+                                        () => {
+                                          _moveToTop(user),
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (BuildContext context) {
+                                                return UserProfileScreen(
+                                                  user: user,
+                                                );
+                                              },
+                                            ),
                                           ),
-                                        ),
+                                        },
                                   );
                                 },
                               ),

@@ -59,7 +59,7 @@ class ChatHeader extends StatelessWidget {
               participants.where((p) => p.id != currentUser.id).toList();
 
           String title = "New chat";
-          if (room.topic == "New chat") {
+          if (room.topic == "") {
             if (otherParticipants.length == 1) {
               title = otherParticipants.first.fullname;
             } else {

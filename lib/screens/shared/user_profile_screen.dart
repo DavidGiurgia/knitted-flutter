@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:heroicons/heroicons.dart';
 import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/api/friends.dart';
+import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
+import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/screens/shared/edit_profile.dart';
 import 'package:zic_flutter/screens/shared/friends_section.dart';
 import 'package:zic_flutter/tabs/search_screen.dart';
@@ -30,7 +33,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<void> loadFriends() async {
-    final List<User> fetchedFriends = await FriendsService.getUserFriends(widget.user.id);
+    final List<User> fetchedFriends = await FriendsService.getUserFriends(
+      widget.user.id,
+    );
 
     setState(() {
       friends = fetchedFriends;
@@ -50,7 +55,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             icon: HeroIcon(
               HeroIcons.magnifyingGlass,
               size: 24,
-              color: AppTheme.isDark(context) ? AppTheme.grey100 : AppTheme.grey950,
+              color:
+                  AppTheme.isDark(context)
+                      ? AppTheme.grey100
+                      : AppTheme.grey950,
             ),
             onPressed: () {
               Navigator.of(context).push(
@@ -83,7 +91,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    widget.user.bio.isNotEmpty ? widget.user.bio : widget.user.email,
+                    widget.user.bio.isNotEmpty
+                        ? widget.user.bio
+                        : widget.user.email,
                     style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 10),
@@ -110,12 +120,36 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         Expanded(
                           child: FriendshipStatusButton(user: widget.user),
                         ),
-                      if (userProvider.user!.friendsIds.contains(widget.user.id))
+                      if (userProvider.user!.friendsIds.contains(
+                        widget.user.id,
+                      ))
                         const SizedBox(width: 6),
-                      if (userProvider.user!.friendsIds.contains(widget.user.id))
+                      if (userProvider.user!.friendsIds.contains(
+                        widget.user.id,
+                      ))
                         Expanded(
                           child: CustomButton(
-                            onPressed: () {},
+                            onPressed: () async {
+                              final room =
+                                  await RoomService.createRoomWithFriend(
+                                    userProvider.user!.id,
+                                    widget.user.id,
+                                  );
+                              if (room != null && context.mounted) {
+                                Provider.of<ChatRoomsProvider>(
+                                  context,
+                                  listen: false,
+                                ).addRoom(room);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) =>
+                                            ChatRoomSection(room: room),
+                                  ),
+                                );
+                              }
+                            },
                             text: 'Message',
                             isFullWidth: true,
                             type: ButtonType.bordered,
@@ -130,7 +164,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => FriendsSection(user: widget.user),
+                          builder:
+                              (context) => FriendsSection(user: widget.user),
                         ),
                       );
                     },
@@ -151,7 +186,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: AppTheme.isDark(context) ? Colors.grey.shade300 : Colors.grey.shade700,
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? Colors.grey.shade300
+                                        : Colors.grey.shade700,
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -159,7 +197,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               "friends",
                               style: TextStyle(
                                 fontSize: 16,
-                                color: AppTheme.isDark(context) ? Colors.grey.shade400 : Colors.grey.shade600,
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? Colors.grey.shade400
+                                        : Colors.grey.shade600,
                               ),
                             ),
                           ],

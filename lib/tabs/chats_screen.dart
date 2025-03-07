@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:heroicons/heroicons.dart';
 import 'package:provider/provider.dart';
-import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/models/chat_room.dart';
+import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
+import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
-import 'package:zic_flutter/screens/chats/chats_section.dart';
+import 'package:zic_flutter/screens/chats/chat_rooms_list.dart';
+import 'package:zic_flutter/screens/chats/chats_search_section.dart';
 import 'package:zic_flutter/screens/chats/new_chat_section.dart';
 import 'package:zic_flutter/screens/chats/new_message_section.dart';
 import 'package:zic_flutter/screens/chats/new_temporary_chat_section.dart';
@@ -14,6 +15,7 @@ import 'package:zic_flutter/screens/chats/temporary_chat_room.dart';
 import 'package:zic_flutter/widgets/bottom_sheet.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/join_room_input.dart';
+import 'package:zic_flutter/widgets/search_input.dart';
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
@@ -22,57 +24,39 @@ class ChatsScreen extends StatefulWidget {
   State<ChatsScreen> createState() => _ChatsScreenState();
 }
 
-class _ChatsScreenState extends State<ChatsScreen> {
-  final TextEditingController _searchController = TextEditingController();
+class _ChatsScreenState extends State<ChatsScreen>
+    with AutomaticKeepAliveClientMixin<ChatsScreen> {
   final TextEditingController _codeController = TextEditingController();
-  List<Room> rooms = [];
+
   bool _isCodeInputVisible = false;
+
+  @override
+  bool get wantKeepAlive => true; // Păstrează starea widgetului
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadRooms();
+      final roomsProvider = Provider.of<ChatRoomsProvider>(
+        context,
+        listen: false,
+      );
+      roomsProvider.loadRooms(context);
     });
   }
 
-  Future<void> _loadRooms() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.user;
-
-    if (user == null) {
-      print("User is null - skipping room loading");
-      return;
-    }
-    try {
-      final roomParticipants = await RoomParticipantsService.findByUserId(
-        user.id,
-      );
-      List<Room> loadedRooms = [];
-      for (var participant in roomParticipants) {
-        final room = await RoomService.getRoomById(participant.roomId);
-        if (room != null) {
-          loadedRooms.add(room);
-        }
-      }
-      if (mounted) {
-        setState(() {
-          rooms = loadedRooms;
-        });
-      }
-    } catch (e) {
-      print("Error loading rooms: $e");
-    }
-  }
-
   void _onJoin() async {
+    final roomsProvider = Provider.of<ChatRoomsProvider>(
+      context,
+      listen: false,
+    );
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+
     final code = _codeController.text.trim();
-    if (code.isEmpty) {
-      return;
-    }
-    Room? temporaryRoom = await RoomService.getRoomByCode(code);
-    if (temporaryRoom == null || userProvider.user == null) {
+    if (code.isEmpty) return;
+
+    final room = await RoomService.getRoomByCode(code);
+    if (room == null || userProvider.user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Sorry, there is no such room active right now!'),
@@ -80,28 +64,26 @@ class _ChatsScreenState extends State<ChatsScreen> {
       );
       return;
     }
-    if (!rooms.any((room) => room.id == temporaryRoom.id) &&
-        userProvider.user != null) {
-      final success = await RoomParticipantsService.create(
-        userProvider.user!.id,
-        temporaryRoom.id,
-      );
-      if (success != null) {
-        setState(() {
-          rooms.add(temporaryRoom);
-        });
-      }
+
+    // Verificăm dacă camera există deja în listă.
+    final existingIndex = roomsProvider.rooms.indexWhere(
+      (r) => r.id == room.id,
+    );
+    if (existingIndex == -1) {
+      roomsProvider.addRoom(room);
     }
+
+    // Curățăm input-ul după join.
     _codeController.clear();
+
+    // Navighează către camera respectivă.
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TemporaryChatRoom(room: temporaryRoom),
+        builder: (context) => TemporaryChatRoomSection(room: room),
       ),
     );
   }
-
-  
 
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -170,6 +152,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -202,7 +185,17 @@ class _ChatsScreenState extends State<ChatsScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadRooms,
+        onRefresh:
+            () async => {
+              Provider.of<ChatRoomsProvider>(
+                context,
+                listen: false,
+              ).loadRooms(context),
+              Provider.of<FriendsProvider>(
+                context,
+                listen: false,
+              ).loadFriends(context),
+            },
         child: CustomScrollView(
           slivers: [
             if (_isCodeInputVisible) // Afișează input-ul doar dacă este vizibil
@@ -221,27 +214,25 @@ class _ChatsScreenState extends State<ChatsScreen> {
                 ),
               ),
             SliverFillRemaining(
-              child: ChatsSection(
-                rooms: rooms,
-                searchController: _searchController,
-                onSearchChanged: (query) {},
-                onCreatePressed: () => _showBottomSheet(context),
-                onJoinPressed: () {
-                  setState(() {
-                    _isCodeInputVisible = true;
-                  });
-                },
+              child: Column(
+                children: [
+                  SearchInput(
+                    readOnly: true,
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ChatsSearchSection(),
+                          ),
+                        ),
+                  ),
+                  Expanded(child: const ChatRoomsList()),
+                ],
               ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 }

@@ -34,7 +34,7 @@ class RoomService {
     } catch (e) {
       print("Error creating room: $e");
       return null;
-    }
+    } 
   }
 
   // Actualizarea unei camere
@@ -265,5 +265,43 @@ class RoomService {
       print("Error removing participant: $e");
       return false;
     }
+  }
+
+  static Future<Room?> createRoomWithFriend(
+    String userId,
+    String friendId,
+  ) async {
+    // Generarea participantKeys
+    final participantsIds = [userId, friendId];
+    participantsIds.sort(); // Sortarea ID-urilor
+    final participantsKey = participantsIds.join('-');
+
+    try {
+      // Creare obiect Room
+      final newRoomData = Room(
+        type: 'permanent',
+        creatorId: userId,
+        topic: '',
+        allowJoinCode: false,
+        id: '', // id-ul va fi generat de backend
+        participantsKey: participantsKey,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Creare camera
+      final room = await RoomService.createRoom(newRoomData);
+      if (room != null) {
+        // Adaugare participanti
+        final success = await RoomService.addParticipantsToRoom(room.id, [
+          friendId,
+        ]);
+
+        if (success) return room;
+      } 
+    } catch (error) {
+      print("Error creating room: $error");
+    }
+    return null;
   }
 }

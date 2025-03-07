@@ -6,12 +6,16 @@ class SearchInput extends StatefulWidget {
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
   final String? hintText;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const SearchInput({
     super.key,
     this.controller,
     this.onChanged,
     this.hintText = "Search",
+    this.readOnly = false,
+    this.onTap,
   });
 
   @override
@@ -25,6 +29,9 @@ class _SearchInputState extends State<SearchInput> {
   void initState() {
     super.initState();
     _searchController = widget.controller ?? TextEditingController();
+    if (widget.readOnly && widget.onTap == null) {
+      throw ArgumentError("onTap must be provided when readOnly is true.");
+    }
   }
 
   @override
@@ -63,24 +70,48 @@ class _SearchInputState extends State<SearchInput> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                style: const TextStyle(
-                  fontSize: 15,
-                  decoration: TextDecoration.none,
-                ),
-                decoration: InputDecoration(
-                  hintText: widget.hintText,
-                  hintStyle: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey.shade500,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
-                ),
-              ),
+              child: widget.readOnly
+                  ? GestureDetector(
+                      onTap: widget.onTap,
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: _searchController,
+                          readOnly: true,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            decoration: TextDecoration.none,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: widget.hintText,
+                            hintStyle: TextStyle(
+                              fontSize: 15,
+                              color: Colors.grey.shade500,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                    )
+                  : TextField(
+                      controller: _searchController,
+                      onChanged: _onSearchChanged,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        decoration: TextDecoration.none,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: widget.hintText,
+                        hintStyle: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey.shade500,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                        isDense: true,
+                      ),
+                    ),
             ),
           ],
         ),

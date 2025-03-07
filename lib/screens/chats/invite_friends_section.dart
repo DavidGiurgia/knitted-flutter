@@ -48,7 +48,7 @@ class _InviteFriendsSectionState extends State<InviteFriendsSection> {
       }
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => TemporaryChatRoom(room: widget.room)),
+        MaterialPageRoute(builder: (context) => TemporaryChatRoomSection(room: widget.room)),
       );
     } catch (error) {
       print("Error sending notifications: $error");
@@ -121,7 +121,7 @@ class _InviteFriendsSectionState extends State<InviteFriendsSection> {
           onPressed:
               () => Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => TemporaryChatRoom(room: widget.room,)),
+                MaterialPageRoute(builder: (context) => TemporaryChatRoomSection(room: widget.room,)),
               ),
 
           /// go to created chat
