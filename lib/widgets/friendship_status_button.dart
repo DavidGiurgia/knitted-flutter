@@ -71,7 +71,6 @@ class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // cum sa fac un handler in centru sus pentru 'tragere sheet'
             Container(
               width: 40,
               height: 5,
@@ -116,7 +115,7 @@ class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
                   color: Colors.red.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.block, color: Colors.red),
+                child: Icon(Icons.block_rounded, color: Colors.red),
               ),
               title: Text(
                 'Block',
@@ -142,7 +141,7 @@ class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
                   color: Colors.red.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.report, color: Colors.red),
+                child: Icon(Icons.report_rounded, color: Colors.red),
               ),
               title: Text(
                 'Report',

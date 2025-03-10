@@ -41,9 +41,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
     }
   }
 
-  Future<void> _handleNotificationAction(
-     NotificationModel notification
-  ) async {
+  Future<void> _handleNotificationAction(NotificationModel notification) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     switch (notification.type) {
       case NotificationType.friendRequest:
@@ -53,9 +51,10 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         );
         break;
       case NotificationType.chatInvitation:
-        final Room? room = await RoomService.getRoomById(notification.data['chatRoomId']);
+        final Room? room = await RoomService.getRoomById(
+          notification.data['chatRoomId'],
+        );
         if (room != null) {
-          
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -67,7 +66,6 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         }
         break;
       case NotificationType.friendRequestAccepted:
-        
         break;
     }
     await userProvider.loadUser();
@@ -86,6 +84,8 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         child:
             isLoading
                 ? Center(child: CircularProgressIndicator())
+                : notifications.isEmpty
+                ? _buildEmptyState() // Noua funcție pentru empty state
                 : ListView.builder(
                   itemCount: notifications.length,
                   itemBuilder: (context, index) {
@@ -97,6 +97,36 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                   },
                   addAutomaticKeepAlives: true,
                 ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.notifications_off_rounded, size: 80, color: Colors.grey[400]),
+            SizedBox(height: 16),
+            Text(
+              "No notifications yet",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "We'll let you know when something happens.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
       ),
     );
   }

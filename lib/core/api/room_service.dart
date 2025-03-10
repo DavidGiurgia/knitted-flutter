@@ -1,13 +1,19 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
+import 'package:zic_flutter/core/models/room_participants.dart';
 
 class RoomService {
   static String? baseUrl = dotenv.env['BASE_URL'];
 
   // Crearea unei camere (temporare sau permanente)
   static Future<Room?> createRoom(Room roomData) async {
+    if (baseUrl == null) {
+    print("BASE_URL is not set in environment variables.");
+    return null;
+  }
     final url = Uri.parse('$baseUrl/rooms/create');
     final jsonRoomData = roomData.toJson();
     try {
@@ -34,7 +40,7 @@ class RoomService {
     } catch (e) {
       print("Error creating room: $e");
       return null;
-    } 
+    }
   }
 
   // Actualizarea unei camere
@@ -125,45 +131,6 @@ class RoomService {
     }
   }
 
-  // Obținerea camerelor temporare create de un utilizator
-  static Future<List<Room>> getCreatorRooms(String userId) async {
-    final url = Uri.parse('$baseUrl/rooms/creator/$userId');
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = jsonDecode(response.body);
-        return jsonData.map((json) => Room.fromJson(json)).toList();
-      } else {
-        print(
-          "Failed to fetch creator rooms. Status code: ${response.statusCode}",
-        );
-        return [];
-      }
-    } catch (e) {
-      print("Error fetching creator rooms: $e");
-      return [];
-    }
-  }
-
-  // Obținerea camerelor unui utilizator
-  static Future<List<Room>> getRoomsForUser(String userId) async {
-    final url = Uri.parse('$baseUrl/rooms/user/$userId');
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = jsonDecode(response.body);
-        return jsonData.map((json) => Room.fromJson(json)).toList();
-      } else {
-        print(
-          "Failed to fetch rooms for user. Status code: ${response.statusCode}",
-        );
-        return [];
-      }
-    } catch (e) {
-      print("Error fetching rooms for user: $e");
-      return [];
-    }
-  }
 
   // Ștergerea unei camere
   static Future<bool> deleteRoom(String roomId) async {
@@ -174,6 +141,7 @@ class RoomService {
         return true;
       } else {
         print("Failed to delete room. Status code: ${response.statusCode}");
+        print("Response body: ${response.body}");
         return false;
       }
     } catch (e) {
@@ -182,126 +150,82 @@ class RoomService {
     }
   }
 
-  // Obținerea participanților unei camere
-  static Future<List<String>> getParticipantsForRoom(String roomId) async {
-    final url = Uri.parse('$baseUrl/rooms/$roomId/participants');
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = jsonDecode(response.body);
-        return jsonData.map((json) => json.toString()).toList();
-      } else {
-        print(
-          "Failed to fetch participants for room. Status code: ${response.statusCode}",
-        );
-        return [];
-      }
-    } catch (e) {
-      print("Error fetching participants for room: $e");
-      return [];
-    }
-  }
 
-  // Adăugarea mai multor participanți la o cameră
-  static Future<bool> addParticipantsToRoom(
-    String roomId,
-    List<String> participantsIds,
-  ) async {
-    final url = Uri.parse('$baseUrl/rooms/$roomId/participants');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'participantsIds': participantsIds}),
-      );
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        return true;
-      } else {
-        print(
-          "Failed to add participants. Status code: ${response.statusCode}",
-        );
-        return false;
-      }
-    } catch (e) {
-      print("Error adding participants: $e");
-      return false;
-    }
-  }
-
-  // Adăugarea unui participant la o cameră
-  static Future<bool> addParticipantToRoom(String roomId, String userId) async {
-    final url = Uri.parse('$baseUrl/rooms/$roomId/participant/$userId');
-    try {
-      final response = await http.post(url);
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        return true;
-      } else {
-        print("Failed to add participant. Status code: ${response.statusCode}");
-        return false;
-      }
-    } catch (e) {
-      print("Error adding participant: $e");
-      return false;
-    }
-  }
-
-  // Eliminarea unui participant dintr-o cameră
-  static Future<bool> removeParticipantFromRoom(
-    String roomId,
-    String userId,
-  ) async {
-    final url = Uri.parse('$baseUrl/rooms/$roomId/participant/$userId');
-    try {
-      final response = await http.delete(url);
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        print(
-          "Failed to remove participant. Status code: ${response.statusCode}",
-        );
-        return false;
-      }
-    } catch (e) {
-      print("Error removing participant: $e");
-      return false;
-    }
-  }
-
-  static Future<Room?> createRoomWithFriend(
-    String userId,
-    String friendId,
-  ) async {
-    // Generarea participantKeys
+  // Crearea unei camere private
+  static Future<Room?> createPrivateRoom(String userId, String friendId) async {
     final participantsIds = [userId, friendId];
-    participantsIds.sort(); // Sortarea ID-urilor
-    final participantsKey = participantsIds.join('-');
+    participantsIds.sort();
+    final privateRoomKey = participantsIds.join('-');
 
-    try {
-      // Creare obiect Room
-      final newRoomData = Room(
-        type: 'permanent',
-        creatorId: userId,
-        topic: '',
-        allowJoinCode: false,
-        id: '', // id-ul va fi generat de backend
-        participantsKey: participantsKey,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
+    final newRoomData = Room(
+      type: 'private',
+      creatorId: userId,
+      topic: '',
+      allowJoinCode: false,
+      id: '',
+      privateRoomKey: privateRoomKey,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      expiresAt: null,
+      isActive: false,
+      lastMessage: null,
+      lastActivity: null,
+    );
 
-      // Creare camera
-      final room = await RoomService.createRoom(newRoomData);
-      if (room != null) {
-        // Adaugare participanti
-        final success = await RoomService.addParticipantsToRoom(room.id, [
-          friendId,
-        ]);
-
-        if (success) return room;
-      } 
-    } catch (error) {
-      print("Error creating room: $error");
+    final newRoom = await createRoom(newRoomData);
+    if (newRoom != null) {
+      await RoomParticipantsService.addParticipantToRoom(newRoom.id, friendId);
+      return newRoom;
+    } else {
+      print("Failed to create private room.");
+      return null;
     }
-    return null;
+  }
+
+  // Crearea unei camere de grup
+  static Future<Room?> createGroupRoom(String userId, String topic) async {
+    final newRoomData = Room(
+      type: 'group',
+      creatorId: userId,
+      topic: topic,
+      allowJoinCode: false,
+      id: '',
+      privateRoomKey: null,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      expiresAt: null,
+      isActive: true,
+      lastMessage: null,
+      lastActivity: null,
+    );
+
+    return createRoom(newRoomData);
+  }
+
+  // Crearea unei camere temporare
+  static Future<Room?> createTemporaryRoom(
+    String userId,
+    String topic,
+    DateTime expiresAt,
+    String? joinCode,
+    bool allowJoinCode,
+  ) async {
+    final newRoomData = Room(
+      type: 'temporary',
+      creatorId: userId,
+      topic: topic,
+      allowJoinCode: allowJoinCode,
+      id: '',
+      privateRoomKey: null,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      expiresAt: expiresAt,
+      isActive: true,
+      lastMessage: null,
+      lastActivity: null,
+      joinCode: joinCode,
+    );
+
+    return createRoom(newRoomData);
   }
 }

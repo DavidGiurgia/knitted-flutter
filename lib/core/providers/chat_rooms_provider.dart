@@ -1,106 +1,120 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zic_flutter/core/api/message_service.dart';
 import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/api/user.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
+import 'package:zic_flutter/core/models/message.dart';
 import 'package:zic_flutter/core/models/user.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
-import 'package:zic_flutter/core/api/message_service.dart';
-import 'package:zic_flutter/core/models/message.dart';
 
 class ChatRoomsProvider with ChangeNotifier {
   List<Room> _rooms = [];
-  final Map<String, List<User>> _roomParticipants = {};
-  final Map<String, Message?> _lastMessages = {};
-  final Map<String, List<Message>> _roomMessages = {};
-  final Map<String, DateTime?> _lastMessageTimes = {}; // RoomId -> Last message time
 
   List<Room> get rooms => _rooms;
-  Map<String, List<User>> get roomParticipants => _roomParticipants;
-  Map<String, Message?> get lastMessages => _lastMessages;
-  Map<String, List<Message>> get roomMessages => _roomMessages;
 
   Future<void> loadRooms(BuildContext context) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (userProvider.user == null) return;
 
-    _rooms.clear();
-    _roomParticipants.clear();
-    _lastMessages.clear();
-    _roomMessages.clear();
-    _lastMessageTimes.clear(); // Clear last message times as well
-
-    final roomParticipantsList = await RoomParticipantsService.findByUserId(
-      userProvider.user!.id,
-    );
-    for (var participant in roomParticipantsList) {
-      final room = await RoomService.getRoomById(participant.roomId);
-      if (room != null) {
-        _rooms.add(room);
-        await _loadRoomParticipants(room.id);
-        await _loadLastMessage(room.id);
-      }
-    }
-    _sortRoomsByLastMessageTime(); // Sort rooms after loading
-    notifyListeners();
-  }
-
-  Future<void> _loadRoomParticipants(String roomId) async {
-    final participantsList = await RoomParticipantsService.findByRoomId(roomId);
-    if (participantsList.isNotEmpty) {
-      _roomParticipants[roomId] = [];
-      for (var participant in participantsList) {
-        final user = await UserService.fetchUserById(participant.userId);
-        if (user != null) {
-          _roomParticipants[roomId]!.add(user);
+    try {
+      final roomsForUserList = await RoomParticipantsService.findByUserId(
+        userProvider.user!.id,
+      );
+      if (roomsForUserList.isNotEmpty) {
+        List<Room> roomList = [];
+        for (var pair in roomsForUserList) {
+          try {
+            final room = await RoomService.getRoomById(pair.roomId);
+            if (room != null && room.isActive) {
+              roomList.add(room);
+            } else {
+              print("Room ${pair.roomId} is null or inactive");
+            }
+          } catch (e) {
+            print("Error fetching room ${pair.roomId}: $e");
+          }
         }
+        _rooms =
+            roomList..sort(
+              (a, b) => (b.lastActivity ?? DateTime(0)).compareTo(
+                a.lastActivity ?? DateTime(0),
+              ),
+            );
+        notifyListeners();
       }
+    } catch (e) {
+      print("Error loading rooms: $e");
     }
   }
 
-  Future<void> _loadLastMessage(String roomId) async {
-    final lastMessage = await MessageService.getLastMessage(roomId);
-    _lastMessages[roomId] = lastMessage;
-    _lastMessageTimes[roomId] = lastMessage?.createdAt; // Store last message time
+  Future<List<User>> getRoomParticipants(String roomId) async {
+    try {
+      final participantsList = await RoomParticipantsService.findByRoomId(
+        roomId,
+      );
+      if (participantsList.isNotEmpty) {
+        List<User> participants = [];
+        for (var participant in participantsList) {
+          try {
+            final user = await UserService.fetchUserById(participant.userId);
+            if (user != null) {
+              participants.add(user);
+            }
+          } catch (e) {
+            print("Error fetching user ${participant.userId}: $e");
+          }
+        }
+        return participants;
+      }
+    } catch (e) {
+      print("Error fetching participants for room $roomId: $e");
+    }
+    return [];
+  }
+
+  Future<Message?> getLastMessage(String roomId) async {
+    try {
+      return await MessageService.getLastMessage(roomId);
+    } catch (e) {
+      print("Error fetching last message for room $roomId: $e");
+      return null;
+    }
   }
 
   void addRoom(Room room) {
+    if (!room.isActive) return;
+
+
     if (!_rooms.any((r) => r.id == room.id)) {
       _rooms.add(room);
-      _sortRoomsByLastMessageTime();
-      _loadRoomParticipants(room.id);
-      _loadLastMessage(room.id);
+      _rooms.sort(
+        (a, b) => (b.lastActivity ?? DateTime(0)).compareTo(
+          a.lastActivity ?? DateTime(0),
+        ),
+      );
       notifyListeners();
     }
   }
 
-  Future<void> updateLastMessage(String roomId) async {
-    await _loadLastMessage(roomId);
-    _sortRoomsByLastMessageTime();
-    notifyListeners();
-  }
+  
 
-  Future<void> loadRoomMessages(String roomId) async {
-    final messages = await MessageService.getMessagesForRoom(roomId);
-    _roomMessages[roomId] = messages;
-    notifyListeners();
-  }
+  void updateRoomActivity(String roomId, DateTime activityTime) {
+    if (activityTime.isAfter(DateTime.now())) {
+      print("Invalid activity time: $activityTime");
+      return;
+    }
 
-  void _sortRoomsByLastMessageTime() {
-    _rooms.sort((a, b) {
-      final timeA = _lastMessageTimes[a.id];
-      final timeB = _lastMessageTimes[b.id];
-
-      if (timeA == null && timeB == null) {
-        return 0;
-      } else if (timeA == null) {
-        return 1;
-      } else if (timeB == null) {
-        return -1;
-      } else {
-        return timeB.compareTo(timeA);
-      }
-    });
+    final roomIndex = _rooms.indexWhere((r) => r.id == roomId);
+    if (roomIndex != -1) {
+      _rooms[roomIndex].lastActivity = activityTime;
+      _rooms.sort(
+        (a, b) => (b.lastActivity ?? DateTime(0)).compareTo(
+          a.lastActivity ?? DateTime(0),
+        ),
+      );
+      notifyListeners();
+    }
   }
 }

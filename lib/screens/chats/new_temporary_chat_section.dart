@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/models/chat_room.dart';
 import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/invite_friends_section.dart';
+import 'package:zic_flutter/screens/shared/custom_toast.dart';
 import 'package:zic_flutter/utils/utils.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/switch.dart';
@@ -29,11 +29,10 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
 
   Future<void> goToNextStep() async {
     if (topicController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("You must enter a topic to continue"),
-          backgroundColor: Colors.red,
-        ),
+      CustomToast.show(
+        context,
+        "You must provide a topic to continue",
+        color: Colors.red,
       );
       return;
     }
@@ -41,11 +40,10 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     if (userProvider.user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("User not found. Please log in again."),
-          backgroundColor: Colors.red,
-        ),
+      CustomToast.show(
+        context,
+        "User not found. Please log in again.",
+        color: Colors.red,
       );
       return;
     }
@@ -60,21 +58,21 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
         Duration(days: chatDuration),
       );
 
-      // Creare obiect Room
-      final newRoomData = Room(
-        type: 'temporary',
-        creatorId: userProvider.user!.id,
-        topic: topicController.text,
-        joinCode: joinCode,
-        allowJoinCode: allowJoinCode,
-        expiresAt: expiresAt,
-        id: '',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
+      if (userProvider.user == null) {
+        CustomToast.show(context, "User not found. Please log in again!");
+        return;
+      }
+
+      final creatorId = userProvider.user!.id;
 
       // Creare camera
-      final room = await RoomService.createRoom(newRoomData);
+      final room = await RoomService.createTemporaryRoom(
+        creatorId,
+        topicController.text,
+        expiresAt,
+        joinCode,
+        allowJoinCode,
+      );
 
       if (room != null && userProvider.user != null) {
         Navigator.pushReplacement(
@@ -88,21 +86,12 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
           listen: false,
         ).loadRooms(context);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Failed to create temporary room."),
-            backgroundColor: Colors.red,
-          ),
-        );
+        CustomToast.show(context, "Failed to create temporary room.");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "An error occurred while creating the temporary room. Please try again. $e",
-          ),
-          backgroundColor: Colors.red,
-        ),
+      CustomToast.show(
+        context,
+        "An error occurred while creating the temporary room. Please try again. $e",
       );
     } finally {
       setState(() {

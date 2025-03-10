@@ -8,10 +8,11 @@ import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_rooms_list.dart';
 import 'package:zic_flutter/screens/chats/chats_search_section.dart';
-import 'package:zic_flutter/screens/chats/new_chat_section.dart';
+import 'package:zic_flutter/screens/chats/new_group_chat_section.dart';
 import 'package:zic_flutter/screens/chats/new_message_section.dart';
 import 'package:zic_flutter/screens/chats/new_temporary_chat_section.dart';
 import 'package:zic_flutter/screens/chats/temporary_chat_room.dart';
+import 'package:zic_flutter/screens/shared/custom_toast.dart';
 import 'package:zic_flutter/widgets/bottom_sheet.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/join_room_input.dart';
@@ -57,11 +58,11 @@ class _ChatsScreenState extends State<ChatsScreen>
 
     final room = await RoomService.getRoomByCode(code);
     if (room == null || userProvider.user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sorry, there is no such room active right now!'),
-        ),
+      CustomToast.show(
+        context,
+        'Sorry, there is no such room active right now!',
       );
+
       return;
     }
 
@@ -123,7 +124,7 @@ class _ChatsScreenState extends State<ChatsScreen>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const NewChatSection(),
+                    builder: (context) => const NewGroupChatSection(),
                   ),
                 );
               },
@@ -185,17 +186,20 @@ class _ChatsScreenState extends State<ChatsScreen>
         ],
       ),
       body: RefreshIndicator(
-        onRefresh:
-            () async => {
-              Provider.of<ChatRoomsProvider>(
-                context,
-                listen: false,
-              ).loadRooms(context),
-              Provider.of<FriendsProvider>(
-                context,
-                listen: false,
-              ).loadFriends(context),
-            },
+        onRefresh: () async {
+          try {
+            await Provider.of<ChatRoomsProvider>(
+              context,
+              listen: false,
+            ).loadRooms(context);
+            await Provider.of<FriendsProvider>(
+              context,
+              listen: false,
+            ).loadFriends(context);
+          } catch (e) {
+            CustomToast.show(context, "Failed to refresh data: $e");
+          }
+        },
         child: CustomScrollView(
           slivers: [
             if (_isCodeInputVisible) // Afișează input-ul doar dacă este vizibil

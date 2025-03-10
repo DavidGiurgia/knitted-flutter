@@ -28,7 +28,7 @@ class SearchResultTile extends StatelessWidget {
         user: friend,
         //actionWidget: HeroIcon(HeroIcons.chevronRight, style: HeroIconStyle.micro, ),
         onTap: () async {
-          final room = await RoomService.createRoomWithFriend(
+          final room = await RoomService.createPrivateRoom(
             userProvider.user!.id,
             friend.id,
           );

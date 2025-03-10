@@ -100,13 +100,22 @@ class _NotificationItemState extends State<NotificationItem> {
       sender?.id,
     );
 
-    // Definirea mesajului și butonului de acțiune
-    String message = "You have a new notification.";
     Widget? actionButton;
+
+    List<TextSpan> messageSpans = [];
 
     switch (widget.notification.type) {
       case NotificationType.friendRequest:
-        message = "${sender?.fullname} sent you a friend request.";
+        messageSpans = [
+          TextSpan(
+            text: "${sender?.fullname} ",
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          TextSpan(
+            text: "sent you a friend request.",
+            style: TextStyle(fontWeight: FontWeight.w400),
+          ),
+        ];
         actionButton =
             hasIncomingRequest
                 ? CustomButton(
@@ -119,11 +128,37 @@ class _NotificationItemState extends State<NotificationItem> {
                 : null;
         break;
       case NotificationType.friendRequestAccepted:
-        message = "${sender?.fullname} accepted your friend request.";
+        messageSpans = [
+          TextSpan(
+            text: "${sender?.fullname} ",
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          TextSpan(
+            text: "accepted your friend request.",
+            style: TextStyle(fontWeight: FontWeight.w400),
+          ),
+        ];
         break;
       case NotificationType.chatInvitation:
-        message =
-            "${sender?.fullname} has been invited you to join a temporary chat: ${widget.notification.data['chatRoomTopic']}.";
+        messageSpans = [
+          TextSpan(
+            text: "${sender?.fullname} ",
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          TextSpan(
+            text: "invited you to join a temporary chat:\n",
+            style: TextStyle(fontWeight: FontWeight.w400),
+          ),
+          TextSpan(
+            text: "# ${widget.notification.data['chatRoomTopic']}",
+            style: TextStyle(fontWeight: FontWeight.w500, color: AppTheme.primaryColor.withValues(alpha: 0.8)),
+          ),
+          if (!isRoomStilActive)
+            TextSpan(
+              text: "   Expired",
+              style: TextStyle(fontWeight: FontWeight.w400, color: Colors.grey, fontSize: 14, fontStyle: FontStyle.italic),
+            ),
+        ];
         if (isRoomStilActive) {
           actionButton = CustomButton(
             onPressed: widget.onAction,
@@ -149,20 +184,20 @@ class _NotificationItemState extends State<NotificationItem> {
             ),
           ),
       child: Container(
-        //margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color:
               isRead
                   ? AppTheme.backgroundColor(context)
                   : Colors.yellow.shade400.withAlpha(20),
-          //borderRadius: BorderRadius.circular(0),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AdvancedAvatar(
-              size: 52,
+              size: 40,
               image: NetworkImage(avatarUrl),
               autoTextSize: true,
               name: sender?.fullname,
@@ -195,11 +230,19 @@ class _NotificationItemState extends State<NotificationItem> {
                                 ? AppTheme.grey800
                                 : AppTheme.grey200,
                       ) // Skeleton loader
-                      : Text(message, style: TextStyle(fontSize: 14)),
+                      : RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: AppTheme.foregroundColor(context),
+                            fontSize: 16,
+                          ), // Stilul implicit pentru RichText
+                          children: messageSpans,
+                        ),
+                      ),
                   SizedBox(height: 4),
                   Text(
                     timestamp,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
                   ),
                 ],
               ),

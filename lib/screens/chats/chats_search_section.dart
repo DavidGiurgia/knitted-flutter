@@ -11,7 +11,7 @@ import 'package:zic_flutter/core/providers/search_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/screens/chats/chats_search_result_tile.dart';
-import 'package:zic_flutter/screens/chats/new_chat_section.dart';
+import 'package:zic_flutter/screens/chats/new_group_chat_section.dart';
 import 'package:zic_flutter/widgets/search_input.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 
@@ -92,7 +92,7 @@ class _ChatsSearchSectionState extends State<ChatsSearchSection> {
                       return UserListTile(
                         user: friend,
                         onTap: () async {
-                          final room = await RoomService.createRoomWithFriend(
+                          final room = await RoomService.createPrivateRoom(
                             userProvider.user!.id,
                             friend.id,
                           );
@@ -176,7 +176,7 @@ Widget _buildEmptyState(BuildContext context) {
                       MaterialPageRoute(
                         builder:
                             (context) =>
-                                const NewChatSection(), //FindFriendsScreen(),
+                                const NewGroupChatSection(), //FindFriendsScreen(),
                       ),
                     );
                   },

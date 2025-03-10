@@ -10,12 +10,8 @@ class ChatRoomSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(
-        actionsPadding: const EdgeInsets.all(0),
-        title: Row(children: [ChatHeader(room: room)]),
-      ),
+      appBar: AppBar(title: Row(children: [ChatHeader(room: room)])),
       body: ChatRoomBody(room: room),
     );
   }

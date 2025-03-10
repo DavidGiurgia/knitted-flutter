@@ -131,7 +131,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           child: CustomButton(
                             onPressed: () async {
                               final room =
-                                  await RoomService.createRoomWithFriend(
+                                  await RoomService.createPrivateRoom(
                                     userProvider.user!.id,
                                     widget.user.id,
                                   );

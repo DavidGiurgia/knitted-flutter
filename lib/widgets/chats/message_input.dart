@@ -61,7 +61,7 @@ class _MessageInputState extends State<MessageInput> {
                     color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
                   ),
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(6),
                   child: HeroIcon(
                     HeroIcons.paperAirplane,
                     color: AppTheme.backgroundColor(context),
@@ -74,13 +74,13 @@ class _MessageInputState extends State<MessageInput> {
               IconButton(
                 icon: Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
+                    //color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
                   ),
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(6),
                   child: HeroIcon(
                     HeroIcons.photo,
-                    color: AppTheme.backgroundColor(context),
+                    color: AppTheme.primaryColor,
                     style: HeroIconStyle.micro,
                   ),
                 ),

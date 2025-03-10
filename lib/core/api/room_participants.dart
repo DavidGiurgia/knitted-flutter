@@ -151,4 +151,89 @@ class RoomParticipantsService {
       return null;
     }
   }
+
+  // Obținerea participanților unei camere
+  static Future<List<String>> getParticipantsForRoom(String roomId) async {
+    final url = Uri.parse('$baseUrl/room-participants/$roomId/participants');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = jsonDecode(response.body);
+        return jsonData.map((json) => json.toString()).toList();
+      } else {
+        print(
+          "Failed to fetch participants for room. Status code: ${response.statusCode}",
+        );
+        return [];
+      }
+    } catch (e) {
+      print("Error fetching participants for room: $e");
+      return [];
+    }
+  }
+
+  // Adăugarea mai multor participanți la o cameră
+  static Future<bool> addParticipantsToRoom(
+    String roomId,
+    List<String> participantsIds,
+  ) async {
+    final url = Uri.parse('$baseUrl/room-participants/$roomId/participants');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'participantsIds': participantsIds}),
+      );
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      } else {
+        print(
+          "Failed to add participants. Status code: ${response.statusCode}",
+        );
+        return false;
+      }
+    } catch (e) {
+      print("Error adding participants: $e");
+      return false;
+    }
+  }
+
+  // Adăugarea unui participant la o cameră
+  static Future<bool> addParticipantToRoom(String roomId, String userId) async {
+    final url = Uri.parse('$baseUrl/room-participants/$roomId/participant/$userId');
+    try {
+      final response = await http.post(url);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      } else {
+        print("Failed to add participant. Status code: ${response.statusCode}");
+        return false;
+      }
+    } catch (e) {
+      print("Error adding participant: $e");
+      return false;
+    }
+  }
+
+  // Eliminarea unui participant dintr-o cameră
+  static Future<bool> removeParticipantFromRoom(
+    String roomId,
+    String userId,
+  ) async {
+    final url = Uri.parse('$baseUrl/room-participants/$roomId/participant/$userId');
+    try {
+      final response = await http.delete(url);
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print(
+          "Failed to remove participant. Status code: ${response.statusCode}",
+        );
+        return false;
+      }
+    } catch (e) {
+      print("Error removing participant: $e");
+      return false;
+    }
+  }
 }

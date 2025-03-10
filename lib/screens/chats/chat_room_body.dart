@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:zic_flutter/core/api/message_service.dart';
+import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
 import 'package:zic_flutter/core/models/message.dart';
 import 'package:zic_flutter/core/models/user.dart';
@@ -22,6 +24,8 @@ class ChatRoomBody extends StatefulWidget {
 class _ChatRoomBodyState extends State<ChatRoomBody> {
   final SocketService socketService = SocketService();
   List<Message> messages = [];
+  List<User> participants = [];
+
   final TextEditingController messageController = TextEditingController();
   String baseUrl = dotenv.env['BASE_URL'] ?? '';
   bool isConnected = false;
@@ -40,6 +44,7 @@ class _ChatRoomBodyState extends State<ChatRoomBody> {
     currentUser = userProvider.user!;
 
     _loadMessages();
+    _loadParticipants();
 
     if (!isConnected) {
       socketService.connect(baseUrl);
@@ -48,16 +53,32 @@ class _ChatRoomBodyState extends State<ChatRoomBody> {
         setState(() {
           messages.add(message);
         });
+        chatRoomsProvider.updateRoomActivity(message.roomId, DateTime.now());
       };
+      
       isConnected = true;
     }
+
+    // Marchează mesajele ca citite la deschiderea camerei
+    _markMessagesAsRead();
   }
 
   Future<void> _loadMessages() async {
-    await chatRoomsProvider.loadRoomMessages(widget.room.id);
+    final messagesFetched = await MessageService.getMessagesForRoom(
+      widget.room.id,
+    );
     setState(() {
-      messages = chatRoomsProvider.roomMessages[widget.room.id] ?? [];
+      messages = messagesFetched;
       _messagesLoaded = true; // Setăm variabila la true după încărcare
+    });
+  }
+
+  Future<void> _loadParticipants() async {
+    final participantsFetched = await chatRoomsProvider.getRoomParticipants(
+      widget.room.id,
+    );
+    setState(() {
+      participants = participantsFetched;
     });
   }
 
@@ -89,6 +110,13 @@ class _ChatRoomBodyState extends State<ChatRoomBody> {
     }
   }
 
+  Future<void> _markMessagesAsRead() async {
+    final unreadMessages = messages.where((m) => m.status != 'read').toList();
+    for (final message in unreadMessages) {
+      await MessageService.markMessageAsRead(message.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -109,9 +137,7 @@ class _ChatRoomBodyState extends State<ChatRoomBody> {
                     ? MessageList(
                       messages: messages,
                       currentUserId: currentUser.id,
-                      participants:
-                          chatRoomsProvider.roomParticipants[widget.room.id] ??
-                          [],
+                      participants: participants,
                     )
                     : const Center(child: CircularProgressIndicator()),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
@@ -9,14 +10,14 @@ import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/select_friends.dart';
 
-class NewChatSection extends StatefulWidget {
-  const NewChatSection({super.key});
+class NewGroupChatSection extends StatefulWidget {
+  const NewGroupChatSection({super.key});
 
   @override
-  State<NewChatSection> createState() => _NewChatSectionState();
+  State<NewGroupChatSection> createState() => _NewGroupChatSectionState();
 }
 
-class _NewChatSectionState extends State<NewChatSection> {
+class _NewGroupChatSectionState extends State<NewGroupChatSection> {
   bool isLoading = false;
   final List<String> participants = [];
   final TextEditingController nameController = TextEditingController();
@@ -37,20 +38,11 @@ class _NewChatSectionState extends State<NewChatSection> {
     });
 
     try {
-      // Creare obiect Room
-      final newRoomData = Room(
-        type: 'permanent',
-        creatorId: currentUser.id,
-        topic: nameController.text.isNotEmpty ? nameController.text : '',
-        allowJoinCode: false,
-        id: '', // id-ul va fi generat de backend
-        participantsKey: "group",
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
+
+      final topic = nameController.text.isNotEmpty ? nameController.text : '';
 
       // Creare camera
-      final room = await RoomService.createRoom(newRoomData);
+      final room = await RoomService.createGroupRoom(currentUser.id, topic);
       if (room == null) {
         print("Failed to create room");
         setState(() {
@@ -60,7 +52,7 @@ class _NewChatSectionState extends State<NewChatSection> {
       }
 
       // Adaugare participanti
-      final success = await RoomService.addParticipantsToRoom(
+      final success = await RoomParticipantsService.addParticipantsToRoom(
         room.id,
         participants,
       );

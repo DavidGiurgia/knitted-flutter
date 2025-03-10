@@ -44,7 +44,6 @@ class ChatRoomsList extends StatelessWidget {
           );
         }
         return ListView.builder(
-          key: const PageStorageKey('chat_rooms_list'),
           itemCount: roomsProvider.rooms.length,
           itemBuilder: (context, index) {
             final room = roomsProvider.rooms[index];
