@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zic_flutter/core/app_theme.dart';
 
 class CustomSwitchTile extends StatelessWidget {
   final String title;
@@ -6,6 +7,7 @@ class CustomSwitchTile extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
   final Color activeColor;
+  final double radius;
 
   const CustomSwitchTile({
     super.key,
@@ -13,7 +15,8 @@ class CustomSwitchTile extends StatelessWidget {
     this.description,
     required this.value,
     required this.onChanged,
-    this.activeColor = Colors.green,
+    this.activeColor = AppTheme.primaryColor,
+    this.radius = 12,
   });
 
   @override
@@ -24,15 +27,15 @@ class CustomSwitchTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.grey.shade900
-            : Colors.grey.shade50,
-        border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.grey.shade800
-              : Colors.grey.shade300,
-        ),
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.isDark(context)
+            ? const Color.fromARGB(92, 33, 33, 33)
+            : Colors.grey[50],
+        // border: Border.all(
+        //   color: Theme.of(context).brightness == Brightness.dark
+        //       ? Colors.grey.shade800
+        //       : Colors.grey.shade300,
+        // ),
+        borderRadius: BorderRadius.circular(radius),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

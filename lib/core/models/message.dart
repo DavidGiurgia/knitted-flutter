@@ -4,11 +4,11 @@ class Message {
   final String senderId;
   final String senderName;
   final String content;
-  final bool isAnonymous;
-  final String type; // text, image, video, file, audio
+  final bool? isAnonymous;
+  final String type;
   final String? mediaUrl;
-  final String status; // sent, delivered, read, failed
-  final Map<String, List<String>> reactions; // {"😂": ["user1", "user2"]}
+  final String status;
+  final Map<String, List<String>> reactions;
   final String? replyTo;
   final DateTime? expiresAt;
   final DateTime createdAt;
@@ -20,7 +20,7 @@ class Message {
     required this.senderId,
     required this.senderName,
     required this.content,
-    required this.isAnonymous,
+    this.isAnonymous,
     required this.type,
     this.mediaUrl,
     required this.status,
@@ -33,25 +33,24 @@ class Message {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      id: json['_id'] ?? json['id'] ?? '', // Acceptă și id-ul MongoDB
-      roomId: json['roomId'],
-      senderId: json['senderId'] ?? '',
-      senderName: json['senderName'],
-      content: json['content'] ?? '',
-      isAnonymous: json['isAnonymous'] ?? false,
-      type: json['type'] ?? 'text',
-      mediaUrl: json['mediaUrl'],
-      status: json['status'] ?? 'sent',
-      reactions:
-          (json['reactions'] as Map<String, dynamic>?)?.map(
-            (key, value) => MapEntry(key, List<String>.from(value)),
-          ) ??
-          {},
-      replyTo: json['replyTo'],
-      expiresAt:
-          json['expiresAt'] != null ? DateTime.parse(json['expiresAt']) : null,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
+      roomId: json['roomId']?.toString() ?? '',
+      senderId: json['senderId']?.toString() ?? '',
+      senderName: json['senderName']?.toString() ?? '',
+      content: json['content']?.toString() ?? '',
+      isAnonymous: json['isAnonymous'] == null ? false : json['isAnonymous'] as bool,
+      type: json['type']?.toString() ?? 'text',
+      mediaUrl: json['mediaUrl']?.toString(),
+      status: json['status']?.toString() ?? 'sent',
+      reactions: (json['reactions'] is Map<String, dynamic>)
+          ? (json['reactions'] as Map<String, dynamic>).map(
+              (key, value) => MapEntry(key, List<String>.from(value)),
+            )
+          : {},
+      replyTo: json['replyTo']?.toString(),
+      expiresAt: json['expiresAt'] != null ? DateTime.tryParse(json['expiresAt'].toString()) : null,
+      createdAt: DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now(),
     );
   }
 

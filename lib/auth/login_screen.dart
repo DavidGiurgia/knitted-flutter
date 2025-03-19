@@ -1,59 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
 import 'package:zic_flutter/auth/register_screen.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/screens/shared/custom_toast.dart';
 import 'package:zic_flutter/tabs/tabs_layout.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/input.dart';
 import 'package:zic_flutter/widgets/join_room_input.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
-  bool _loading = false;
-  static const String assetName = 'lib/assets/images/ZIC-logo.svg';
 
   void _login() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-    setState(() => _loading = true);
-
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all fields")),
-      );
-      setState(() => _loading = false);
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    if (email.isEmpty || password.isEmpty) {
+      CustomToast.show(context, "Please fill in all fields");
       return;
     }
-
-    bool success = await userProvider.login(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
-
-    setState(() => _loading = false);
-
+    final success = await ref
+        .read(userProvider.notifier)
+        .login(email, password);
     if (success) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const TabsLayout()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Login failed", style: TextStyle(color: Colors.red)),
-        ),
-      );
+      CustomToast.show(context, "Invalid credentials. Please try again.");
     }
   }
 
@@ -70,6 +55,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userAsync = ref.watch(userProvider);
+    if (userAsync.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (userAsync.hasError) {
+      // Afiseaza un mesaj de eroare daca autentificarea a esuat
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${userAsync.error}")),
+        );
+      });
+    }
+    // Check if the user is logged in and navigate to the TabsLayout
+    if (userAsync.hasValue && userAsync.value != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const TabsLayout()),
+        );
+      });
+    }
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -119,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Center(
                       child: SvgPicture.asset(
-                        assetName,
+                        'lib/assets/images/ZIC-logo.svg',
                         semanticsLabel: 'ZiC Logo',
                         width: 64,
                       ),
@@ -148,14 +154,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontSize: 18,
                     ),
                     const SizedBox(height: 20),
-                    _loading
-                        ? const Center(child: CircularProgressIndicator())
-                        : CustomButton(
-                          onPressed: _login,
-                          text: 'Login',
-                          isFullWidth: true,
-                          bgColor: AppTheme.primaryColor,
-                        ),
+                    CustomButton(
+                      onPressed: _login,
+                      text: 'Login',
+                      isFullWidth: true,
+                      bgColor: AppTheme.primaryColor,
+                      isLoading: userAsync.isLoading,
+                    ),
                     const SizedBox(height: 60),
                     CustomButton(
                       onPressed:

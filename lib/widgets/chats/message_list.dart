@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:zic_flutter/core/models/message.dart';
 import 'package:zic_flutter/core/models/user.dart';
@@ -55,15 +56,9 @@ class _MessageListState extends State<MessageList> {
         final isCurrentUser = message.senderId == widget.currentUserId;
         final isGroup = widget.participants.length > 2;
 
-        User? sender;
-        try {
-          sender = widget.participants.firstWhere(
-            (p) => p.id == message.senderId,
-          );
-        } catch (e) {
-          print("Sender not found for message: ${message.senderId}");
-          sender = null;
-        }
+        User? sender = widget.participants.firstWhereOrNull(
+          (p) => p.id == message.senderId,
+        );
 
         final isSameSenderAsPrevious =
             index > 0 &&
@@ -88,7 +83,8 @@ class _MessageListState extends State<MessageList> {
                 avatarUrl: sender?.avatarUrl,
                 fullName: sender?.fullname,
                 showAvatar: showAvatar,
-                shouldHaveSpace: isSameSenderAsPrevious && isGroup && !isCurrentUser,
+                shouldHaveSpace:
+                    isSameSenderAsPrevious && isGroup && !isCurrentUser,
               ),
               const SizedBox(width: 8),
               Flexible(

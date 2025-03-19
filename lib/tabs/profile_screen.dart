@@ -1,63 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroicons/heroicons.dart';
-import 'package:provider/provider.dart';
-import 'package:zic_flutter/core/api/friends.dart';
+
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/models/user.dart';
+import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
-import 'package:zic_flutter/screens/post/create_post.dart';
+import 'package:zic_flutter/screens/post/create_post/create_post.dart';
 import 'package:zic_flutter/screens/settings/settings_and_activity.dart';
 import 'package:zic_flutter/screens/shared/edit_profile.dart';
 import 'package:zic_flutter/screens/shared/friends_section.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/profile_header.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  List<User> friends = [];
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      if (userProvider.user != null) {
-        loadFriends(userProvider.user!.id);
-      }
-    });
-  }
-
-  Future<void> loadFriends(String userId) async {
-    try {
-      final List<User> fetchedFriends = await FriendsService.getUserFriends(userId);
-
-      setState(() {
-        friends = fetchedFriends;
-      });
-    } catch (error) {
-      print("Error loading friends: $error");
-    }
-  }
-
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: true);
-    final user = userProvider.user;
+    final userAsync = ref.watch(userProvider);
+    final friendsAsync = ref.watch(friendsProvider(null));
+
+    final user = userAsync.value;
 
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text('Profile'),
-        ),
-        body: Center(
-          child: Text('No user data available'),
-        ),
+        appBar: AppBar(title: Text('Profile')),
+        body: Center(child: Text('No user data available')),
       );
     }
 
@@ -83,8 +56,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      SettingsAndActivity(),
+                  pageBuilder:
+                      (context, animation, secondaryAnimation) =>
+                          SettingsAndActivity(),
                   transitionsBuilder: (
                     context,
                     animation,
@@ -117,8 +91,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await userProvider.loadUser();
-          await loadFriends(user.id);
+          ref.invalidate(friendsProvider(null));
+          ref.invalidate(userProvider);
         },
         child: ListView(
           children: [
@@ -138,9 +112,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     user.bio.isNotEmpty ? user.bio : user.email,
                     style: TextStyle(
                       fontSize: 18,
-                      color: AppTheme.isDark(context)
-                          ? Colors.grey.shade200
-                          : Colors.grey.shade800,
+                      color:
+                          AppTheme.isDark(context)
+                              ? Colors.grey.shade200
+                              : Colors.grey.shade800,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -181,13 +156,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Row(
                           children: [
                             Text(
-                              "${friends.length}",
+                              "${friendsAsync.value?.length ?? 0}",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: AppTheme.isDark(context)
-                                    ? Colors.grey.shade300
-                                    : Colors.grey.shade700,
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? Colors.grey.shade300
+                                        : Colors.grey.shade700,
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -195,9 +171,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               "friends",
                               style: TextStyle(
                                 fontSize: 16,
-                                color: AppTheme.isDark(context)
-                                    ? Colors.grey.shade400
-                                    : Colors.grey.shade600,
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? Colors.grey.shade400
+                                        : Colors.grey.shade600,
                               ),
                             ),
                           ],
@@ -206,7 +183,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // aici
+                  // to do
                 ],
               ),
             ),

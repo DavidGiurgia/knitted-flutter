@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/invite_friends_section.dart';
 import 'package:zic_flutter/screens/shared/custom_toast.dart';
@@ -10,15 +10,16 @@ import 'package:zic_flutter/utils/utils.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/switch.dart';
 
-class NewTemporaryChatSection extends StatefulWidget {
+class NewTemporaryChatSection extends ConsumerStatefulWidget {
   const NewTemporaryChatSection({super.key});
 
   @override
-  State<NewTemporaryChatSection> createState() =>
+  ConsumerState<NewTemporaryChatSection> createState() =>
       _NewTemporaryChatSectionState();
 }
 
-class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
+class _NewTemporaryChatSectionState
+    extends ConsumerState<NewTemporaryChatSection> {
   bool allowJoinCode = true;
   int chatDuration = 3; // Default: 3 days
   final TextEditingController topicController = TextEditingController(
@@ -37,9 +38,10 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
       return;
     }
 
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userAsync = ref.read(userProvider);
+    final user = userAsync.value;
 
-    if (userProvider.user == null) {
+    if (user == null) {
       CustomToast.show(
         context,
         "User not found. Please log in again.",
@@ -58,12 +60,7 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
         Duration(days: chatDuration),
       );
 
-      if (userProvider.user == null) {
-        CustomToast.show(context, "User not found. Please log in again!");
-        return;
-      }
-
-      final creatorId = userProvider.user!.id;
+      final creatorId = user.id;
 
       // Creare camera
       final room = await RoomService.createTemporaryRoom(
@@ -74,17 +71,13 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
         allowJoinCode,
       );
 
-      if (room != null && userProvider.user != null) {
+      if (room != null) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => InviteFriendsSection(room: room),
           ),
         );
-        Provider.of<ChatRoomsProvider>(
-          context,
-          listen: false,
-        ).loadRooms(context);
       } else {
         CustomToast.show(context, "Failed to create temporary room.");
       }
@@ -222,23 +215,6 @@ class _NewTemporaryChatSectionState extends State<NewTemporaryChatSection> {
             ),
 
             const SizedBox(height: 20),
-
-            // // Accept terms
-            // Row(
-            //   children: [
-            //     Checkbox(
-            //       value: acceptedTerms,
-            //       onChanged: (value) => setState(() => acceptedTerms = value!),
-            //       activeColor: AppTheme.primaryColor,
-            //     ),
-            //     Expanded(
-            //       child: Text(
-            //         "I have read and agree to the Terms & Conditions.",
-            //         style: TextStyle(fontSize: 14),
-            //       ),
-            //     ),
-            //   ],
-            // ),
           ],
         ),
       ),

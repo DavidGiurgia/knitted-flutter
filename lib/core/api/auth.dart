@@ -1,11 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ApiService {
-  static String? baseUrl =
-      dotenv.env['BASE_URL'];// ?? "http://192.168.0.102:8000"; // API URL
+  static String? baseUrl = dotenv.env['BASE_URL'];
+
+  static Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
+  }
 
   // 🔹 Funcție pentru înregistrarea utilizatorului
   static Future<bool> registerUser(
@@ -14,6 +19,10 @@ class ApiService {
     String email,
     String password,
   ) async {
+    if (!await checkInternetConnection()) {
+      print('No internet connection');
+      return false;
+    }
     final url = Uri.parse('$baseUrl/auth/register');
 
     try {
@@ -32,23 +41,24 @@ class ApiService {
         final data = jsonDecode(response.body);
         String token = data["access_token"];
 
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token);
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'auth_token', value: token);
 
         return true;
       } else {
-        throw Exception(
-          jsonDecode(response.body)["message"] ?? "Registration failed",
-        );
+        return false;
       }
     } catch (e) {
-      print("Error during registration: $e");
       return false;
     }
   }
 
   // 🔹 Funcție pentru autentificare (login)
   static Future<bool> loginUser(String email, String password) async {
+    if (!await checkInternetConnection()) {
+      print('No internet connection');
+      return false;
+    }
     final url = Uri.parse('$baseUrl/auth/login');
 
     try {
@@ -58,28 +68,32 @@ class ApiService {
         body: jsonEncode({"email": email, "password": password}),
       );
 
+      print('Login response: ${response.statusCode} - ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        String token = data["access_token"];
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token);
-
-        return true;
+        if (data.containsKey("access_token")) {
+          String token = data["access_token"];
+          const storage = FlutterSecureStorage();
+          await storage.write(key: 'auth_token', value: token);
+          return true;
+        } else {
+          print('No access token found in response');
+          return false;
+        }
       } else {
-        print("❌ Login failed: ${response.body}");
+        print('Login failed with status code: ${response.statusCode}');
         return false;
       }
     } catch (e) {
-      print("⚠️ Error during login: $e");
       return false;
     }
   }
 
   // 🔹 Funcție pentru obținerea utilizatorului curent
   static Future<Map<String, dynamic>?> getCurrentUserFromApi() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
+    const storage = FlutterSecureStorage();
+    String? token = await storage.read(key: 'auth_token');
 
     if (token == null) {
       return null;
@@ -98,6 +112,9 @@ class ApiService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        await logout(); // Șterge token-ul invalid
+        return null;
       } else {
         throw Exception("Failed to fetch user: ${response.body}");
       }
@@ -109,12 +126,14 @@ class ApiService {
 
   // 🔹 Funcție pentru delogare (șterge token-ul local)
   static Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
+    const storage = FlutterSecureStorage();
+    await storage.delete(
+      key: 'auth_token',
+    ); // Șterge token-ul din secure storage
   }
 
   static Future<bool> isLoggedIn() async {
     var user = await getCurrentUserFromApi();
-    return user != null; // Verificăm dacă user există
+    return user != null;
   }
 }

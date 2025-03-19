@@ -78,7 +78,9 @@ class MessageService {
       if (response.statusCode == 200) {
         return true;
       } else {
-        print("Failed to mark message as read. Status code: ${response.statusCode}");
+        print(
+          "Failed to mark message as read. Status code: ${response.statusCode}",
+        );
         return false;
       }
     } catch (e) {

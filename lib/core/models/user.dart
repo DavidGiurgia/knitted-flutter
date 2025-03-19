@@ -78,4 +78,25 @@ class User {
       'updatedAt': updatedAt.toIso8601String(),
     };
   }
+
+  static User defaultUser() {
+     return User(
+      id: '',
+      username: '',
+      fullname: 'Unknown',
+      email: '',
+      bio:  '',
+      role: 'user',
+      friendsIds: [],
+      friendRequests: [],
+      sentRequests: [],
+      blockedUsers: [],
+      avatarUrl: '',
+      avatarPublicId: '',
+      coverUrl: '',
+      coverPublicId: '',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
 }

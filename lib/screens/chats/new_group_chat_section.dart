@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/models/chat_room.dart';
-import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/select_friends.dart';
 
-class NewGroupChatSection extends StatefulWidget {
+class NewGroupChatSection extends ConsumerStatefulWidget {
   const NewGroupChatSection({super.key});
 
   @override
-  State<NewGroupChatSection> createState() => _NewGroupChatSectionState();
+  ConsumerState<NewGroupChatSection> createState() =>
+      _NewGroupChatSectionState();
 }
 
-class _NewGroupChatSectionState extends State<NewGroupChatSection> {
+class _NewGroupChatSectionState extends ConsumerState<NewGroupChatSection> {
   bool isLoading = false;
   final List<String> participants = [];
   final TextEditingController nameController = TextEditingController();
 
   void handleCreateRoom() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final currentUser = userProvider.user;
+    final userAsync = ref.read(userProvider);
+    final currentUser = userAsync.value;
+
     if (currentUser == null) {
       return;
     }
@@ -38,7 +39,6 @@ class _NewGroupChatSectionState extends State<NewGroupChatSection> {
     });
 
     try {
-
       final topic = nameController.text.isNotEmpty ? nameController.text : '';
 
       // Creare camera
@@ -68,8 +68,6 @@ class _NewGroupChatSectionState extends State<NewGroupChatSection> {
         context,
         MaterialPageRoute(builder: (context) => ChatRoomSection(room: room)),
       );
-
-      Provider.of<ChatRoomsProvider>(context, listen: false).loadRooms(context);
     } catch (error) {
       print("Error creating room: $error");
     }

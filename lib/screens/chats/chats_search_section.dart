@@ -1,57 +1,47 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroicons/heroicons.dart';
-import 'package:provider/provider.dart';
+
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
+import 'package:zic_flutter/core/providers/rooms_provider.dart';
 import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/core/providers/search_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/screens/chats/chats_search_result_tile.dart';
-import 'package:zic_flutter/screens/chats/new_group_chat_section.dart';
+import 'package:zic_flutter/screens/shared/find_friends_section.dart';
 import 'package:zic_flutter/widgets/search_input.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 
-class ChatsSearchSection extends StatefulWidget {
+class ChatsSearchSection extends ConsumerStatefulWidget {
   const ChatsSearchSection({super.key});
 
   @override
-  State<ChatsSearchSection> createState() => _ChatsSearchSectionState();
+  ConsumerState<ChatsSearchSection> createState() => _ChatsSearchSectionState();
 }
 
-class _ChatsSearchSectionState extends State<ChatsSearchSection> {
+class _ChatsSearchSectionState extends ConsumerState<ChatsSearchSection> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final roomsProvider = Provider.of<ChatRoomsProvider>(
-        context,
-        listen: false,
-      );
-      final friendsProvider = Provider.of<FriendsProvider>(
-        context,
-        listen: false,
-      );
-      roomsProvider.loadRooms(context);
-      friendsProvider.loadFriends(context);
-    });
-  }
 
   void _onSearchChanged(String query) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
-      Provider.of<SearchProvider>(context, listen: false).search(query);
+      ref.read(searchProvider.notifier).searchFriendsAndRooms(query);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userAsync = ref.watch(userProvider);
+    final user = userAsync.value;
+
+    if (user == null) {
+      return const SizedBox.shrink();
+    }
     return Scaffold(
       appBar: AppBar(
         actionsPadding: EdgeInsets.only(right: 6),
@@ -61,56 +51,57 @@ class _ChatsSearchSectionState extends State<ChatsSearchSection> {
           onChanged: _onSearchChanged,
         ),
         actions: [
-          HeroIcon(HeroIcons.paperAirplane, style: HeroIconStyle.micro, ),
+          HeroIcon(HeroIcons.paperAirplane, style: HeroIconStyle.micro),
         ],
       ),
       body: Expanded(
-        child: Consumer<SearchProvider>(
-          builder: (context, searchProvider, child) {
+        child: Consumer(
+          builder: (context, ref, child) {
+            final searchAsync = ref.watch(searchProvider);
             final searchQuery = _searchController.text.trim();
             if (searchQuery.isNotEmpty) {
-              if (searchProvider.results.isEmpty) {
+              if (searchAsync.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (searchAsync.hasError) {
+                return Center(child: Text('Error: ${searchAsync.error}'));
+              }
+              if (searchAsync.value?.isEmpty ?? true) {
                 return const Center(child: Text('No results found'));
               }
               return ListView.builder(
-                itemCount: searchProvider.results.length,
+                itemCount: searchAsync.value!.length,
                 itemBuilder: (context, index) {
-                  final result = searchProvider.results[index];
+                  final result = searchAsync.value![index];
                   return SearchResultTile(result: result);
                 },
               );
             } else {
-              return Consumer<FriendsProvider>(
-                builder: (context, friendsProvider, child) {
-                  if (friendsProvider.friends.isEmpty) {
-                    return _buildEmptyState(context); // no friends
-                  }
-                  return ListView.builder(
-                    itemCount: friendsProvider.friends.length,
-                    itemBuilder: (context, index) {
-                      final friend = friendsProvider.friends[index];
-                      return UserListTile(
-                        user: friend,
-                        onTap: () async {
-                          final room = await RoomService.createPrivateRoom(
-                            userProvider.user!.id,
-                            friend.id,
-                          );
-                          if (room != null && context.mounted) {
-                            Provider.of<ChatRoomsProvider>(
-                              context,
-                              listen: false,
-                            ).addRoom(room);
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => ChatRoomSection(room: room),
-                              ),
-                            );
-                          }
-                        },
+              final friendsAsync = ref.watch(friendsProvider(null));
+              final friends = friendsAsync.value ?? [];
+              if (friends.isEmpty) {
+                return _buildEmptyState(context);
+              }
+              return ListView.builder(
+                itemCount: friends.length,
+                itemBuilder: (context, index) {
+                  final friend = friends[index];
+                  return UserListTile(
+                    user: friend,
+                    onTap: () async {
+                      final room = await RoomService.createPrivateRoom(
+                        user.id,
+                        friend.id,
                       );
+                      if (room != null && context.mounted) {
+                        ref.read(roomsProvider.notifier).addRoom(room);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatRoomSection(room: room),
+                          ),
+                        );
+                      }
                     },
                   );
                 },
@@ -136,7 +127,7 @@ Widget _buildEmptyState(BuildContext context) {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
-          Icons.person_search,
+          Icons.person_search_rounded,
           size: 60,
           color:
               AppTheme.isDark(context)
@@ -174,9 +165,7 @@ Widget _buildEmptyState(BuildContext context) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (context) =>
-                                const NewGroupChatSection(), //FindFriendsScreen(),
+                        builder: (context) => const FindFriendsSection(),
                       ),
                     );
                   },

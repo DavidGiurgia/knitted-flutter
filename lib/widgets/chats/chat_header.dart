@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/api/user.dart';
 import 'package:zic_flutter/core/app_theme.dart';
@@ -9,7 +9,7 @@ import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
 import 'package:heroicons/heroicons.dart';
 
-class ChatHeader extends StatelessWidget {
+class ChatHeader extends ConsumerWidget {
   final Room room;
 
   const ChatHeader({super.key, required this.room});
@@ -33,11 +33,10 @@ class ChatHeader extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final currentUser = userProvider.user;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userProvider).value;
 
-    if (currentUser == null) {
+    if (user == null) {
       return const Text("User not logged in");
     }
 
@@ -56,7 +55,7 @@ class ChatHeader extends StatelessWidget {
         } else if (snapshot.hasData) {
           final participants = snapshot.data!;
           final otherParticipants =
-              participants.where((p) => p.id != currentUser.id).toList();
+              participants.where((p) => p.id != user.id).toList();
 
           String title = "New chat";
           if (room.topic == "") {

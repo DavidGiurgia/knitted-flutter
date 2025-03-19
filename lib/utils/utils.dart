@@ -23,7 +23,7 @@ Future<String> generateUniqueJoinCode() async {
   return joinCode;
 }
 // Function to format the date string
-String multiFormatDateString(DateTime date) { // Change to DateTime
+String multiFormatDateString(DateTime date, {bool short = false}) { // Change to DateTime
   DateTime now = DateTime.now();
 
   Duration diff = now.difference(date);
@@ -35,13 +35,13 @@ String multiFormatDateString(DateTime date) { // Change to DateTime
   if (diffInDays >= 30) {
     return formatDateString(date); // Pass DateTime
   } else if (diffInDays >= 1 && diffInDays < 2) {
-    return '${diffInDays.floor()} day ago';
+    return '${diffInDays.floor()} ${short ? 'd' : 'day ago'}';
   } else if (diffInDays >= 2 && diffInDays < 30) {
-    return '${diffInDays.floor()} days ago';
+    return '${diffInDays.floor()} ${short ? 'd' : 'days ago'}';
   } else if (diffInHours >= 1) {
-    return '${diffInHours.floor()} hours ago';
+    return '${diffInHours.floor()} ${short ? 'h' : 'hours ago'}';
   } else if (diffInMinutes >= 1) {
-    return '${diffInMinutes.floor()} minutes ago';
+    return '${diffInMinutes.floor()} ${short ? 'm' : 'minutes ago'}';
   } else {
     return 'Just now';
   }

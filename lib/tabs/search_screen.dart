@@ -1,36 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroicons/heroicons.dart';
-import 'package:provider/provider.dart';
+
 import 'package:zic_flutter/core/api/recent_search.dart';
 import 'package:zic_flutter/core/api/user.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
+import 'package:zic_flutter/core/providers/search_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/shared/user_profile_screen.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   final bool withLeading;
 
   const SearchScreen({super.key, this.withLeading = true});
 
   @override
-  _SearchScreenState createState() => _SearchScreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<User> _searchResults = [];
   List<User> _recentSearches = [];
-  bool _loading = false;
   bool _loadingRecent = true;
   late String userId;
 
   @override
   void initState() {
     super.initState();
-    userId = Provider.of<UserProvider>(context, listen: false).user!.id;
+    final userAsync = ref.read(userProvider);
+    userId = userAsync.value!.id;
     _fetchRecentSearches();
     _searchController.addListener(_onSearchTextChanged);
   }
@@ -44,7 +45,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onSearchTextChanged() {
     if (_searchController.text.isEmpty) {
-      setState(() => _searchResults = []);
+      setState(() {});
     } else {
       _onSearchChanged(_searchController.text);
     }
@@ -70,15 +71,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onSearchChanged(String query) async {
     if (query.isEmpty) {
-      setState(() => _searchResults = []);
       return;
     }
-    setState(() => _loading = true);
-    List<User> results = await UserService.searchUser(query, userId);
-    setState(() {
-      _searchResults = results;
-      _loading = false;
-    });
+    ref.read(searchProvider.notifier).searchUsers(query);
   }
 
   void _addToRecent(User user) async {
@@ -90,7 +85,6 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _moveToTop(User user) async {
-    //await RecentSearchService.moveRecentSearchToTop(userId, user.id);
     setState(() {
       _recentSearches = [
         user,
@@ -113,6 +107,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final searchAsync = ref.watch(searchProvider);
     return Scaffold(
       backgroundColor:
           AppTheme.isDark(context) ? AppTheme.grey950 : Colors.white,
@@ -169,111 +164,126 @@ class _SearchScreenState extends State<SearchScreen> {
       body: Column(
         children: [
           Expanded(
-            child:
-                _loading
-                    ? Center(child: CircularProgressIndicator())
-                    : _searchController.text.isEmpty
-                    ? _loadingRecent
-                        ? Center(child: CircularProgressIndicator())
-                        : _recentSearches.isEmpty
-                        ? Center(
-                          child: Text(
-                            "No recent searches",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        )
-                        : Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+            child: searchAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error:
+                  (error, stackTrace) => Center(child: Text("Error: $error")),
+              data:
+                  (results) =>
+                      _searchController.text.isEmpty
+                          ? _loadingRecent
+                              ? Center(child: CircularProgressIndicator())
+                              : _recentSearches.isEmpty
+                              ? Center(
+                                child: Text(
+                                  "No recent searches",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              )
+                              : Column(
                                 children: [
-                                  Text(
-                                    "Recent",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Recent",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: _clearRecent,
+                                          child: Text(
+                                            "Clear all",
+                                            style: TextStyle(
+                                              color: Colors.blueAccent,
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  GestureDetector(
-                                    onTap: _clearRecent,
-                                    child: Text(
-                                      "Clear all",
-                                      style: TextStyle(
-                                        color: Colors.blueAccent,
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 14,
-                                      ),
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: _recentSearches.length,
+                                      itemBuilder: (context, index) {
+                                        User user = _recentSearches[index];
+                                        return UserListTile(
+                                          user: user,
+                                          actionWidget: CustomButton(
+                                            heroIcon: HeroIcons.xMark,
+                                            onPressed:
+                                                () => _removeRecent(user),
+                                            isIconOnly: true,
+                                            size: ButtonSize.small,
+                                          ),
+                                          onTap:
+                                              () => {
+                                                _moveToTop(user),
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (
+                                                      BuildContext context,
+                                                    ) {
+                                                      return UserProfileScreen(
+                                                        user: user,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              },
+                                        );
+                                      },
                                     ),
                                   ),
                                 ],
-                              ),
+                              )
+                          : results.isEmpty
+                          ? Center(
+                            child: Text(
+                              "No result found for \"${_searchController.text}\"",
+                              style: TextStyle(fontSize: 16),
                             ),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: _recentSearches.length,
-                                itemBuilder: (context, index) {
-                                  User user = _recentSearches[index];
-                                  return UserListTile(
-                                    user: user,
-                                    actionWidget: CustomButton(
-                                      heroIcon: HeroIcons.xMark,
-                                      onPressed: () => _removeRecent(user),
-                                      isIconOnly: true,
-                                      size: ButtonSize.small,
-                                    ),
-                                    onTap:
-                                        () => {
-                                          _moveToTop(user),
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (BuildContext context) {
-                                                return UserProfileScreen(
+                          )
+                          : ListView.builder(
+                            itemCount: results.length,
+                            itemBuilder: (context, index) {
+                              final result = results[index];
+                              if (result.type == 'friend') {
+                                final user = result.data as User;
+                                return UserListTile(
+                                  user: user,
+                                  onTap:
+                                      () => {
+                                        _addToRecent(user),
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => UserProfileScreen(
                                                   user: user,
-                                                );
-                                              },
-                                            ),
+                                                ),
                                           ),
-                                        },
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        )
-                    : _searchResults.isEmpty
-                    ? Center(
-                      child: Text(
-                        "No results found",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    )
-                    : ListView.builder(
-                      itemCount: _searchResults.length,
-                      itemBuilder: (context, index) {
-                        User user = _searchResults[index];
-                        return UserListTile(
-                          user: user,
-                          onTap:
-                              () => {
-                                _addToRecent(user),
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) =>
-                                            UserProfileScreen(user: user),
-                                  ),
-                                ),
-                              },
-                        );
-                      },
-                    ),
+                                        ),
+                                      },
+                                );
+                              } else {
+                                return ListTile(
+                                  title: Text('Room: ${result.data.topic}'),
+                                );
+                              }
+                            },
+                          ),
+            ),
           ),
         ],
       ),

@@ -1,77 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroicons/heroicons.dart';
-import 'package:provider/provider.dart';
-import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/models/user.dart';
-import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 
-class SelectFriends extends StatefulWidget {
+class SelectFriends extends ConsumerStatefulWidget {
   final Function(List<String>) setSelectedFriends;
 
   const SelectFriends({super.key, required this.setSelectedFriends});
 
   @override
-  State<SelectFriends> createState() => _SelectFriendsState();
+  ConsumerState<SelectFriends> createState() => _SelectFriendsState();
 }
 
-class _SelectFriendsState extends State<SelectFriends> {
+class _SelectFriendsState extends ConsumerState<SelectFriends> {
   final TextEditingController _searchController = TextEditingController();
-  List<User> friends = [];
-  List<User> filteredFriends = [];
-  List<User> selectedFriends = [];
-  bool isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFriends();
-  }
-
-  void _loadFriends() async {
-    setState(() => isLoading = true);
-    try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      friends = await FriendsService.getUserFriends(userProvider.user!.id);
-      filteredFriends = friends;
-    } catch (error) {
-      print("Error fetching friends: $error");
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
+  List<User> _filteredFriends = [];
+  final List<User> _selectedFriends = [];
 
   void _onSearchChanged(String query) {
-    setState(() {
-      filteredFriends =
-          friends
-              .where(
-                (friend) =>
-                    friend.fullname.toLowerCase().contains(query.toLowerCase()),
-              )
-              .toList();
-    });
+    final friendsAsync = ref.read(friendsProvider(null));
+    friendsAsync.when(
+      data: (friends) {
+        setState(() {
+          _filteredFriends =
+              friends
+                  .where(
+                    (friend) => friend.fullname.toLowerCase().contains(
+                      query.toLowerCase(),
+                    ),
+                  )
+                  .toList();
+        });
+      },
+      loading: () {
+        print("Loading friends...");
+      },
+      error: (error, stackTrace) {
+        print("Error loading friends: $error");
+      },
+    );
   }
 
   void _toggleFriendSelection(User friend) {
     setState(() {
-      if (selectedFriends.contains(friend)) {
-        selectedFriends.remove(friend);
+      if (_selectedFriends.contains(friend)) {
+        _selectedFriends.remove(friend);
       } else {
-        selectedFriends.add(friend);
+        _selectedFriends.add(friend);
         _searchController.clear();
       }
-      widget.setSelectedFriends(selectedFriends.map((f) => f.id).toList());
+      widget.setSelectedFriends(_selectedFriends.map((f) => f.id).toList());
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return  Column(
+    final friendsAsync = ref.watch(friendsProvider(null));
+    return Column(
       children: [
-        /// Search Input
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Container(
@@ -118,7 +108,7 @@ class _SelectFriendsState extends State<SelectFriends> {
         ),
 
         /// Selected Friends Avatars
-        if (selectedFriends.isNotEmpty) ...[
+        if (_selectedFriends.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Align(
@@ -134,9 +124,9 @@ class _SelectFriendsState extends State<SelectFriends> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 10),
-              itemCount: selectedFriends.length,
+              itemCount: _selectedFriends.length,
               itemBuilder: (context, index) {
-                final friend = selectedFriends[index];
+                final friend = _selectedFriends[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: GestureDetector(
@@ -211,38 +201,55 @@ class _SelectFriendsState extends State<SelectFriends> {
         ],
 
         Expanded(
-          child:
-              isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : filteredFriends.isEmpty
-                  ? Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Center(
-                      child: Text(
-                        "No results found",
-                        style: TextStyle(color: Colors.grey.shade500),
-                      ),
+          child: friendsAsync.when(
+            data: (friends) {
+              if (_searchController.text.isEmpty) {
+                _filteredFriends = friends;
+              }
+              if (_filteredFriends.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Center(
+                    child: Text(
+                      "No results found",
+                      style: TextStyle(color: Colors.grey),
                     ),
-                  )
-                  : ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemCount: filteredFriends.length,
-                    itemBuilder: (context, index) {
-                      final friend = filteredFriends[index];
-                      return UserListTile(
-                        user: friend,
-                        onTap: () => _toggleFriendSelection(friend),
-                        actionWidget:
-                            selectedFriends.contains(friend)
-                                ? Icon(
-                                  Icons.check,
-                                  color: AppTheme.primaryColor,
-                                  size: 18,
-                                )
-                                : null,
-                      );
-                    },
                   ),
+                );
+              }
+
+              return ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: _filteredFriends.length,
+                itemBuilder: (context, index) {
+                  final friend = _filteredFriends[index];
+                  return UserListTile(
+                    user: friend,
+                    onTap: () => _toggleFriendSelection(friend),
+                    actionWidget:
+                        _selectedFriends.contains(friend)
+                            ? Icon(
+                              Icons.check,
+                              color: AppTheme.primaryColor,
+                              size: 18,
+                            )
+                            : null,
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error:
+                (error, stackTrace) => Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Center(
+                    child: Text(
+                      "Error: $error",
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ),
+          ),
         ),
       ],
     );

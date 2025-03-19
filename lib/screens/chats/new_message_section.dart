@@ -1,64 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroicons/heroicons.dart';
-import 'package:provider/provider.dart';
-import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
-import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
+import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/screens/chats/new_group_chat_section.dart';
 import 'package:zic_flutter/widgets/search_input.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 
-class NewMessageSection extends StatefulWidget {
+class NewMessageSection extends ConsumerStatefulWidget {
   const NewMessageSection({super.key});
 
   @override
-  State<NewMessageSection> createState() => _NewMessageSectionState();
+  ConsumerState<NewMessageSection> createState() => _NewMessageSectionState();
 }
 
-class _NewMessageSectionState extends State<NewMessageSection> {
+class _NewMessageSectionState extends ConsumerState<NewMessageSection> {
   bool isLoading = false;
-  final TextEditingController searchController = TextEditingController();
-  List<User> friends = [];
-  List<User> filteredFriends = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFriends();
-  }
-
-  void _loadFriends() async {
-    setState(() => isLoading = true);
-    try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      friends = await FriendsService.getUserFriends(userProvider.user!.id);
-      filteredFriends = friends;
-    } catch (error) {
-      print("Error fetching friends: $error");
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
+  final TextEditingController _searchController = TextEditingController();
+  List<User> _filteredFriends = [];
 
   void _onSearchChanged(String query) {
-    setState(() {
-      filteredFriends =
-          friends
-              .where(
-                (friend) =>
-                    friend.fullname.toLowerCase().contains(query.toLowerCase()),
-              )
-              .toList();
-    });
+    final friendsAsync = ref.read(friendsProvider(null));
+    friendsAsync.when(
+      data: (friends) {
+        setState(() {
+          _filteredFriends =
+              friends
+                  .where(
+                    (friend) => friend.fullname.toLowerCase().contains(
+                      query.toLowerCase(),
+                    ),
+                  )
+                  .toList();
+        });
+      },
+      loading: () {
+        print("Loading friends...");
+      },
+      error: (error, stackTrace) {
+        print("Error loading friends: $error");
+      },
+    );
   }
 
   void handleCreateRoom(User friend) async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final currentUser = userProvider.user;
+    final userAsync = ref.read(userProvider);
+    final currentUser = userAsync.value;
     if (currentUser == null) {
       return;
     }
@@ -68,16 +59,12 @@ class _NewMessageSectionState extends State<NewMessageSection> {
     setState(() {
       isLoading = true;
     });
-    final room = await RoomService.createPrivateRoom(
-      currentUser.id,
-      friend.id,
-    );
+    final room = await RoomService.createPrivateRoom(currentUser.id, friend.id);
     if (room != null) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => ChatRoomSection(room: room)),
       );
-      Provider.of<ChatRoomsProvider>(context, listen: false).loadRooms(context);
     } else {
       print("Failed to create room");
     }
@@ -88,6 +75,8 @@ class _NewMessageSectionState extends State<NewMessageSection> {
 
   @override
   Widget build(BuildContext context) {
+    final friendsAsync = ref.watch(friendsProvider(null));
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(title: const Text("New message")),
@@ -161,12 +150,12 @@ class _NewMessageSectionState extends State<NewMessageSection> {
                 children: [
                   /// Search Input
                   SearchInput(
-                    controller: searchController,
+                    controller: _searchController,
                     onChanged: _onSearchChanged,
                   ),
 
                   /// Suggested Friends List
-                  if (searchController.text.isEmpty) ...[
+                  if (_searchController.text.isEmpty) ...[
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -186,32 +175,50 @@ class _NewMessageSectionState extends State<NewMessageSection> {
                   ],
 
                   Expanded(
-                    child:
-                        isLoading
-                            ? Center(child: CircularProgressIndicator())
-                            : filteredFriends.isEmpty
-                            ? Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Center(
-                                child: Text(
-                                  "No results found",
-                                  style: TextStyle(color: Colors.grey.shade500),
-                                ),
+                    child: friendsAsync.when(
+                      loading:
+                          () =>
+                              const Center(child: CircularProgressIndicator()),
+                      error:
+                          (error, stackTrace) => Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Center(
+                              child: Text(
+                                "Error: $error",
+                                style: const TextStyle(color: Colors.red),
                               ),
-                            )
-                            : ListView.builder(
-                              padding: EdgeInsets.zero,
-                              itemCount: filteredFriends.length,
-                              itemBuilder: (context, index) {
-                                final friend = filteredFriends[index];
-                                return UserListTile(
-                                  user: friend,
-                                  onTap: () {
-                                    handleCreateRoom(friend);
-                                  }, // set friend and create room
-                                );
-                              },
                             ),
+                          ),
+                      data: (friends) {
+                        if (_searchController.text.isEmpty) {
+                          _filteredFriends = friends;
+                        }
+                        if (_filteredFriends.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Center(
+                              child: Text(
+                                "No results found",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          );
+                        }
+                        return ListView.builder(
+                          padding: EdgeInsets.zero,
+                          itemCount: _filteredFriends.length,
+                          itemBuilder: (context, index) {
+                            final friend = _filteredFriends[index];
+                            return UserListTile(
+                              user: friend,
+                              onTap: () {
+                                handleCreateRoom(friend);
+                              }, // set friend and create room
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),

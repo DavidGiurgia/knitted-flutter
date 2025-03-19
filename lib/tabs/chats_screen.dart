@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroicons/heroicons.dart';
-import 'package:provider/provider.dart';
+
+import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
-import 'package:zic_flutter/core/providers/friends_provider.dart';
+import 'package:zic_flutter/core/providers/rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_rooms_list.dart';
 import 'package:zic_flutter/screens/chats/chats_search_section.dart';
@@ -18,14 +19,14 @@ import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/join_room_input.dart';
 import 'package:zic_flutter/widgets/search_input.dart';
 
-class ChatsScreen extends StatefulWidget {
+class ChatsScreen extends ConsumerStatefulWidget {
   const ChatsScreen({super.key});
 
   @override
-  State<ChatsScreen> createState() => _ChatsScreenState();
+  ConsumerState<ChatsScreen> createState() => _ChatsScreenState();
 }
 
-class _ChatsScreenState extends State<ChatsScreen>
+class _ChatsScreenState extends ConsumerState<ChatsScreen>
     with AutomaticKeepAliveClientMixin<ChatsScreen> {
   final TextEditingController _codeController = TextEditingController();
 
@@ -34,30 +35,31 @@ class _ChatsScreenState extends State<ChatsScreen>
   @override
   bool get wantKeepAlive => true; // Păstrează starea widgetului
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final roomsProvider = Provider.of<ChatRoomsProvider>(
-        context,
-        listen: false,
-      );
-      roomsProvider.loadRooms(context);
-    });
-  }
-
   void _onJoin() async {
-    final roomsProvider = Provider.of<ChatRoomsProvider>(
-      context,
-      listen: false,
-    );
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userAsync = ref.watch(userProvider);
+    final user = userAsync.value;
+
+    if (user == null) {
+      return;
+    }
+    final roomsAsync = ref.watch(roomsProvider);
+
+    if (roomsAsync.isLoading) {
+      return;
+    }
+
+    if (roomsAsync.hasError) {
+      return;
+    }
+
+    final rooms = roomsAsync.value ?? [];
+    
 
     final code = _codeController.text.trim();
     if (code.isEmpty) return;
 
     final room = await RoomService.getRoomByCode(code);
-    if (room == null || userProvider.user == null) {
+    if (room == null) {
       CustomToast.show(
         context,
         'Sorry, there is no such room active right now!',
@@ -67,11 +69,16 @@ class _ChatsScreenState extends State<ChatsScreen>
     }
 
     // Verificăm dacă camera există deja în listă.
-    final existingIndex = roomsProvider.rooms.indexWhere(
+    final existingIndex = rooms.indexWhere(
       (r) => r.id == room.id,
     );
     if (existingIndex == -1) {
-      roomsProvider.addRoom(room);
+      ref.read(roomsProvider.notifier).addRoom(room);
+
+      await RoomParticipantsService.addParticipantToRoom(
+        room.id,
+        user.id,
+      );
     }
 
     // Curățăm input-ul după join.
@@ -187,18 +194,8 @@ class _ChatsScreenState extends State<ChatsScreen>
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          try {
-            await Provider.of<ChatRoomsProvider>(
-              context,
-              listen: false,
-            ).loadRooms(context);
-            await Provider.of<FriendsProvider>(
-              context,
-              listen: false,
-            ).loadFriends(context);
-          } catch (e) {
-            CustomToast.show(context, "Failed to refresh data: $e");
-          }
+          ref.invalidate(userProvider);
+          ref.invalidate(roomsProvider);
         },
         child: CustomScrollView(
           slivers: [

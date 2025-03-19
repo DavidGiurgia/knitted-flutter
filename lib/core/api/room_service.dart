@@ -3,7 +3,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
-import 'package:zic_flutter/core/models/room_participants.dart';
 
 class RoomService {
   static String? baseUrl = dotenv.env['BASE_URL'];
@@ -11,9 +10,9 @@ class RoomService {
   // Crearea unei camere (temporare sau permanente)
   static Future<Room?> createRoom(Room roomData) async {
     if (baseUrl == null) {
-    print("BASE_URL is not set in environment variables.");
-    return null;
-  }
+      print("BASE_URL is not set in environment variables.");
+      return null;
+    }
     final url = Uri.parse('$baseUrl/rooms/create');
     final jsonRoomData = roomData.toJson();
     try {
@@ -42,6 +41,7 @@ class RoomService {
       return null;
     }
   }
+  
 
   // Actualizarea unei camere
   static Future<Room?> updateRoom(String roomId, Room updateData) async {
@@ -131,7 +131,6 @@ class RoomService {
     }
   }
 
-
   // Ștergerea unei camere
   static Future<bool> deleteRoom(String roomId) async {
     final url = Uri.parse('$baseUrl/rooms/$roomId');
@@ -150,7 +149,6 @@ class RoomService {
     }
   }
 
-
   // Crearea unei camere private
   static Future<Room?> createPrivateRoom(String userId, String friendId) async {
     final participantsIds = [userId, friendId];
@@ -168,7 +166,6 @@ class RoomService {
       updatedAt: DateTime.now(),
       expiresAt: null,
       isActive: false,
-      lastMessage: null,
       lastActivity: null,
     );
 
@@ -195,7 +192,6 @@ class RoomService {
       updatedAt: DateTime.now(),
       expiresAt: null,
       isActive: true,
-      lastMessage: null,
       lastActivity: null,
     );
 
@@ -221,11 +217,50 @@ class RoomService {
       updatedAt: DateTime.now(),
       expiresAt: expiresAt,
       isActive: true,
-      lastMessage: null,
       lastActivity: null,
       joinCode: joinCode,
     );
 
     return createRoom(newRoomData);
   }
+
+  static Future<bool> activateRoom(String roomId) async {
+    final url = Uri.parse('$baseUrl/rooms/$roomId/activate');
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({}),
+      );
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print("Failed to activate room. Status code: ${response.statusCode}");
+        print("Response body: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error activating room: $e");
+      return false;
+    }
+  }
+
+  static Future<int> getRoomUnreadCount(String roomId, String userId) async {
+  final url = Uri.parse('$baseUrl/rooms/$roomId/unread-count?userId=$userId'); // Construct the URL with query parameter
+  try {
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final unreadCount = int.parse(response.body); // Parse the response body as an integer
+      return unreadCount;
+    } else {
+      print("Failed to fetch unread count. Status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+      return 0; // Return 0 or handle error as needed
+    }
+  } catch (e) {
+    print("Error fetching unread count: $e");
+    return 0; // Return 0 or handle error as needed
+  }
+}
 }

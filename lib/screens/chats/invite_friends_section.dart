@@ -1,58 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:heroicons/heroicons.dart';
-import 'package:provider/provider.dart';
-import 'package:zic_flutter/core/api/friends.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zic_flutter/core/api/notifications.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
 import 'package:zic_flutter/core/models/user.dart';
+import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/temporary_chat_room.dart';
 import 'package:zic_flutter/widgets/button.dart';
+import 'package:zic_flutter/widgets/search_input.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 
-class InviteFriendsSection extends StatefulWidget {
+class InviteFriendsSection extends ConsumerStatefulWidget {
   final Room room;
   const InviteFriendsSection({super.key, required this.room});
 
   @override
-  State<InviteFriendsSection> createState() => _InviteFriendsSectionState();
+  ConsumerState<InviteFriendsSection> createState() =>
+      _InviteFriendsSectionState();
 }
 
-class _InviteFriendsSectionState extends State<InviteFriendsSection> {
+class _InviteFriendsSectionState extends ConsumerState<InviteFriendsSection> {
   bool isLoading = false;
-  final TextEditingController nameController = TextEditingController();
-  final List<String> participants = [];
   final TextEditingController _searchController = TextEditingController();
-  List<User> friends = [];
-  List<User> filteredFriends = [];
-  List<User> selectedFriends = [];
+  List<User> _filteredFriends = [];
+  final List<User> _selectedFriends = [];
 
   void handleSendNotifications() async {
     setState(() => isLoading = true);
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      if (userProvider.user == null) {
+      final user = ref.read(userProvider).value;
+      if (user == null) {
         throw Exception("User not logged in");
       }
-      for (var friend in selectedFriends) {
+      for (var friend in _selectedFriends) {
         await NotificationService.createNotification(
-          userProvider.user!.id,
+          user.id,
           friend.id,
           "chat_invitation",
-          {
-            "chatRoomTopic": widget.room.topic,
-            "chatRoomId": widget.room.id,
-          },
+          {"chatRoomTopic": widget.room.topic, "chatRoomId": widget.room.id},
         );
       }
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => TemporaryChatRoomSection(room: widget.room)),
+        MaterialPageRoute(
+          builder: (context) => TemporaryChatRoomSection(room: widget.room),
+        ),
       );
     } catch (error) {
       print("Error sending notifications: $error");
-      // Show an error message to the user
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error sending notifications: $error")),
       );
@@ -60,59 +56,40 @@ class _InviteFriendsSectionState extends State<InviteFriendsSection> {
     setState(() => isLoading = false);
   }
 
-  void setSelectedFriends(List<String> selectedFriends) {
-    setState(() {
-      participants
-        ..clear()
-        ..addAll(selectedFriends);
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFriends();
-  }
-
-  void _loadFriends() async {
-    setState(() => isLoading = true);
-    try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      friends = await FriendsService.getUserFriends(userProvider.user!.id);
-      filteredFriends = friends;
-    } catch (error) {
-      print("Error fetching friends: $error");
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
-
   void _onSearchChanged(String query) {
-    setState(() {
-      filteredFriends =
-          friends
-              .where(
-                (friend) =>
-                    friend.fullname.toLowerCase().contains(query.toLowerCase()),
-              )
-              .toList();
-    });
+    final friendsAsync = ref.read(friendsProvider(null));
+    friendsAsync.when(
+    data: (friends) {
+      setState(() {
+        _filteredFriends = friends
+            .where((friend) =>
+                friend.fullname.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      });
+    },
+    loading: () {
+      print("Loading friends...");
+    },
+    error: (error, stackTrace) {
+      print("Error loading friends: $error");
+    },
+  );
   }
 
   void _toggleFriendSelection(User friend) {
     setState(() {
-      if (selectedFriends.contains(friend)) {
-        selectedFriends.remove(friend);
+      if (_selectedFriends.contains(friend)) {
+        _selectedFriends.remove(friend);
       } else {
-        selectedFriends.add(friend);
-        //_searchController.clear();
+        _selectedFriends.add(friend);
       }
-      setSelectedFriends(selectedFriends.map((f) => f.id).toList());
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final friendsAsync = ref.watch(friendsProvider(null));
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Invite your friends"),
@@ -121,10 +98,11 @@ class _InviteFriendsSectionState extends State<InviteFriendsSection> {
           onPressed:
               () => Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => TemporaryChatRoomSection(room: widget.room,)),
+                MaterialPageRoute(
+                  builder:
+                      (context) => TemporaryChatRoomSection(room: widget.room),
+                ),
               ),
-
-          /// go to created chat
         ),
         actions: [
           Padding(
@@ -172,55 +150,9 @@ class _InviteFriendsSectionState extends State<InviteFriendsSection> {
               child: Column(
                 children: [
                   /// Search Input
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            AppTheme.isDark(context)
-                                ? Colors.grey.shade900
-                                : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          HeroIcon(
-                            HeroIcons.magnifyingGlass,
-                            style: HeroIconStyle.outline,
-                            color: Colors.grey.shade500,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: _onSearchChanged,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                decoration: TextDecoration.none,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: "Search friends...",
-                                hintStyle: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.grey.shade500,
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.zero,
-                                isDense: true,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  SearchInput(
+                    controller: _searchController,
+                    onChanged: _onSearchChanged,
                   ),
 
                   /// Suggested Friends List
@@ -244,48 +176,64 @@ class _InviteFriendsSectionState extends State<InviteFriendsSection> {
                   ],
 
                   Expanded(
-                    child:
-                        isLoading
-                            ? Center(child: CircularProgressIndicator())
-                            : filteredFriends.isEmpty
-                            ? Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Center(
-                                child: Text(
-                                  "No results found",
-                                  style: TextStyle(color: Colors.grey.shade500),
-                                ),
+                    child: friendsAsync.when(
+                      data: (friends) {
+                        if (_searchController.text.isEmpty) {
+                          _filteredFriends = friends;
+                        }
+                        if (_filteredFriends.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Center(
+                              child: Text(
+                                "No results found",
+                                style: TextStyle(color: Colors.grey),
                               ),
-                            )
-                            : ListView.builder(
-                              padding: EdgeInsets.zero,
-                              itemCount: filteredFriends.length,
-                              itemBuilder: (context, index) {
-                                final friend = filteredFriends[index];
-                                return UserListTile(
-                                  user: friend,
-                                  onTap:
-                                      () {}, // Remove feedback effect by not providing a callback
-                                  actionWidget: CustomButton(
-                                    onPressed:
-                                        () => _toggleFriendSelection(friend),
-                                    text:
-                                        selectedFriends.contains(friend)
-                                            ? "Undo"
-                                            : "Invite",
-                                    bgColor:
-                                        selectedFriends.contains(friend)
-                                            ? null
-                                            : AppTheme.primaryColor,
-                                    type:
-                                        selectedFriends.contains(friend)
-                                            ? ButtonType.light
-                                            : ButtonType.solid,
-                                    size: ButtonSize.xs,
-                                  ),
-                                );
-                              },
                             ),
+                          );
+                        }
+                        return ListView.builder(
+                          padding: EdgeInsets.zero,
+                          itemCount: _filteredFriends.length,
+                          itemBuilder: (context, index) {
+                            final friend = _filteredFriends[index];
+                            return UserListTile(
+                              user: friend,
+                              onTap: () {},
+                              actionWidget: CustomButton(
+                                onPressed: () => _toggleFriendSelection(friend),
+                                text:
+                                    _selectedFriends.contains(friend)
+                                        ? "Undo"
+                                        : "Invite",
+                                bgColor:
+                                    _selectedFriends.contains(friend)
+                                        ? null
+                                        : AppTheme.primaryColor,
+                                type:
+                                    _selectedFriends.contains(friend)
+                                        ? ButtonType.light
+                                        : ButtonType.solid,
+                                size: ButtonSize.xs,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      loading:
+                          () =>
+                              const Center(child: CircularProgressIndicator()),
+                      error:
+                          (error, stackTrace) => Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Center(
+                              child: Text(
+                                "Error: $error",
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ),
+                    ),
                   ),
                 ],
               ),

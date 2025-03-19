@@ -1,23 +1,23 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:provider/provider.dart';
 import 'package:zic_flutter/core/api/user.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/core/services/cloudinaryService.dart';
+import 'package:zic_flutter/screens/shared/cropp_image.dart';
 import 'package:zic_flutter/widgets/button.dart';
 
-class EditProfileScreen extends StatefulWidget {
+class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
-  _EditProfileScreenState createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final TextEditingController _bioController = TextEditingController();
   File? _avatar;
   File? _cover;
@@ -27,60 +27,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final user = Provider.of<UserProvider>(context, listen: false).user;
-    _bioController.text = user?.bio ?? '';
-    avatarUrl = user?.avatarUrl.isNotEmpty == true ? user?.avatarUrl : null;
-    avatarPublicId = user?.avatarPublicId.isNotEmpty == true ? user?.avatarPublicId : null;
-    coverUrl = user?.coverUrl.isNotEmpty == true ? user?.coverUrl : null;
-    coverPublicId = user?.coverPublicId.isNotEmpty == true ? user?.coverPublicId : null;
+    final userAsync = ref.read(userProvider);
+    final user = userAsync.value;
+
+    if (user == null) {
+      return;
+    }
+
+    _bioController.text = user.bio;
+    avatarUrl = user.avatarUrl.isNotEmpty == true ? user.avatarUrl : null;
+    avatarPublicId =
+        user.avatarPublicId.isNotEmpty == true ? user.avatarPublicId : null;
+    coverUrl = user.coverUrl.isNotEmpty == true ? user.coverUrl : null;
+    coverPublicId =
+        user.coverPublicId.isNotEmpty == true ? user.coverPublicId : null;
   }
 
   Future<void> _pickImage(bool isAvatar) async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
+    final croppedFile = await ImageCropperUtil.pickAndCropImage(
+      rX: !isAvatar ? 4 : 1,
+      rY: !isAvatar ? 2 : 1,
+      cropStyle: isAvatar ? CropStyle.circle : CropStyle.rectangle,
+      context: context,
     );
 
-    if (pickedFile != null) {
-      CroppedFile? croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        aspectRatio:
-            isAvatar
-                ? const CropAspectRatio(ratioX: 1, ratioY: 1)
-                : const CropAspectRatio(ratioX: 4, ratioY: 2),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Crop',
-            toolbarColor: AppTheme.primaryColor,
-            toolbarWidgetColor: Colors.white,
-            lockAspectRatio: true,
-            cropStyle: isAvatar ? CropStyle.circle : CropStyle.rectangle,
-            initAspectRatio: CropAspectRatioPreset.original,
-          ),
-          IOSUiSettings(
-            title: 'Crop',
-            aspectRatioLockEnabled: true,
-            cropStyle: isAvatar ? CropStyle.circle : CropStyle.rectangle,
-          ),
-        ],
-      );
-
-      if (croppedFile != null) {
-        setState(() {
-          if (isAvatar) {
-            _avatar = File(croppedFile.path);
-          } else {
-            _cover = File(croppedFile.path);
-          }
-        });
-      }
+    if (croppedFile != null) {
+      setState(() {
+        if (isAvatar) {
+          _avatar = File(croppedFile.path);
+        } else {
+          _cover = File(croppedFile.path);
+        }
+      });
     }
   }
 
   Future<void> _saveProfile() async {
     setState(() => _isLoading = true);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.user;
+    final userAsync = ref.read(userProvider);
+    final user = userAsync.value;
+
+    if (user == null) {
+      return;
+    }
 
     try {
       // Înlocuiește avatarul dacă există unul nou
@@ -127,15 +116,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       // Actualizează profilul utilizatorului
       await UserService.updateUser(
-        user!.id,
+        user.id,
         _bioController.text.trim(),
         avatarUrl ?? '',
         avatarPublicId ?? '',
         coverUrl ?? '',
         coverPublicId ?? '',
       );
-
-      await userProvider.loadUser();
       Navigator.pop(context);
     } catch (error) {
       print("Error saving profile: $error");
@@ -149,7 +136,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context).user;
+    final userAsync = ref.watch(userProvider);
+    final user = userAsync.value;
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Profile'),
@@ -340,7 +328,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       maxLines: null,
                       //expands: true,
                       decoration: InputDecoration(
-                        
                         hintText: 'Describe yourself...',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),

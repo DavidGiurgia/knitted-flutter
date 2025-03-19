@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zic_flutter/core/api/notifications.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/api/user.dart';
@@ -12,7 +12,7 @@ import 'package:zic_flutter/screens/shared/user_profile_screen.dart';
 import 'package:zic_flutter/utils/utils.dart';
 import 'package:zic_flutter/widgets/button.dart';
 
-class NotificationItem extends StatefulWidget {
+class NotificationItem extends ConsumerStatefulWidget {
   final NotificationModel notification;
   final VoidCallback onAction;
 
@@ -23,10 +23,10 @@ class NotificationItem extends StatefulWidget {
   });
 
   @override
-  _NotificationItemState createState() => _NotificationItemState();
+  ConsumerState<NotificationItem> createState() => _NotificationItemState();
 }
 
-class _NotificationItemState extends State<NotificationItem> {
+class _NotificationItemState extends ConsumerState<NotificationItem> {
   bool isLoading = true;
   User? sender;
   bool isRoomStilActive = false;
@@ -90,15 +90,17 @@ class _NotificationItemState extends State<NotificationItem> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
+    final user = ref.watch(userProvider).value;
+
+    if (user == null) {
+      return SizedBox.shrink();
+    }
     final String timestamp = multiFormatDateString(
       widget.notification.createdAt,
     );
     final bool isRead = widget.notification.read;
     final String avatarUrl = sender?.avatarUrl ?? '';
-    final bool hasIncomingRequest = userProvider.user!.friendRequests.contains(
-      sender?.id,
-    );
+    final bool hasIncomingRequest = user.friendRequests.contains(sender?.id);
 
     Widget? actionButton;
 
@@ -151,12 +153,20 @@ class _NotificationItemState extends State<NotificationItem> {
           ),
           TextSpan(
             text: "# ${widget.notification.data['chatRoomTopic']}",
-            style: TextStyle(fontWeight: FontWeight.w500, color: AppTheme.primaryColor.withValues(alpha: 0.8)),
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: AppTheme.primaryColor.withValues(alpha: 0.8),
+            ),
           ),
           if (!isRoomStilActive)
             TextSpan(
               text: "   Expired",
-              style: TextStyle(fontWeight: FontWeight.w400, color: Colors.grey, fontSize: 14, fontStyle: FontStyle.italic),
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                color: Colors.grey,
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+              ),
             ),
         ];
         if (isRoomStilActive) {

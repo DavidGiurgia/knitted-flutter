@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/widgets/button.dart';
 
-class FriendshipStatusButton extends StatefulWidget {
+class FriendshipStatusButton extends ConsumerStatefulWidget {
   final User user;
   final bool isCompact;
   const FriendshipStatusButton({
@@ -16,48 +17,46 @@ class FriendshipStatusButton extends StatefulWidget {
   });
 
   @override
-  State<FriendshipStatusButton> createState() => _FriendshipStatusButtonState();
+  ConsumerState<FriendshipStatusButton> createState() =>
+      _FriendshipStatusButtonState();
 }
 
-class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
+class _FriendshipStatusButtonState
+    extends ConsumerState<FriendshipStatusButton> {
   bool isLoading = false;
+  
 
   Future<void> handleFriendRequest(String action) async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = ref.watch(userProvider).value?.id;
+
+    if (userId == null) {
+      return;
+    }
 
     setState(() => isLoading = true);
 
     try {
       if (action == "add") {
-        await FriendsService.request(userProvider.user!.id, widget.user.id);
+        await FriendsService.request(userId, widget.user.id);
       } else if (action == "cancel") {
-        await FriendsService.cancelFriendRequest(
-          userProvider.user!.id,
-          widget.user.id,
-        );
+        await FriendsService.cancelFriendRequest(userId, widget.user.id);
       } else if (action == "accept") {
-        await FriendsService.acceptFriendRequest(
-          userProvider.user!.id,
-          widget.user.id,
-        );
+        await FriendsService.acceptFriendRequest(userId, widget.user.id);
       } else if (action == "remove") {
-        await FriendsService.removeFriend(
-          userProvider.user!.id,
-          widget.user.id,
-        );
+        await FriendsService.removeFriend(userId, widget.user.id);
       } else if (action == "block") {
-        await FriendsService.blockUser(userProvider.user!.id, widget.user.id);
+        await FriendsService.blockUser(userId, widget.user.id);
       } else if (action == "unblock") {
-        await FriendsService.unblockUser(userProvider.user!.id, widget.user.id);
+        await FriendsService.unblockUser(userId, widget.user.id);
       }
 
       setState(() => isLoading = false);
+      ref.invalidate(userProvider);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
-      await userProvider.loadUser();
       setState(() => isLoading = false);
     }
   }
@@ -163,21 +162,18 @@ class _FriendshipStatusButtonState extends State<FriendshipStatusButton> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final bool isFriend = userProvider.user!.friendsIds.contains(
+    final user = ref.watch(userProvider).value;
+    if (user == null) {
+      return SizedBox.shrink();
+    }
+    final bool isFriend = user.friendsIds.contains(widget.user.id);
+    final bool hasSentRequest = user.sentRequests.contains(widget.user.id);
+    final bool hasIncomingRequest = user.friendRequests.contains(
       widget.user.id,
     );
-    final bool hasSentRequest = userProvider.user!.sentRequests.contains(
-      widget.user.id,
-    );
-    final bool hasIncomingRequest = userProvider.user!.friendRequests.contains(
-      widget.user.id,
-    );
-    final bool isBlocked = userProvider.user!.blockedUsers.contains(
-      widget.user.id,
-    );
+    final bool isBlocked = user.blockedUsers.contains(widget.user.id);
 
-    if (userProvider.user?.id == widget.user.id) {
+    if (user.id == widget.user.id) {
       return SizedBox.shrink(); //Text("You");
     }
 

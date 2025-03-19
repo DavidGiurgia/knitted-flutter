@@ -1,51 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:heroicons/heroicons.dart';
-import 'package:provider/provider.dart';
-import 'package:zic_flutter/core/api/notifications.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/core/providers/notifications_provider.dart';
 import 'package:zic_flutter/screens/notifications/notifications_section.dart';
-import 'package:zic_flutter/screens/post/create_post.dart';
+import 'package:zic_flutter/screens/post/create_post/create_post.dart';
 import 'package:zic_flutter/widgets/button.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const String assetName = 'lib/assets/images/ZIC-logo.svg';
-  bool unreadNotifications = true;
-
-  /// verifica cu functia de mai sus
-
-  @override
-  void initState() {
-    super.initState();
-    _checkUnreadNotifications();
-  }
-
-  Future<void> _checkUnreadNotifications() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    try {
-      List<dynamic> notifications =
-          await NotificationService.fetchNotifications(
-            userProvider.user!.id,
-            unreadOnly: true,
-          );
-      setState(() {
-        unreadNotifications = notifications.isNotEmpty;
-      });
-    } catch (error) {
-      print("Error checking unread notifications: $error");
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final notificationsAsync = ref.watch(notificationsProvider);
+
+    bool unreadNotifications = notificationsAsync.when(
+      data:
+          (notifications) =>
+              notifications.any((notification) => !notification.read),
+      loading: () => false,
+      error: (error, stackTrace) => false,
+    );
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -70,7 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           CustomButton(
             onPressed: () async {
-              await _checkUnreadNotifications();
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => NotificationsSection()),

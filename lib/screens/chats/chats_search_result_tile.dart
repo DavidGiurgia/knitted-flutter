@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/models/chat_room.dart';
 import 'package:zic_flutter/core/models/user.dart';
-import 'package:zic_flutter/core/providers/chat_rooms_provider.dart';
+import 'package:zic_flutter/core/providers/rooms_provider.dart';
 import 'package:zic_flutter/core/providers/search_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/widgets/chats/chat_list_tile.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 
-class SearchResultTile extends StatelessWidget {
+class SearchResultTile extends ConsumerWidget {
   final SearchResult result;
 
   const SearchResultTile({super.key, required this.result});
 
   @override
-  Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+    final user = userAsync.value;
+
+    if (user == null) {
+      return const SizedBox.shrink();
+    }
 
     if (result.type == 'room') {
       final room = result.data as Room;
@@ -29,14 +35,11 @@ class SearchResultTile extends StatelessWidget {
         //actionWidget: HeroIcon(HeroIcons.chevronRight, style: HeroIconStyle.micro, ),
         onTap: () async {
           final room = await RoomService.createPrivateRoom(
-            userProvider.user!.id,
+            user.id,
             friend.id,
           );
           if (room != null && context.mounted) {
-            Provider.of<ChatRoomsProvider>(
-              context,
-              listen: false,
-            ).addRoom(room);
+            ref.read(roomsProvider.notifier).addRoom(room);
             Navigator.push(
               context,
               MaterialPageRoute(
