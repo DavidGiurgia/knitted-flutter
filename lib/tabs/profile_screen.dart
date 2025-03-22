@@ -8,7 +8,7 @@ import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/post/create_post/create_post.dart';
 import 'package:zic_flutter/screens/settings/settings_and_activity.dart';
 import 'package:zic_flutter/screens/shared/edit_profile.dart';
-import 'package:zic_flutter/screens/shared/friends_section.dart';
+import 'package:zic_flutter/screens/friends/friends_section.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/profile_header.dart';
 

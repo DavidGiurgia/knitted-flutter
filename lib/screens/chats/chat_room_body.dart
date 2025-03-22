@@ -25,7 +25,6 @@ class _ChatRoomBodyState extends ConsumerState<ChatRoomBody> {
   late ChatSocketService _socketService;
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final FocusNode _textFieldFocus = FocusNode();
 
   List<Message> _messages = [];
   bool _messagesLoaded = false;
@@ -34,8 +33,8 @@ class _ChatRoomBodyState extends ConsumerState<ChatRoomBody> {
   @override
   void initState() {
     super.initState();
-    _socketService = ChatSocketService(); 
-     _participantsFuture = ref
+    _socketService = ChatSocketService();
+    _participantsFuture = ref
         .read(roomsProvider.notifier)
         .getRoomParticipants(widget.room.id);
     _initializeChat();
@@ -73,6 +72,7 @@ class _ChatRoomBodyState extends ConsumerState<ChatRoomBody> {
 
     if (!widget.room.isActive) {
       await RoomService.activateRoom(widget.room.id);
+      ref.invalidate(roomsProvider);
     }
 
     final message = {
@@ -91,7 +91,12 @@ class _ChatRoomBodyState extends ConsumerState<ChatRoomBody> {
     final currentUser = ref.read(userProvider).value;
     if (currentUser == null) return;
 
-    final unreadMessages = _messages.where((m) => m.status != 'read' && m.senderId != currentUser.id).toList();
+    print("messages: ${_messages.length};");
+
+    final unreadMessages = _messages
+      .where((m) => !m.readBy.contains(currentUser.id) && m.senderId != currentUser.id)
+      .toList();
+
     for (final message in unreadMessages) {
       _socketService.markMessageAsRead(
         message.id,
@@ -99,6 +104,7 @@ class _ChatRoomBodyState extends ConsumerState<ChatRoomBody> {
         currentUser.id,
       );
     }
+    ref.invalidate(roomsProvider);
   }
 
   @override
@@ -106,7 +112,6 @@ class _ChatRoomBodyState extends ConsumerState<ChatRoomBody> {
     _socketService.leaveRoom(widget.room.id);
     _scrollController.dispose();
     _messageController.dispose();
-    _textFieldFocus.dispose();
     super.dispose();
   }
 
@@ -146,7 +151,6 @@ class _ChatRoomBodyState extends ConsumerState<ChatRoomBody> {
         MessageInput(
           sendMessage: _sendMessage,
           messageController: _messageController,
-          textFieldFocus: _textFieldFocus,
           onChanged: (text) {
             setState(() {}); // Reconstruiește widget-ul părinte
           },

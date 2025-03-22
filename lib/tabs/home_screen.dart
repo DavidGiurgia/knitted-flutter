@@ -4,9 +4,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:heroicons/heroicons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/notifications_provider.dart';
+import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/notifications/notifications_section.dart';
 import 'package:zic_flutter/screens/post/create_post/create_post.dart';
 import 'package:zic_flutter/widgets/button.dart';
+import 'package:zic_flutter/widgets/post_items/post_input.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +18,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  static const String assetName = 'lib/assets/images/ZIC-logo.svg';
+  static const String blackLogo = 'lib/assets/images/Knitted-logo.svg';
+  static const String whiteLogo = 'lib/assets/images/Knitted-white-logo.svg';
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +35,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(0.5), // Înălțimea bordurii
+          child: Container(
+            color:
+                AppTheme.isDark(context)
+                    ? AppTheme.grey800
+                    : AppTheme.grey200, // Culoarea bordurii
+            height: 1.0,
+          ),
+        ),
         automaticallyImplyLeading: false,
         title: SvgPicture.asset(
-          assetName,
+          AppTheme.isDark(context) ? whiteLogo : blackLogo,
           semanticsLabel: 'ZiC Logo',
           //width: 32,
-          height: 26,
+          height: 20,
         ),
         actions: [
           CustomButton(
@@ -73,6 +86,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             size: ButtonSize.large,
           ),
         ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(userProvider);
+        },
+        child: ListView(
+          children: [
+            Column(children: [PostInput()]),
+          ],
+        ),
       ),
     );
   }

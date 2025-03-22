@@ -5,7 +5,6 @@ import 'package:zic_flutter/core/app_theme.dart';
 class MessageInput extends StatefulWidget {
   final VoidCallback _sendMessage;
   final TextEditingController _messageController;
-  final FocusNode? _textFieldFocus;
   final Function(String) onChanged;
   final VoidCallback onImagePressed;
 
@@ -17,8 +16,7 @@ class MessageInput extends StatefulWidget {
     required this.onChanged,
     required this.onImagePressed,
   }) : _sendMessage = sendMessage,
-        _messageController = messageController,
-        _textFieldFocus = textFieldFocus;
+       _messageController = messageController;
 
   @override
   State<MessageInput> createState() => _MessageInputState();
@@ -31,19 +29,28 @@ class _MessageInputState extends State<MessageInput> {
       padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.isDark(context)
-              ? AppTheme.grey800
-              : AppTheme.grey100,
+          color: Colors.transparent, // Fundal transparent
           borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color:
+                AppTheme.isDark(context)
+                    ? Colors
+                        .grey
+                        .shade900 // Bordură gri subtilă în modul dark
+                    : Colors
+                        .grey
+                        .shade200, // Bordură gri subtilă în modul light
+            width: 1.5, // Grosimea bordurii
+          ),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
                   maxLines: null,
-                  focusNode: widget._textFieldFocus,
                   controller: widget._messageController,
                   onChanged: widget.onChanged,
                   decoration: InputDecoration(
@@ -56,6 +63,7 @@ class _MessageInputState extends State<MessageInput> {
             ),
             if (widget._messageController.text.isNotEmpty)
               IconButton(
+                padding: EdgeInsets.zero,
                 icon: Container(
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
@@ -77,7 +85,7 @@ class _MessageInputState extends State<MessageInput> {
                     //color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
                   ),
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(2),
                   child: HeroIcon(
                     HeroIcons.photo,
                     color: AppTheme.primaryColor,

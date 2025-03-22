@@ -7,12 +7,12 @@ class Message {
   final bool? isAnonymous;
   final String type;
   final String? mediaUrl;
-  final String status;
   final Map<String, List<String>> reactions;
   final String? replyTo;
   final DateTime? expiresAt;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final List<String> readBy;
 
   Message({
     required this.id,
@@ -23,12 +23,12 @@ class Message {
     this.isAnonymous,
     required this.type,
     this.mediaUrl,
-    required this.status,
     required this.reactions,
     this.replyTo,
     this.expiresAt,
     required this.createdAt,
     required this.updatedAt,
+    required this.readBy,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
@@ -38,19 +38,26 @@ class Message {
       senderId: json['senderId']?.toString() ?? '',
       senderName: json['senderName']?.toString() ?? '',
       content: json['content']?.toString() ?? '',
-      isAnonymous: json['isAnonymous'] == null ? false : json['isAnonymous'] as bool,
+      isAnonymous:
+          json['isAnonymous'] == null ? false : json['isAnonymous'] as bool,
       type: json['type']?.toString() ?? 'text',
       mediaUrl: json['mediaUrl']?.toString(),
-      status: json['status']?.toString() ?? 'sent',
-      reactions: (json['reactions'] is Map<String, dynamic>)
-          ? (json['reactions'] as Map<String, dynamic>).map(
-              (key, value) => MapEntry(key, List<String>.from(value)),
-            )
-          : {},
+      readBy: (json['readBy'] is List) ? List<String>.from(json['readBy']) : [],
+      reactions:
+          (json['reactions'] is Map<String, dynamic>)
+              ? (json['reactions'] as Map<String, dynamic>).map(
+                (key, value) => MapEntry(key, List<String>.from(value)),
+              )
+              : {},
       replyTo: json['replyTo']?.toString(),
-      expiresAt: json['expiresAt'] != null ? DateTime.tryParse(json['expiresAt'].toString()) : null,
-      createdAt: DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now(),
+      expiresAt:
+          json['expiresAt'] != null
+              ? DateTime.tryParse(json['expiresAt'].toString())
+              : null,
+      createdAt:
+          DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now(),
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now(),
     );
   }
 
@@ -64,7 +71,7 @@ class Message {
       'isAnonymous': isAnonymous,
       'type': type,
       'mediaUrl': mediaUrl,
-      'status': status,
+      'readBy': readBy, 
       'reactions': reactions,
       'replyTo': replyTo,
       'expiresAt': expiresAt?.toIso8601String(),
@@ -75,6 +82,6 @@ class Message {
 
   @override
   String toString() {
-    return 'Message{id: $id, roomId: $roomId, senderId: $senderId, senderName: $senderName, content: $content, type: $type, mediaUrl: $mediaUrl, status: $status, reactions: $reactions, replyTo: $replyTo, expiresAt: $expiresAt, createdAt: $createdAt, updatedAt: $updatedAt}';
+    return 'Message{id: $id, roomId: $roomId, senderId: $senderId, senderName: $senderName, content: $content, type: $type, mediaUrl: $mediaUrl, readBy: $readBy, reactions: $reactions, replyTo: $replyTo, expiresAt: $expiresAt, createdAt: $createdAt, updatedAt: $updatedAt}';
   }
 }

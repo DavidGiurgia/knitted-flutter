@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heroicons/heroicons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 
 class CustomSwitchTile extends StatelessWidget {
@@ -8,6 +9,7 @@ class CustomSwitchTile extends StatelessWidget {
   final ValueChanged<bool> onChanged;
   final Color activeColor;
   final double radius;
+  final HeroIcon? icon;
 
   const CustomSwitchTile({
     super.key,
@@ -17,6 +19,7 @@ class CustomSwitchTile extends StatelessWidget {
     required this.onChanged,
     this.activeColor = AppTheme.primaryColor,
     this.radius = 12,
+    this.icon,
   });
 
   @override
@@ -27,9 +30,10 @@ class CustomSwitchTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.isDark(context)
-            ? const Color.fromARGB(92, 33, 33, 33)
-            : Colors.grey[50],
+        color:
+            AppTheme.isDark(context)
+                ? const Color.fromARGB(92, 33, 33, 33)
+                : Colors.grey[50],
         // border: Border.all(
         //   color: Theme.of(context).brightness == Brightness.dark
         //       ? Colors.grey.shade800
@@ -43,13 +47,12 @@ class CustomSwitchTile extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              icon ?? const SizedBox.shrink(),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
               Switch(
@@ -65,10 +68,7 @@ class CustomSwitchTile extends StatelessWidget {
               padding: const EdgeInsets.only(top: 6),
               child: Text(
                 description!,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               ),
             ),
         ],

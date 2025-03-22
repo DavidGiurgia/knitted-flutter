@@ -70,22 +70,29 @@ class MessageService {
     }
   }
 
-  ///mark message as read
-  static Future<bool> markMessageAsRead(String messageId) async {
-    final url = Uri.parse('$baseUrl/messages/$messageId/read');
+  static Future<Message?> markMessageAsRead(
+    String messageId,
+    String userId,
+  ) async {
+    final url = Uri.parse('$baseUrl/messages/$userId/$messageId/read');
     try {
       final response = await http.patch(url);
+
       if (response.statusCode == 200) {
-        return true;
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        return Message.fromJson(jsonResponse); // Returnează mesajul actualizat
+      } else if (response.statusCode == 404) {
+        print("Message not found.");
+        return null;
       } else {
         print(
-          "Failed to mark message as read. Status code: ${response.statusCode}",
+          "Failed to mark message as read. Status code: ${response.statusCode}, body: ${response.body}",
         );
-        return false;
+        return null;
       }
     } catch (e) {
       print("Error marking message as read: $e");
-      return false;
+      return null;
     }
   }
 }

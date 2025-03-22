@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
+import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/widgets/button.dart';
 
@@ -24,7 +25,6 @@ class FriendshipStatusButton extends ConsumerStatefulWidget {
 class _FriendshipStatusButtonState
     extends ConsumerState<FriendshipStatusButton> {
   bool isLoading = false;
-  
 
   Future<void> handleFriendRequest(String action) async {
     final userId = ref.watch(userProvider).value?.id;
@@ -52,6 +52,7 @@ class _FriendshipStatusButtonState
 
       setState(() => isLoading = false);
       ref.invalidate(userProvider);
+      ref.invalidate(friendsProvider);
     } catch (e) {
       ScaffoldMessenger.of(
         context,

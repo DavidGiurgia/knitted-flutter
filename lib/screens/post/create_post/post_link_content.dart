@@ -9,13 +9,13 @@ import 'package:zic_flutter/screens/post/create_post/post_data.dart';
 class PostLinkContent extends StatefulWidget {
   final VoidCallback resetPost;
   final PostData postData;
-  final bool isValid;
+  final VoidCallback validatePost;
 
   const PostLinkContent({
     super.key,
     required this.resetPost,
     required this.postData,
-    required this.isValid,
+    required this.validatePost,
   });
 
   @override
@@ -38,6 +38,8 @@ class _PostLinkContentState extends State<PostLinkContent> {
       if (!_isValidUrl) {
         _previewData = null;
       }
+
+      widget.validatePost();
     });
   }
 
@@ -96,6 +98,9 @@ class _PostLinkContentState extends State<PostLinkContent> {
           children: [
             TextField(
               controller: widget.postData.textController,
+              onChanged: (value) {
+                widget.validatePost(); // Adaugă această linie
+              },
               decoration: const InputDecoration(
                 hintText: "Add a comment...",
                 hintStyle: TextStyle(color: Colors.grey),

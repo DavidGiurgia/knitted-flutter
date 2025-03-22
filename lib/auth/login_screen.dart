@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:zic_flutter/auth/register_screen.dart';
+import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
+import 'package:zic_flutter/screens/chats/temporary_chat_room.dart';
 import 'package:zic_flutter/screens/shared/custom_toast.dart';
 import 'package:zic_flutter/tabs/tabs_layout.dart';
 import 'package:zic_flutter/widgets/button.dart';
@@ -38,19 +40,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         MaterialPageRoute(builder: (_) => const TabsLayout()),
       );
     } else {
-      CustomToast.show(context, "Invalid credentials. Please try again.");
+      CustomToast.show(
+        context,
+        "Invalid credentials. Please try again.",
+        color: Colors.red,
+      );
     }
   }
 
-  void _joinGroup() {
+  void _joinGroup() async {
     String code = _codeController.text.trim();
     if (code.length != 7) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a valid code.")),
+      CustomToast.show(
+        context,
+        "Invalid code format. Code must be 7 characters.",
+        color: Colors.red,
       );
       return;
     }
-    print("Joining group with code: $code");
+    final room = await RoomService.getRoomByCode(code);
+    if (room == null) {
+      CustomToast.show(
+        context,
+        'Sorry, there is no such room active right now!',
+      );
+      return;
+    }
+    // Curățăm input-ul după join.
+    _codeController.clear();
+
+    // Navighează către camera respectivă.
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TemporaryChatRoomSection(room: room), // aici adauga un pas intermediar de setare a numelui
+      ),
+    );
   }
 
   @override
@@ -62,9 +87,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (userAsync.hasError) {
       // Afiseaza un mesaj de eroare daca autentificarea a esuat
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${userAsync.error}")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${userAsync.error}")));
       });
     }
     // Check if the user is logged in and navigate to the TabsLayout

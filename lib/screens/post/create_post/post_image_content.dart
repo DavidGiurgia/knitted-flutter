@@ -9,13 +9,13 @@ import 'package:zic_flutter/screens/shared/custom_toast.dart';
 class PostImageContent extends StatefulWidget {
   final VoidCallback resetPost;
   final PostData postData;
-  final bool isValid;
+  final VoidCallback validatePost;
 
   const PostImageContent({
     super.key,
     required this.resetPost,
     required this.postData,
-    required this.isValid,
+    required this.validatePost,
   });
 
   @override
@@ -29,6 +29,7 @@ class _PostImageContentState extends State<PostImageContent> {
   @override
   void initState() {
     super.initState();
+    widget.postData.textController.addListener(_validateForm);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       getImages();
     });
@@ -41,7 +42,8 @@ class _PostImageContentState extends State<PostImageContent> {
       limit: 4,
     );
 
-    if (pickedFiles.isNotEmpty && widget.postData.images.length + pickedFiles.length <= 4) {
+    if (pickedFiles.isNotEmpty &&
+        widget.postData.images.length + pickedFiles.length <= 4) {
       List<File> newImages =
           pickedFiles.map((pickedFile) => File(pickedFile.path)).toList();
 
@@ -79,6 +81,16 @@ class _PostImageContentState extends State<PostImageContent> {
   }
 
   @override
+  void dispose() {
+    widget.postData.textController.removeListener(_validateForm);
+    super.dispose();
+  }
+
+  void _validateForm() {
+    widget.validatePost();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
@@ -87,6 +99,9 @@ class _PostImageContentState extends State<PostImageContent> {
           children: [
             TextField(
               controller: widget.postData.textController,
+              onChanged: (value) {
+                widget.validatePost(); // Adaugă această linie
+              },
               decoration: const InputDecoration(
                 hintText: "Add a comment...",
                 hintStyle: TextStyle(color: Colors.grey),
@@ -129,7 +144,9 @@ class _PostImageContentState extends State<PostImageContent> {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(14),
                                     image: DecorationImage(
-                                      image: FileImage(widget.postData.images[index]),
+                                      image: FileImage(
+                                        widget.postData.images[index],
+                                      ),
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -176,7 +193,8 @@ class _PostImageContentState extends State<PostImageContent> {
                         ],
                       ),
                     ),
-                  if (widget.postData.images.isEmpty) const SizedBox(height: 16),
+                  if (widget.postData.images.isEmpty)
+                    const SizedBox(height: 16),
                   if (widget.postData.images.isEmpty)
                     GestureDetector(
                       onTap: getImages,

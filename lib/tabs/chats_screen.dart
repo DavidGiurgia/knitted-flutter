@@ -35,7 +35,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen>
   @override
   bool get wantKeepAlive => true; // Păstrează starea widgetului
 
-  void _onJoin() async {
+ void _onJoin() async {
     final userAsync = ref.watch(userProvider);
     final user = userAsync.value;
 
@@ -63,8 +63,17 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen>
       CustomToast.show(
         context,
         'Sorry, there is no such room active right now!',
+       // bgColor: Colors.red,
       );
 
+      return;
+    }
+
+    if(!room.allowJoinCode){
+      CustomToast.show(
+        context,
+        'This room is not available for joining with a code.',
+      );
       return;
     }
 
@@ -93,6 +102,9 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen>
     );
   }
 
+       
+            
+            
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,

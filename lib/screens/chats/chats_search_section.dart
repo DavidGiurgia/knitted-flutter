@@ -12,7 +12,7 @@ import 'package:zic_flutter/core/providers/search_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/screens/chats/chats_search_result_tile.dart';
-import 'package:zic_flutter/screens/shared/find_friends_section.dart';
+import 'package:zic_flutter/screens/friends/find_friends_section.dart';
 import 'package:zic_flutter/widgets/search_input.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 

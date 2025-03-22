@@ -9,7 +9,7 @@ import 'package:zic_flutter/core/providers/rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/screens/shared/edit_profile.dart';
-import 'package:zic_flutter/screens/shared/friends_section.dart';
+import 'package:zic_flutter/screens/friends/friends_section.dart';
 import 'package:zic_flutter/tabs/search_screen.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/friendship_status_button.dart';

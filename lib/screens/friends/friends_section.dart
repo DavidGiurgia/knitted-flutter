@@ -4,7 +4,7 @@ import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
 import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
-import 'package:zic_flutter/screens/shared/find_friends_section.dart';
+import 'package:zic_flutter/screens/friends/find_friends_section.dart';
 import 'package:zic_flutter/screens/shared/user_profile_screen.dart';
 import 'package:zic_flutter/widgets/friendship_status_button.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';

@@ -231,7 +231,7 @@ class ChatListTile extends ConsumerWidget {
     }
 
     if (lastMessage.senderId == currentUser.id) {
-      return "${lastMessage.content} • ${lastMessage.status}";
+      return lastMessage.content;// • ${lastMessage.status}";
     } else if (room.type == "private") {
       return "${lastMessage.content} • ${multiFormatDateString(lastMessage.createdAt, short: true)}";
     } else {

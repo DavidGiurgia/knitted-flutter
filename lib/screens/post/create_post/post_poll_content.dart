@@ -6,13 +6,13 @@ import 'package:zic_flutter/screens/post/create_post/post_data.dart';
 class PostPollContent extends StatefulWidget {
   final VoidCallback resetPost;
   final PostData postData;
-  final bool isValid;
+  final VoidCallback validatePost;
 
   const PostPollContent({
     super.key,
     required this.resetPost,
     required this.postData,
-    required this.isValid,
+    required this.validatePost,
   });
 
   @override
@@ -22,6 +22,19 @@ class PostPollContent extends StatefulWidget {
 class _PostPollContentState extends State<PostPollContent> {
   final _formKey = GlobalKey<FormState>(); // Add a GlobalKey for the form
 
+  @override
+  void initState() {
+    super.initState();
+    widget.postData.textController.addListener(_validateForm);
+    for (var controller in widget.postData.optionControllers) {
+      controller.addListener(_validateForm);
+    }
+  }
+
+  void _validateForm() {
+    widget.validatePost();
+  }
+
   void addOption() {
     if (widget.postData.optionControllers.length < 5) {
       // Use PostData
@@ -30,6 +43,8 @@ class _PostPollContentState extends State<PostPollContent> {
           TextEditingController(),
         ); // Use PostData
       });
+
+      widget.validatePost();
     }
   }
 
@@ -39,6 +54,8 @@ class _PostPollContentState extends State<PostPollContent> {
       setState(() {
         widget.postData.optionControllers.removeAt(index); // Use PostData
       });
+
+      widget.validatePost();
     }
   }
 
@@ -71,6 +88,15 @@ class _PostPollContentState extends State<PostPollContent> {
   }
 
   @override
+  void dispose() {
+    widget.postData.textController.removeListener(_validateForm);
+    for (var controller in widget.postData.optionControllers) {
+      controller.removeListener(_validateForm);
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
@@ -83,6 +109,9 @@ class _PostPollContentState extends State<PostPollContent> {
             children: [
               TextFormField(
                 controller: widget.postData.textController,
+                onChanged: (value) {
+                widget.validatePost(); // Adaugă această linie
+              },
                 decoration: const InputDecoration(
                   hintText: "Ask a question...",
                   hintStyle: TextStyle(color: Colors.grey, fontSize: 20),

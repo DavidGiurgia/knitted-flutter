@@ -11,9 +11,11 @@ class PostData {
   ];
   final List<File> images = [];
   String selectedOption = 'text';
+  String commentControl = 'everyone'; // Valoarea implicită
+  String selectedAudience = 'friends';
+  List<String> audienceList = [];
 
   void reset() {
-    //textController.clear();
     urlController.clear();
     for (final controller in optionControllers) {
       controller.text = "";
