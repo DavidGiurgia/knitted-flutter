@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heroicons/heroicons.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
 import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
@@ -9,13 +9,9 @@ import 'package:zic_flutter/core/providers/rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_rooms_list.dart';
 import 'package:zic_flutter/screens/chats/chats_search_section.dart';
-import 'package:zic_flutter/screens/chats/new_group_chat_section.dart';
 import 'package:zic_flutter/screens/chats/new_message_section.dart';
-import 'package:zic_flutter/screens/chats/new_temporary_chat_section.dart';
 import 'package:zic_flutter/screens/chats/temporary_chat_room.dart';
 import 'package:zic_flutter/screens/shared/custom_toast.dart';
-import 'package:zic_flutter/widgets/bottom_sheet.dart';
-import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/join_room_input.dart';
 import 'package:zic_flutter/widgets/search_input.dart';
 
@@ -35,7 +31,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen>
   @override
   bool get wantKeepAlive => true; // Păstrează starea widgetului
 
- void _onJoin() async {
+  void _onJoin() async {
     final userAsync = ref.watch(userProvider);
     final user = userAsync.value;
 
@@ -53,7 +49,6 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen>
     }
 
     final rooms = roomsAsync.value ?? [];
-    
 
     final code = _codeController.text.trim();
     if (code.isEmpty) return;
@@ -63,13 +58,13 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen>
       CustomToast.show(
         context,
         'Sorry, there is no such room active right now!',
-       // bgColor: Colors.red,
+        // bgColor: Colors.red,
       );
 
       return;
     }
 
-    if(!room.allowJoinCode){
+    if (!room.allowJoinCode) {
       CustomToast.show(
         context,
         'This room is not available for joining with a code.',
@@ -78,16 +73,11 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen>
     }
 
     // Verificăm dacă camera există deja în listă.
-    final existingIndex = rooms.indexWhere(
-      (r) => r.id == room.id,
-    );
+    final existingIndex = rooms.indexWhere((r) => r.id == room.id);
     if (existingIndex == -1) {
       ref.read(roomsProvider.notifier).addRoom(room);
 
-      await RoomParticipantsService.addParticipantToRoom(
-        room.id,
-        user.id,
-      );
+      await RoomParticipantsService.addParticipantToRoom(room.id, user.id);
     }
 
     // Curățăm input-ul după join.
@@ -102,105 +92,35 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen>
     );
   }
 
-       
-            
-            
-  void _showBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return CustomBottomSheet(
-          title: "Start a New Chat",
-          options: [
-            SheetOption(
-              title: "Temporary Room",
-              subtitle:
-                  "Start a short-lived chat with no saved messages and anonymous participation.",
-              icon: HeroIcons.hashtag,
-              iconColor: AppTheme.foregroundColor(context),
-              iconStyle: HeroIconStyle.micro,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NewTemporaryChatSection(),
-                  ),
-                );
-              },
-            ),
-            SheetOption(
-              title: "Group chat",
-              subtitle: "Create a group chat with your friends.",
-              icon: HeroIcons.users,
-              iconColor: AppTheme.foregroundColor(context),
-              iconStyle: HeroIconStyle.micro,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NewGroupChatSection(),
-                  ),
-                );
-              },
-            ),
-            SheetOption(
-              title: "New message",
-              subtitle: "Stay connected with your friends.",
-              icon: HeroIcons.chatBubbleLeftRight,
-              iconColor: AppTheme.foregroundColor(context),
-              iconStyle: HeroIconStyle.solid,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NewMessageSection(),
-                  ),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         title: const Text('Chats'),
         actions: [
-          CustomButton(
+          IconButton(
             onPressed: () {
               setState(() {
                 _isCodeInputVisible = !_isCodeInputVisible;
               });
             },
-            isIconOnly: true,
-            heroIcon: HeroIcons.hashtag,
-            iconStyle: HeroIconStyle.micro,
-            type: ButtonType.light,
-            size: ButtonSize.large,
-            bgColor:
+            icon: Icon(TablerIcons.hash),
+            color:
                 _isCodeInputVisible
                     ? AppTheme.primaryColor
                     : null, // Schimbă culoarea
           ),
-          CustomButton(
-            onPressed: () => _showBottomSheet(context),
-            isIconOnly: true,
-            heroIcon: HeroIcons.pencilSquare,
-            iconStyle: HeroIconStyle.mini,
-            type: ButtonType.light,
-            size: ButtonSize.large,
+          IconButton(
+            onPressed:
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NewMessageSection(),
+                  ),
+                ),
+            icon: const Icon(TablerIcons.message_plus),
           ),
         ],
       ),

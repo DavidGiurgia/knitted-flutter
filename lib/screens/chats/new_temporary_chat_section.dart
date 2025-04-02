@@ -21,9 +21,8 @@ class NewTemporaryChatSection extends ConsumerStatefulWidget {
 class _NewTemporaryChatSectionState
     extends ConsumerState<NewTemporaryChatSection> {
   bool allowJoinCode = true;
-  int chatDuration = 3; // Default: 3 days
   final TextEditingController topicController = TextEditingController(
-    text: "",
+    text: "New temporary chat",
   ); // add default
 
   bool isLoading = false;
@@ -57,7 +56,7 @@ class _NewTemporaryChatSectionState
 
       final String joinCode = await generateUniqueJoinCode();
       final DateTime expiresAt = DateTime.now().add(
-        Duration(days: chatDuration),
+        Duration(hours: 24),
       );
 
       final creatorId = user.id;
@@ -144,6 +143,11 @@ class _NewTemporaryChatSectionState
                               : Colors.grey.shade700,
                     ),
                   ),
+                  const SizedBox(height: 16),
+                   Text(
+                    "Ends in 24 h",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
                 ],
               ),
             ),
@@ -162,43 +166,7 @@ class _NewTemporaryChatSectionState
             ),
             const SizedBox(height: 20),
 
-            // Chat duration
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color:
-                    AppTheme.isDark(context)
-                        ? Colors.grey.shade900
-                        : Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Chat Duration",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  Slider(
-                    value: chatDuration.toDouble(),
-                    min: 1,
-                    max: 7,
-                    divisions: 6,
-                    label: "$chatDuration days",
-                    onChanged:
-                        (value) => setState(() => chatDuration = value.toInt()),
-                    activeColor: AppTheme.primaryColor,
-                    inactiveColor: Colors.transparent,
-                  ),
-                  Text(
-                    "This chat will expire in $chatDuration days. You can adjust the duration later if needed.",
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
+           
 
             // Topic & Description
             TextField(

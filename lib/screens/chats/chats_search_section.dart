@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heroicons/heroicons.dart';
 
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
@@ -50,9 +49,6 @@ class _ChatsSearchSectionState extends ConsumerState<ChatsSearchSection> {
           controller: _searchController,
           onChanged: _onSearchChanged,
         ),
-        actions: [
-          HeroIcon(HeroIcons.paperAirplane, style: HeroIconStyle.micro),
-        ],
       ),
       body: Expanded(
         child: Consumer(

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:zic_flutter/core/models/link.dart';
@@ -37,19 +36,54 @@ class PostService {
     }
   }
 
-  // Obține un post
-  Future<Post> getPost(String id) async {
-    final url = Uri.parse('$baseUrl/$id');
+  Future<List<Post>> getUserPosts(String userId) async {
+    final url = Uri.parse('$baseUrl/$userId');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return _postFromJson(data);
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((postJson) => _postFromJson(postJson)).toList();
+      } else if (response.statusCode == 404) {
+        return [];
       } else {
-        throw Exception('Failed to load post: ${response.statusCode}');
+        throw Exception('Failed to load user posts: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Failed to load post: $e');
+      throw Exception('Failed to load user posts: $e');
+    }
+  }
+
+  Future<List<Post>> getCreatorPosts(String userId) async {
+    final url = Uri.parse('$baseUrl/creator/$userId');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((postJson) => _postFromJson(postJson)).toList();
+      } else if (response.statusCode == 404) {
+        return [];
+      } else {
+        throw Exception('Failed to load user posts: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to load user posts: $e');
+    }
+  }
+
+  Future<List<Post>> getPostReplies(String postId) async {
+    final url = Uri.parse('$baseUrl/replies/$postId');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((postJson) => _postFromJson(postJson)).toList();
+      } else if (response.statusCode == 404) {
+        return [];
+      } else {
+        throw Exception('Failed to load user posts: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to load user posts: $e');
     }
   }
 

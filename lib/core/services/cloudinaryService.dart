@@ -12,6 +12,7 @@ class CloudinaryService {
   static Future<Map<String, dynamic>?> uploadFile(
     File file, {
     String? resourceType,
+    bool isVideo = false,
   }) async {
     try {
       final uri = Uri.parse(cloudinaryUrl);
@@ -23,9 +24,9 @@ class CloudinaryService {
           (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
       var signature = generateUploadSignature(timestamp, apiSecret);
 
-      var url = Uri.parse(
-        "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
-      );
+      var uploadUrl =
+          "https://api.cloudinary.com/v1_1/$cloudName/${isVideo ? 'video' : 'image'}/upload";
+      var url = Uri.parse(uploadUrl);
       var request = http.MultipartRequest("POST", url);
 
       request.fields['timestamp'] = timestamp;

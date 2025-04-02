@@ -1,7 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heroicons/heroicons.dart';
 import 'package:zic_flutter/core/api/post_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/link.dart';
@@ -9,19 +9,29 @@ import 'package:zic_flutter/core/models/media_post.dart';
 import 'package:zic_flutter/core/models/poll.dart';
 import 'package:zic_flutter/core/models/post.dart';
 import 'package:zic_flutter/core/providers/friends_provider.dart';
+import 'package:zic_flutter/core/providers/post_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
-import 'package:zic_flutter/screens/post/create_post/create_post_options_modal.dart';
-import 'package:zic_flutter/screens/post/create_post/post_content_area.dart';
+import 'package:zic_flutter/core/services/cloudinaryService.dart';
+import 'package:zic_flutter/screens/post/audience_selector.dart';
+import 'package:zic_flutter/screens/post/create_post/action_buttons.dart';
 import 'package:zic_flutter/screens/post/create_post/post_data.dart';
-import 'package:zic_flutter/screens/post/create_post/post_settings.dart';
+import 'package:zic_flutter/screens/post/create_post/post_input_area.dart';
 import 'package:zic_flutter/screens/shared/custom_toast.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:validators/validators.dart';
+import 'package:zic_flutter/widgets/post_items/post_item.dart';
 import 'package:zic_flutter/widgets/switch.dart';
 
 class CreatePost extends ConsumerStatefulWidget {
   final String initialOption;
-  const CreatePost({super.key, this.initialOption = "text"});
+  final bool isReply; // New parameter
+  final Post? replyTo;
+  const CreatePost({
+    super.key,
+    this.initialOption = "text",
+    this.isReply = false,
+    this.replyTo,
+  });
 
   @override
   ConsumerState<CreatePost> createState() => _CreatePostState();
@@ -32,6 +42,8 @@ class _CreatePostState extends ConsumerState<CreatePost> {
   bool showFloatingButton = true;
   bool anonymousPost = false;
   bool isValid = false;
+  String? validationMessage;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -69,38 +81,66 @@ class _CreatePostState extends ConsumerState<CreatePost> {
   }
 
   bool _validatePostData(PostData postData) {
-    if (postData.textController.text.isEmpty) {
-      return false;
-    }
-
     switch (postData.selectedOption) {
+      case 'text':
+        if (postData.textController.text.isEmpty) {
+          validationMessage = "Post content is required.";
+          return false;
+        }
+        break;
       case 'link':
-        return isURL(postData.urlController.text) &&
-            postData.urlController.text.isNotEmpty;
+        if (!isURL(postData.urlController.text)) {
+          validationMessage = "Please enter a valid URL.";
+          return false;
+        }
+        if (postData.urlController.text.isEmpty) {
+          validationMessage = "URL is required.";
+          return false;
+        }
+        break;
       case 'poll':
-        return postData.optionControllers.every(
-          (controller) => controller.text.isNotEmpty,
-        );
+        if (postData.textController.text.isEmpty) {
+          validationMessage = "Poll question is required.";
+          return false;
+        }
+        if (postData.optionControllers.any(
+          (controller) => controller.text.isEmpty,
+        )) {
+          validationMessage = "All poll options must be filled.";
+          return false;
+        }
+        break;
       case 'media':
-        return postData.images.isNotEmpty;
+        if (postData.images.isEmpty) {
+          validationMessage = "Please select at least one image.";
+          return false;
+        }
+        break;
       default:
-        return true; // Pentru 'text' sau alte opțiuni, doar textul este necesar
+        validationMessage = null;
+        return true;
     }
+    validationMessage = null;
+    return true;
   }
 
-  void _createPost() {
+  Future<void> _createPost() async {
     _validatePost();
     if (!isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all required fields.')),
+      CustomToast.show(
+        context,
+        validationMessage ?? 'Please fill in all required fields.',
       );
       return;
     }
+
+    setState(() {
+      isLoading = true;
+    });
+
     final user = ref.read(userProvider).value;
     if (user == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please log in.')));
+      CustomToast.show(context, 'Please login to create a post');
       return;
     }
     PostService postService = PostService();
@@ -116,18 +156,26 @@ class _CreatePostState extends ConsumerState<CreatePost> {
     switch (_postData.selectedOption) {
       case 'link':
         newPost = LinkPost(
+          id: '',
           userId: user.id,
+          isReply: widget.isReply,
+          replyTo: widget.replyTo?.id,
           content: _postData.textController.text,
           type: PostType.link,
           url: _postData.urlController.text,
           anonymousPost: anonymousPost,
           audience: _postData.audienceList,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           mentions: [],
         );
         break;
       case 'poll':
         newPost = PollPost(
+          id: '',
           userId: user.id,
+          isReply: widget.isReply,
+          replyTo: widget.replyTo?.id,
           content: _postData.textController.text,
           type: PostType.poll,
           options:
@@ -138,62 +186,97 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                   .toList(),
           anonymousPost: anonymousPost,
           audience: _postData.audienceList,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           mentions: [],
         );
         break;
       case 'media':
+        List<MediaItem> mediaItems = [];
+        for (File file in _postData.images) {
+          var response = await CloudinaryService.uploadFile(file);
+          if (response != null) {
+            mediaItems.add(
+              MediaItem(
+                url: response['fileUrl'],
+                publicId: response['publicId'],
+              ),
+            );
+          } else {
+            CustomToast.show(context, 'Failed to upload media file.');
+            return;
+          }
+        }
         newPost = MediaPost(
+          id: '',
           userId: user.id,
+          isReply: widget.isReply,
+          replyTo: widget.replyTo?.id,
           content: _postData.textController.text,
           type: PostType.media,
-          mediaUrls: _postData.images.map((file) => file.path).toList(),
+          media: mediaItems,
           anonymousPost: anonymousPost,
           audience: _postData.audienceList,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           mentions: [],
         );
         break;
       default:
         newPost = Post(
+          id: '',
           userId: user.id,
+          isReply: widget.isReply,
+          replyTo: widget.replyTo?.id,
           content: _postData.textController.text,
           type: PostType.text,
           anonymousPost: anonymousPost,
           audience: _postData.audienceList,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           mentions: [],
         );
     }
 
-    // Trimiterea postării
-    postService
-        .createPost(newPost)
-        .then((_) {
-          resetPost();
-          if (mounted) {
-            Navigator.pop(context);
-          }
-        })
-        .catchError((error) {
-          if (mounted) {
-            debugPrint('Error creating post: $error');
-            CustomToast.show(context, 'Error creating post: $error');
-          }
-        });
+    try {
+      postService.createPost(newPost);
+      resetPost();
+      if (mounted) {
+        ref.invalidate(userPostsProvider);
+        Navigator.pop(context);
+      }
+    } catch (error) {
+      if (mounted) {
+        CustomToast.show(context, 'Error creating post: $error');
+      }
+    } finally {
+      setState(() {
+        isLoading = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     final user = ref.read(userProvider).value;
     if (user == null) {
       return Center(child: Text("Please login to create a post"));
     }
+    if (widget.isReply && widget.replyTo == null) {
+      return Center(child: Text("Please select a post to reply to"));
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text("New post"),
+        title: Text(widget.isReply ? "Reply" : "New post"),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: CustomButton(
-              onPressed: isValid ? _createPost : () {},
+              onPressed: _createPost,
               text: "Post",
               bgColor:
                   isValid
@@ -202,139 +285,61 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                       ? AppTheme.grey800
                       : AppTheme.grey200,
               size: ButtonSize.small,
-              isLoading: false,
+              isLoading: isLoading,
             ),
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Allow join code
-          CustomSwitchTile(
-            title: "Post anonymously",
-            value: anonymousPost,
-            onChanged: (value) => setState(() => anonymousPost = value),
-            radius: 0,
-          ),
-          InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) =>
-                          PostSettings(postData: _postData, user: user),
-                ),
-              );
-              setState(() {}); // aici incerc sa actualizez
-            },
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-              child: Row(
+          Container(
+            margin: EdgeInsets.only(bottom: widget.isReply ? 50.0 : 100.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 58, // Dimensiune uniformă
-                    height: 58,
-                    child:
-                        anonymousPost
-                            ? Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color:
-                                      AppTheme.isDark(context)
-                                          ? AppTheme.grey800
-                                          : AppTheme.grey100,
-                                ),
-                              ),
-                              child: CircleAvatar(
-                                radius: 29,
-                                backgroundColor: AppTheme.backgroundColor(
-                                  context,
-                                ),
-                                child: HeroIcon(
-                                  HeroIcons.user,
-                                  style: HeroIconStyle.micro,
-                                  color: AppTheme.foregroundColor(context),
-                                  size: 45,
-                                ),
-                              ),
-                            )
-                            : AdvancedAvatar(
-                              size: 58,
-                              image: NetworkImage(user.avatarUrl),
-                              autoTextSize: true,
-                              name: user.fullname,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    AppTheme.isDark(context)
-                                        ? AppTheme.grey200
-                                        : AppTheme.grey800,
-                              ),
-                              decoration: BoxDecoration(
-                                color:
-                                    AppTheme.isDark(context)
-                                        ? AppTheme.grey800
-                                        : AppTheme.grey200,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        anonymousPost ? "Anonymous" : user.fullname,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        _postData.selectedAudience == "friends"
-                            ? "To your friends"
-                            : "To some of your friends",
-                      ),
-                    ],
+                  if (!widget.isReply || widget.replyTo?.anonymousPost == true)
+                    CustomSwitchTile(
+                      title: "${widget.isReply ? "Reply" : "Post"} anonymously",
+                      value: anonymousPost,
+                      onChanged:
+                          (value) => setState(() => anonymousPost = value),
+                      radius: 0,
+                    ),
+
+                  if (widget.isReply && widget.replyTo != null)
+                    PostItem(post: widget.replyTo!, readonly: true),
+
+                  PostInputArea(
+                    postData: _postData,
+                    anonymousPost: anonymousPost,
+                    validatePost: _validatePost,
+                    isReply: widget.isReply,
+                    resetPost: resetPost,
                   ),
                 ],
               ),
             ),
           ),
-          Expanded(
-            child: PostContentArea(
-              postData: _postData, // Pass the PostData instance
-              resetPost: resetPost,
-              validatePost: _validatePost,
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Audience button
+                if (!widget.isReply)
+                  AudienceSelector(postData: _postData, user: user),
+
+                // Action buttons
+                ActionButtons(
+                  postData: _postData,
+                  updateSelectedOption: updateSelectedOption,
+                ),
+              ],
             ),
           ),
         ],
       ),
-      floatingActionButton:
-          showFloatingButton
-              ? FloatingActionButton(
-                onPressed: () {
-                  _showModal(context); // Deschide modalul
-                },
-                foregroundColor: AppTheme.foregroundColor(context),
-                backgroundColor: AppTheme.backgroundColor(context),
-                elevation: 0, // Elimină elevația implicită
-                highlightElevation: 0, // Elimină elevația la apăsare
-                child: const Icon(Icons.add_rounded, size: 32),
-              )
-              : null,
-    );
-  }
-
-  void _showModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return CreatePostModal(updateSelectedOption: updateSelectedOption);
-      },
     );
   }
 }

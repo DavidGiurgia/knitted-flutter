@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
 import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/app_theme.dart';
@@ -226,9 +227,9 @@ class _FriendshipStatusButtonState
             widget.isCompact
                 ? null
                 : isFriend
-                ? Icons.how_to_reg_rounded
+                ? TablerIcons.user_check
                 : (!hasIncomingRequest && !hasSentRequest && !isBlocked)
-                ? Icons.person_add
+                ? TablerIcons.user_plus
                 : null,
         bgColor:
             isFriend || isBlocked

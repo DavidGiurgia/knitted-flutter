@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heroicons/heroicons.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
@@ -100,7 +100,6 @@ class ChatListTile extends ConsumerWidget {
         }
       },
     );
-
   }
 
   String _getRoomTitle(List<User> otherParticipants) {
@@ -182,14 +181,14 @@ class ChatListTile extends ConsumerWidget {
   Widget _buildTrailingWidget(BuildContext context, int unreadCount) {
     return (room.type == "temporary")
         ? _buildCountdown(room.expiresAt!)
-        : (unreadCount > 0)
-        ? Badge(
-          label: Text(
-            unreadCount.toString(),
-            style: TextStyle(color: AppTheme.backgroundColor(context)),
-          ),
-          backgroundColor: AppTheme.primaryColor,
-        )
+        // : (unreadCount > 0)
+        // ? Badge(
+        //   label: Text(
+        //     unreadCount.toString(),
+        //     style: TextStyle(color: AppTheme.backgroundColor(context)),
+        //   ),
+        //   backgroundColor: AppTheme.primaryColor,
+        // )
         : SizedBox();
   }
 
@@ -205,20 +204,21 @@ class ChatListTile extends ConsumerWidget {
     String timeText;
     Color textColor = Colors.grey;
 
-    if (difference.inDays > 1) {
-      timeText = "${difference.inDays} d";
-    } else if (difference.inHours >= 1) {
-      timeText = "${difference.inHours} h";
-      textColor = AppTheme.primaryColor;
+    if (difference.inHours >= 1) {
+      timeText =
+          "${difference.inHours} h";
     } else if (difference.inMinutes >= 1) {
       timeText = "${difference.inMinutes} m";
       textColor = Colors.red;
-    } else {
-      timeText = "Expiring soon!";
+    } else if (difference.inSeconds >= 0) {
+      timeText = "Ending soon!";
       textColor = Colors.red.shade700;
+    } else {
+      timeText = "Ended";
+      textColor = Colors.grey;
     }
 
-    return Text(timeText, style: TextStyle(fontSize: 18, color: textColor));
+    return Text(timeText, style: TextStyle(fontSize: 16, color: textColor));
   }
 
   String _buildLastMessageText(
@@ -231,7 +231,7 @@ class ChatListTile extends ConsumerWidget {
     }
 
     if (lastMessage.senderId == currentUser.id) {
-      return lastMessage.content;// • ${lastMessage.status}";
+      return lastMessage.content; // • ${lastMessage.status}";
     } else if (room.type == "private") {
       return "${lastMessage.content} • ${multiFormatDateString(lastMessage.createdAt, short: true)}";
     } else {
@@ -262,9 +262,8 @@ class ChatListTile extends ConsumerWidget {
         radius: 25,
         backgroundColor:
             AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey100,
-        child: HeroIcon(
-          HeroIcons.hashtag,
-          style: HeroIconStyle.micro,
+        child: Icon(
+          TablerIcons.hash,
           size: 30,
           color: AppTheme.primaryColor,
         ),
@@ -274,10 +273,9 @@ class ChatListTile extends ConsumerWidget {
         radius: 25,
         backgroundColor:
             AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey100,
-        child: HeroIcon(
-          HeroIcons.users,
-          style: HeroIconStyle.micro,
-          size: 30,
+        child: Icon(
+          TablerIcons.users,
+          size: 26,
           color: AppTheme.isDark(context) ? AppTheme.grey200 : AppTheme.grey800,
         ),
       );

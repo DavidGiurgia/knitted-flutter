@@ -9,16 +9,17 @@ import 'package:zic_flutter/core/app_theme.dart';
 class ImageCropperUtil {
   static Future<File?> cropImage({
     required XFile imageFile,
-     double rX = 1,
-     double rY = 1,
-     bool lockAspectRatio = true,
-     CropStyle cropStyle = CropStyle.rectangle,
+    double rX = 1,
+    double rY = 1,
+    bool lockAspectRatio = true,
+    CropStyle cropStyle = CropStyle.rectangle,
     required BuildContext context,
   }) async {
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: imageFile.path,
-      aspectRatio:
-           CropAspectRatio(ratioX: rX, ratioY: rY),
+      aspectRatio: CropAspectRatio(ratioX: rX, ratioY: rY),
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 100,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Crop',
@@ -27,6 +28,11 @@ class ImageCropperUtil {
           lockAspectRatio: lockAspectRatio,
           cropStyle: cropStyle, //else default
           initAspectRatio: CropAspectRatioPreset.original,
+          aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio4x3,
+            ],
         ),
         IOSUiSettings(
           title: 'Crop',
@@ -44,9 +50,9 @@ class ImageCropperUtil {
 
   static Future<File?> pickAndCropImage({
     double rX = 1,
-     double rY = 1,
-     bool lockAspectRatio = true,
-     CropStyle cropStyle = CropStyle.rectangle,
+    double rY = 1,
+    bool lockAspectRatio = true,
+    CropStyle cropStyle = CropStyle.rectangle,
     required BuildContext context,
   }) async {
     final ImagePicker picker = ImagePicker();
@@ -60,7 +66,7 @@ class ImageCropperUtil {
         rX: rX,
         rY: rY,
         lockAspectRatio: lockAspectRatio,
-        cropStyle: cropStyle, 
+        cropStyle: cropStyle,
         context: context,
       );
     }

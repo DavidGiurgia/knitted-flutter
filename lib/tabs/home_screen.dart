@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:heroicons/heroicons.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/notifications_provider.dart';
+import 'package:zic_flutter/core/providers/post_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
-import 'package:zic_flutter/screens/notifications/notifications_section.dart';
-import 'package:zic_flutter/screens/post/create_post/create_post.dart';
-import 'package:zic_flutter/widgets/button.dart';
+import 'package:zic_flutter/screens/notifications/activity_section.dart';
+import 'package:zic_flutter/tabs/chats_screen.dart';
+import 'package:zic_flutter/widgets/post_items/feed_posts_list.dart';
 import 'package:zic_flutter/widgets/post_items/post_input.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -23,6 +24,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.read(userProvider).value;
+    if (user == null) return SizedBox.shrink();
+
     final notificationsAsync = ref.watch(notificationsProvider);
 
     bool unreadNotifications = notificationsAsync.when(
@@ -35,6 +39,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        scrolledUnderElevation: 0.0,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(0.5), // Înălțimea bordurii
           child: Container(
@@ -48,53 +53,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         automaticallyImplyLeading: false,
         title: SvgPicture.asset(
           AppTheme.isDark(context) ? whiteLogo : blackLogo,
-          semanticsLabel: 'ZiC Logo',
+          semanticsLabel: 'App Logo',
           //width: 32,
           height: 20,
         ),
         actions: [
-          CustomButton(
+          IconButton(
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreatePost()),
+                MaterialPageRoute(builder: (context) => ActivityScreen()),
               );
             },
-            isIconOnly: true,
-            heroIcon: HeroIcons.plus,
-            type: ButtonType.light,
-            size: ButtonSize.large,
+            icon: Icon(unreadNotifications ? TablerIcons.heart_filled : TablerIcons.heart),
           ),
-          CustomButton(
-            onPressed: () async {
+          IconButton(
+            onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => NotificationsSection()),
+                MaterialPageRoute(builder: (context) => ChatsScreen()),
               );
             },
-            isIconOnly: true,
-            heroIcon:
-                unreadNotifications ? HeroIcons.bellAlert : HeroIcons.bell,
-            iconStyle:
-                unreadNotifications
-                    ? HeroIconStyle.mini
-                    : HeroIconStyle.outline,
-            bgColor:
-                unreadNotifications
-                    ? AppTheme.primaryColor
-                    : AppTheme.foregroundColor(context),
-            size: ButtonSize.large,
+            icon: Icon(TablerIcons.send),
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(userProvider);
+          ref.invalidate(userPostsProvider);
         },
         child: ListView(
-          children: [
-            Column(children: [PostInput()]),
-          ],
+          children: [PostInput(), FeedPostsList(userId: user.id)],
         ),
       ),
     );

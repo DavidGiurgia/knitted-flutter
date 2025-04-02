@@ -63,7 +63,7 @@ class _FriendsSectionState extends ConsumerState<FriendsSection>
             if (showMutualTab)
               Tab(text: "${mutualFriendsAsync.value?.length ?? 0} mutual"),
             Tab(text: "${friendsAsync.value?.length ?? 0} friends"),
-            Tab(text: "${suggestedUsersAsync.value?.length ?? 0} Suggested"),
+            Tab(text: "Suggested"),
           ],
         ),
       ),

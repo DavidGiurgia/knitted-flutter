@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
-import 'package:zic_flutter/tabs/chats_screen.dart';
-import 'package:zic_flutter/tabs/groups_screen.dart';
+import 'package:zic_flutter/screens/post/create_post/create_post.dart';
+import 'package:zic_flutter/tabs/communities_screen.dart';
 import 'package:zic_flutter/tabs/home_screen.dart';
 import 'package:zic_flutter/tabs/profile_screen.dart';
 import 'package:zic_flutter/tabs/search_screen.dart';
-import 'package:heroicons/heroicons.dart';
 
 class TabsLayout extends StatefulWidget {
   const TabsLayout({super.key});
@@ -23,8 +23,7 @@ class _TabsLayoutState extends State<TabsLayout> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const SearchScreen(withLeading: false),
-    const ChatsScreen(),
-    const GroupsScreen(),
+    const CommunitiesScreen(),
     const ProfileScreen(),
   ];
 
@@ -34,21 +33,18 @@ class _TabsLayoutState extends State<TabsLayout> {
     });
   }
 
-  HeroIcon _getIcon(HeroIcons icon, int index) {
-    final Color iconColor =
-        _selectedIndex == index
-            ? AppTheme.primaryColor
-            : AppTheme.isDark(context)
-            ? AppTheme.grey100
-            : AppTheme.grey900;
-    return HeroIcon(
+  Widget _getIcon(IconData icon, int index) {
+  return Container(
+    width: 36, // Setează o lățime fixă
+    alignment: Alignment.center,
+    child: Icon(
       icon,
-      style:
-          _selectedIndex == index ? HeroIconStyle.solid : HeroIconStyle.outline,
-      color: iconColor,
+      color: _selectedIndex == index ? AppTheme.primaryColor : AppTheme.foregroundColor(context),
       size: 32,
-    );
-  }
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -61,46 +57,83 @@ class _TabsLayoutState extends State<TabsLayout> {
             border: Border(
               top: BorderSide(
                 width: 0.5,
-                color:
-                    AppTheme.isDark(context)
-                        ? Colors.grey.shade900
-                        : Colors.grey.shade100,
+                color: AppTheme.isDark(context)
+                    ? Colors.grey.shade900
+                    : Colors.grey.shade100,
               ),
             ),
           ),
-          height: 64,
+          height: 60,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Expanded(
                 child: InkWell(
                   onTap: () => _onItemTapped(0),
-                  child: Center(child: _getIcon(HeroIcons.home, 0)),
+                  child: Center(
+                    child: _getIcon(
+                      TablerIcons.home,
+                      0,
+                    ),
+                  ),
                 ),
               ),
               Expanded(
                 child: InkWell(
                   onTap: () => _onItemTapped(1),
-                  child: Center(child: _getIcon(HeroIcons.magnifyingGlass, 1)),
+                  child: Center(
+                    child: _getIcon(
+                      TablerIcons.search,
+                      1,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CreatePost()),
+                    );
+                  },
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30.0),
+                        border: Border.all(
+                          color: AppTheme.isDark(context)
+                              ? AppTheme.grey800
+                              : AppTheme.grey200,
+                        ),
+                      ),
+                      child: Icon(
+                        TablerIcons.plus,
+                        color: AppTheme.foregroundColor(context),
+                        size: 28,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               Expanded(
                 child: InkWell(
                   onTap: () => _onItemTapped(2),
                   child: Center(
-                    child: _getIcon(HeroIcons.chatBubbleLeftRight, 2),
+                    child: _getIcon(
+                      TablerIcons.users_group,
+                      2,
+                    ),
                   ),
                 ),
               ),
               Expanded(
                 child: InkWell(
                   onTap: () => _onItemTapped(3),
-                  child: Center(child: _getIcon(HeroIcons.userGroup, 3)),
-                ),
-              ),
-              Expanded(
-                child: InkWell(
-                  onTap: () => _onItemTapped(4),
                   child: Consumer(
                     builder: (context, ref, child) {
                       final userAsync = ref.watch(userProvider);
@@ -110,7 +143,7 @@ class _TabsLayoutState extends State<TabsLayout> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            if (_selectedIndex == 4)
+                            if (_selectedIndex == 3)
                               Container(
                                 width: 35,
                                 height: 35,
@@ -125,23 +158,19 @@ class _TabsLayoutState extends State<TabsLayout> {
                             AdvancedAvatar(
                               size: 32,
                               image:
-                                  avatarUrl != null
-                                      ? NetworkImage(avatarUrl)
-                                      : null,
+                                  avatarUrl != null ? NetworkImage(avatarUrl) : null,
                               autoTextSize: true,
                               name: userAsync.value?.fullname ?? "!",
                               style: TextStyle(
-                                color:
-                                    AppTheme.isDark(context)
-                                        ? Colors.white
-                                        : Colors.black,
+                                color: AppTheme.isDark(context)
+                                    ? Colors.white
+                                    : Colors.black,
                                 fontWeight: FontWeight.w600,
                               ),
                               decoration: BoxDecoration(
-                                color:
-                                    AppTheme.isDark(context)
-                                        ? AppTheme.grey800
-                                        : AppTheme.grey200,
+                                color: AppTheme.isDark(context)
+                                    ? AppTheme.grey800
+                                    : AppTheme.grey200,
                                 shape: BoxShape.circle,
                               ),
                             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:heroicons/heroicons.dart';
 
 import 'package:zic_flutter/core/api/recent_search.dart';
@@ -116,7 +117,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         automaticallyImplyLeading: widget.withLeading,
 
         title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
@@ -128,9 +129,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             child: Row(
               children: [
-                HeroIcon(
-                  HeroIcons.magnifyingGlass,
-                  style: HeroIconStyle.outline,
+                Icon(
+                  TablerIcons.search,
                   color: Colors.grey.shade500,
                   size: 18,
                 ),

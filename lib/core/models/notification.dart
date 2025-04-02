@@ -1,4 +1,10 @@
-enum NotificationType { friendRequest, friendRequestAccepted, chatInvitation }
+enum NotificationType {
+  friendRequest,
+  friendRequestAccepted,
+  chatInvitation,
+  reply,
+  mention,
+}
 
 class NotificationModel {
   final String id;
@@ -36,7 +42,9 @@ class NotificationModel {
         notificationType = NotificationType.chatInvitation;
         break;
       default:
-        notificationType = NotificationType.friendRequest; // Or handle unknown types differently
+        notificationType =
+            NotificationType
+                .friendRequest; // Or handle unknown types differently
         break;
     }
     return NotificationModel(
@@ -64,7 +72,13 @@ class NotificationModel {
       case NotificationType.chatInvitation:
         typeString = 'chat_invitation';
         break;
-      }
+      case NotificationType.reply:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NotificationType.mention:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+    }
     return {
       '_id': id, // Assuming MongoDB _id
       'senderId': senderId,

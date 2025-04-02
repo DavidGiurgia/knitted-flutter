@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heroicons/heroicons.dart';
 import 'package:intl/intl.dart';
 import 'package:zic_flutter/core/models/message.dart';
 import 'package:zic_flutter/core/app_theme.dart';
@@ -42,10 +43,143 @@ class _MessageBubbleState extends State<MessageBubble> {
     }
   }
 
+  void _showPopupMenu(BuildContext context) {   ///////se poate simplifica cu un bottom sheet                      !!!!!!! 
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final Offset offset = renderBox.localToGlobal(Offset.zero);
+    final Size size = renderBox.size;
+
+    final List<PopupMenuEntry<String>> menuItems = [];
+
+    if (widget.isCurrentUser) {
+      menuItems.addAll([
+        const PopupMenuItem(
+          value: 'details',
+          child: Row(
+            children: [
+              HeroIcon(HeroIcons.informationCircle, size: 16, color: Colors.grey), // Iconiță pentru Reply
+              SizedBox(width: 8),
+              Text('Details'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'reply',
+          child: Row(
+            children: [
+              HeroIcon(HeroIcons.arrowUturnLeft, size: 16, color: Colors.grey), // Iconiță pentru Reply
+              SizedBox(width: 8),
+              Text('Reply'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            children: [
+              HeroIcon(HeroIcons.pencil, size: 16, color: Colors.grey), // Iconiță pentru Edit
+              SizedBox(width: 8),
+              Text('Edit'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'unsend',
+          child: Row(
+            children: [
+              HeroIcon(HeroIcons.trash, size: 16, color: Colors.grey), // Iconiță pentru Unsend
+              SizedBox(width: 8),
+              Text('Unsend'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'copy',
+          child: Row(
+            children: [
+              HeroIcon(HeroIcons.documentDuplicate, size: 16, color: Colors.grey), // Iconiță pentru Copy
+              SizedBox(width: 8),
+              Text('Copy'),
+            ],
+          ),
+        ),
+      ]);
+    } else {
+      menuItems.addAll([
+        const PopupMenuItem(
+          value: 'details',
+          child: Row(
+            children: [
+              HeroIcon(HeroIcons.informationCircle, size: 16, color: Colors.grey), // Iconiță pentru Reply
+              SizedBox(width: 8),
+              Text('Details'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'reply',
+          child: Row(
+            children: [
+              HeroIcon(HeroIcons.arrowUturnLeft, size: 16, color: Colors.grey),
+              SizedBox(width: 8),
+              Text('Reply'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'copy',
+          child: Row(
+            children: [
+              HeroIcon(HeroIcons.documentDuplicate, size: 16, color: Colors.grey),
+              SizedBox(width: 8),
+              Text('Copy'),
+            ],
+          ),
+        ),
+      ]);
+    }
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        Rect.fromPoints(
+          offset,
+          offset + size.bottomRight(Offset.zero),
+        ),
+        Offset.zero & MediaQuery.of(context).size,
+      ),
+      shape: RoundedRectangleBorder( // Stilizează popup-ul
+        borderRadius: BorderRadius.circular(12),
+      ),
+      color: AppTheme.isDark(context) ? AppTheme.grey800 : Colors.white, // Fundalul popup-ului
+      items: menuItems,
+    ).then((value) {
+      if (value != null) {
+        // Handle the selected menu item
+        switch (value) {
+          case 'details':
+            // Implement details functionality
+          case 'reply':
+            // Implement reply functionality
+            break;
+          case 'edit':
+            // Implement edit functionality
+            break;
+          case 'unsend':
+            // Implement unsend functionality
+            break;
+          case 'copy':
+            // Implement copy functionality
+            break;
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: _toggleTimestamp,
+      onLongPress: () => _showPopupMenu(context), // Show popup menu on long press
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -68,21 +202,18 @@ class _MessageBubbleState extends State<MessageBubble> {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color:
-                  widget.isCurrentUser
-                      ? AppTheme.primaryColor.withValues(alpha: 0.08)
-                      : AppTheme.isDark(context)
+              color: widget.isCurrentUser
+                  ? AppTheme.primaryColor.withValues(alpha: 0.08)
+                  : AppTheme.isDark(context)
                       ? AppTheme.grey800
                       : AppTheme.grey100,
               borderRadius: BorderRadius.only(
-                topLeft:
-                    !widget.isCurrentUser && !widget.isSameSenderAsPrevious
-                        ? const Radius.circular(0)
-                        : const Radius.circular(12),
-                topRight:
-                    widget.isCurrentUser && !widget.isSameSenderAsPrevious
-                        ? const Radius.circular(0)
-                        : const Radius.circular(12),
+                topLeft: !widget.isCurrentUser && !widget.isSameSenderAsPrevious
+                    ? const Radius.circular(0)
+                    : const Radius.circular(12),
+                topRight: widget.isCurrentUser && !widget.isSameSenderAsPrevious
+                    ? const Radius.circular(0)
+                    : const Radius.circular(12),
                 bottomLeft: const Radius.circular(12),
                 bottomRight: const Radius.circular(12),
               ),
@@ -90,18 +221,18 @@ class _MessageBubbleState extends State<MessageBubble> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(widget.message.content, style: TextStyle(fontSize: 16)),
+                Text(widget.message.content, style: const TextStyle(fontSize: 16)),
+                Visibility(
+                  visible: _showTimestamp,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      DateFormat.Hm().format(widget.message.createdAt),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
+                ),
               ],
-            ),
-          ),
-          Visibility(
-            visible: _showTimestamp,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                DateFormat.Hm().format(widget.message.createdAt),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
             ),
           ),
         ],
@@ -109,3 +240,4 @@ class _MessageBubbleState extends State<MessageBubble> {
     );
   }
 }
+

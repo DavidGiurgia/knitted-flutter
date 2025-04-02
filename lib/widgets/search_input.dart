@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:heroicons/heroicons.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 
 class SearchInput extends StatefulWidget {
@@ -62,9 +62,8 @@ class _SearchInputState extends State<SearchInput> {
         ),
         child: Row(
           children: [
-            HeroIcon(
-              HeroIcons.magnifyingGlass,
-              style: HeroIconStyle.outline,
+            Icon(
+              TablerIcons.search,
               color: Colors.grey.shade500,
               size: 18,
             ),

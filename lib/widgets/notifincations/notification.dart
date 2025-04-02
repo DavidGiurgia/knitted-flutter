@@ -41,7 +41,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     await NotificationService.markNotificationAsRead(widget.notification.id);
     try {
       final senderId = widget.notification.senderId;
-      if (senderId != "zic_team") {
+      if (senderId != "knitted_team") {
         final fetchedSender = await UserService.fetchUserById(senderId);
         final room = await RoomService.getRoomById(
           widget.notification.data['chatRoomId'] ?? "",
@@ -49,10 +49,10 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
         setState(() => isRoomStilActive = room != null);
         setState(() => sender = fetchedSender);
       } else {
-        print("sender id is not an user");
+        debugPrint("sender id is not an user");
       }
     } catch (e) {
-      print("Error fetching notification metadata: $e");
+      debugPrint("Error fetching notification metadata: $e");
     } finally {
       setState(() => isLoading = false);
     }
@@ -88,6 +88,42 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     );
   }
 
+  String _getNotificationTitle() {
+    if (isLoading || sender == null) return "Loading...";
+
+    switch (widget.notification.type) {
+      case NotificationType.friendRequest:
+        return sender!.fullname;
+      case NotificationType.friendRequestAccepted:
+        return sender!.fullname;
+      case NotificationType.chatInvitation:
+        return sender!.fullname;
+      case NotificationType.reply:
+        return sender!.fullname;
+      case NotificationType.mention:
+        return sender!.fullname;
+    }
+  }
+
+  String _getNotificationSubtitle() {
+    if (isLoading) return "Loading...";
+
+    switch (widget.notification.type) {
+      case NotificationType.friendRequest:
+        return "Friend request";
+      case NotificationType.friendRequestAccepted:
+        return "You are now friends";
+      case NotificationType.chatInvitation:
+        return isRoomStilActive
+            ? "Invited you to join a chat"
+            : "Chat invitation expired";
+      case NotificationType.reply:
+        return "Replied to your message";
+      case NotificationType.mention:
+        return "Mentioned you";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider).value;
@@ -95,7 +131,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     if (user == null) {
       return SizedBox.shrink();
     }
-    final String timestamp = multiFormatDateString(
+    final String timestamp = formatTimestampCompact(
       widget.notification.createdAt,
     );
     final bool isRead = widget.notification.read;
@@ -104,20 +140,8 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
 
     Widget? actionButton;
 
-    List<TextSpan> messageSpans = [];
-
     switch (widget.notification.type) {
       case NotificationType.friendRequest:
-        messageSpans = [
-          TextSpan(
-            text: "${sender?.fullname} ",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ),
-          TextSpan(
-            text: "sent you a friend request.",
-            style: TextStyle(fontWeight: FontWeight.w400),
-          ),
-        ];
         actionButton =
             hasIncomingRequest
                 ? CustomButton(
@@ -130,45 +154,9 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
                 : null;
         break;
       case NotificationType.friendRequestAccepted:
-        messageSpans = [
-          TextSpan(
-            text: "${sender?.fullname} ",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ),
-          TextSpan(
-            text: "accepted your friend request.",
-            style: TextStyle(fontWeight: FontWeight.w400),
-          ),
-        ];
+        null;
         break;
       case NotificationType.chatInvitation:
-        messageSpans = [
-          TextSpan(
-            text: "${sender?.fullname} ",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ),
-          TextSpan(
-            text: "invited you to join a temporary chat:\n",
-            style: TextStyle(fontWeight: FontWeight.w400),
-          ),
-          TextSpan(
-            text: "# ${widget.notification.data['chatRoomTopic']}",
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: AppTheme.primaryColor.withValues(alpha: 0.8),
-            ),
-          ),
-          if (!isRoomStilActive)
-            TextSpan(
-              text: "   Expired",
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                color: Colors.grey,
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-        ];
         if (isRoomStilActive) {
           actionButton = CustomButton(
             onPressed: widget.onAction,
@@ -179,6 +167,8 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
           );
         }
         break;
+      default:
+        actionButton = null;
     }
 
     return GestureDetector(
@@ -194,14 +184,14 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
             ),
           ),
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        //margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color:
               isRead
                   ? AppTheme.backgroundColor(context)
                   : Colors.yellow.shade400.withAlpha(20),
-          borderRadius: BorderRadius.circular(12),
+          //borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,29 +221,54 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  isLoading
-                      ? Container(
-                        height: 10,
-                        width: 100,
-                        color:
-                            AppTheme.isDark(context)
-                                ? AppTheme.grey800
-                                : AppTheme.grey200,
-                      ) // Skeleton loader
-                      : RichText(
-                        text: TextSpan(
+                  if (isLoading) ...[
+                    Container(
+                      height: 10,
+                      width: 100,
+                      color:
+                          AppTheme.isDark(context)
+                              ? AppTheme.grey800
+                              : AppTheme.grey200,
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 10,
+                      width: 150,
+                      color:
+                          AppTheme.isDark(context)
+                              ? AppTheme.grey800
+                              : AppTheme.grey200,
+                    ),
+                  ] else ...[
+                    Row(
+                      children: [
+                        Text(
+                          _getNotificationTitle(),
                           style: TextStyle(
-                            color: AppTheme.foregroundColor(context),
+                            fontWeight: FontWeight.w500,
                             fontSize: 16,
-                          ), // Stilul implicit pentru RichText
-                          children: messageSpans,
+                            color: AppTheme.foregroundColor(context),
+                          ),
                         ),
+                        const SizedBox(width: 4),
+                        Text(
+                          timestamp,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: AppTheme.isDark(context) ? Colors.grey[700] : Colors.grey[400],
+                          ),
+                        ),
+                      ],
+                    ),
+                    //const SizedBox(height: 4),
+                    Text(
+                      _getNotificationSubtitle(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppTheme.isDark(context) ? Colors.grey[700] : Colors.grey[400],
                       ),
-                  SizedBox(height: 4),
-                  Text(
-                    timestamp,
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-                  ),
+                    ),
+                  ],
                 ],
               ),
             ),

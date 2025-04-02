@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heroicons/heroicons.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/user.dart';
@@ -8,6 +8,7 @@ import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/chats/chat_room.dart';
 import 'package:zic_flutter/screens/chats/new_group_chat_section.dart';
+import 'package:zic_flutter/screens/chats/new_temporary_chat_section.dart';
 import 'package:zic_flutter/widgets/search_input.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';
 
@@ -85,16 +86,16 @@ class _NewMessageSectionState extends ConsumerState<NewMessageSection> {
           children: [
             GestureDetector(
               onTap:
-                  () => Navigator.push(
+                  () => Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const NewGroupChatSection(),
+                      builder: (context) => const NewTemporaryChatSection(),
                     ),
                   ),
               child: Container(
                 margin: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 10,
+                  vertical: 6,
                 ),
                 padding: const EdgeInsets.symmetric(
                   vertical: 14,
@@ -120,9 +121,80 @@ class _NewMessageSectionState extends ConsumerState<NewMessageSection> {
                         ).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: HeroIcon(
-                        HeroIcons.users,
-                        style: HeroIconStyle.micro,
+                      child: Icon(
+                        TablerIcons.hash,
+                        color: AppTheme.foregroundColor(context),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    // Title and subtitle
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Temporary chat",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            "Start a short-lived chat with no saved messages and anonymous participation.",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                  ],
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NewGroupChatSection(),
+                    ),
+                  ),
+              child: Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color:
+                        AppTheme.isDark(context)
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade300,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Large colored icon
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.foregroundColor(
+                          context,
+                        ).withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        TablerIcons.users_plus,
                         color: AppTheme.foregroundColor(context),
                         size: 20,
                       ),
@@ -138,6 +210,7 @@ class _NewMessageSectionState extends ConsumerState<NewMessageSection> {
                         ),
                       ),
                     ),
+                    
                   ],
                 ),
               ),

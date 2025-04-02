@@ -10,10 +10,13 @@ class PostData {
     TextEditingController(text: "No"),
   ];
   final List<File> images = [];
+  final List<File> videos = [];
   String selectedOption = 'text';
   String commentControl = 'everyone'; // Valoarea implicită
   String selectedAudience = 'friends';
   List<String> audienceList = [];
+
+  VoidCallback? onMediaTap;
 
   void reset() {
     urlController.clear();
@@ -21,6 +24,14 @@ class PostData {
       controller.text = "";
     }
     images.clear();
+    videos.clear();
     selectedOption = 'text';
+  }
+
+  // Funcție care trigger-uieste callback-ul
+  void triggerMediaChanged() {
+    if (onMediaTap != null) {
+      onMediaTap!();
+    }
   }
 }

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heroicons/heroicons.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/post/create_post/create_post.dart';
-import 'package:zic_flutter/tabs/profile_screen.dart';
+import 'package:zic_flutter/widgets/post_items/post_avatar.dart';
 
 class PostInput extends ConsumerStatefulWidget {
   const PostInput({super.key});
@@ -22,9 +21,14 @@ class _PostInputState extends ConsumerState<PostInput> {
       return SizedBox.shrink();
     }
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey200)),
+        border: Border(
+          bottom: BorderSide(
+            color:
+                AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey200,
+          ),
+        ),
       ),
 
       child: Column(
@@ -32,43 +36,15 @@ class _PostInputState extends ConsumerState<PostInput> {
         children: [
           // Input Section
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar (Placeholder - Replace with actual Avatar logic)
-              InkWell(
-                enableFeedback: false,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProfileScreen(),
-                    ),
-                  );
-                },
-                child: AdvancedAvatar(
-                  size: 46, // Dimensiune avatar
-                  image: NetworkImage(user.avatarUrl),
-
-                  autoTextSize: true,
-                  name: user.fullname, // Inițiale fallback
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color:
-                        AppTheme.isDark(context)
-                            ? AppTheme.grey200
-                            : AppTheme.grey800,
-                  ),
-                  decoration: BoxDecoration(
-                    color:
-                        AppTheme.isDark(context)
-                            ? AppTheme.grey800
-                            : AppTheme.grey200, // Background fallback
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
+              PostAvatar(post: null, user: user),
+              const SizedBox(width: 10),
               Expanded(
                 child: InkWell(
+                  splashColor:
+                      Colors.transparent, // Elimină efectul de stropire
+                  highlightColor: Colors.transparent,
                   borderRadius: BorderRadius.circular(30.0),
                   onTap: () {
                     Navigator.push(
@@ -78,48 +54,48 @@ class _PostInputState extends ConsumerState<PostInput> {
                       ),
                     );
                   },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12.0,
-                      horizontal: 16.0,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey200),
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    child: const Text(
-                      'Write something...',
-                      style: TextStyle(color: Colors.grey, fontSize: 16),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.fullname,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        "What's new?",
+                        style: TextStyle(
+                          color:
+                              AppTheme.isDark(context)
+                                  ? AppTheme.grey700
+                                  : AppTheme.grey300,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 6),
 
           // Action Buttons
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          Padding(
+            padding: const EdgeInsets.only(left: 50.0),
             child: Row(
               children: [
-                _buildActionButton(
-                  icon: HeroIcons.user,
-                  label: 'Anonymous post',
-                  tab: 'anonymous',
-                ),
-                const SizedBox(width: 8),
-                _buildActionButton(
-                  icon: HeroIcons.photo,
-                  label: 'Photo/Video',
-                  tab: 'media',
-                ),
-                const SizedBox(width: 8),
-                _buildActionButton(
-                  icon: HeroIcons.chartBar,
-                  label: 'Poll',
-                  tab: 'poll',
-                ),
+                _buildActionButton(icon: TablerIcons.spy, tab: 'anonymous'),
+                const SizedBox(width: 16),
+                _buildActionButton(icon: TablerIcons.library_photo, tab: 'media'),
+                const SizedBox(width: 14),
+                _buildActionButton(icon: TablerIcons.camera, tab: 'media'),
+                const SizedBox(width: 14),
+                _buildActionButton(icon: TablerIcons.link, tab: 'link'),
+                const SizedBox(width: 14),
+                _buildActionButton(icon: TablerIcons.list_numbers, tab: 'poll'),
               ],
             ),
           ),
@@ -128,13 +104,10 @@ class _PostInputState extends ConsumerState<PostInput> {
     );
   }
 
-  Widget _buildActionButton({
-    required HeroIcons icon,
-    required String label,
-    required String tab,
-  }) {
+  Widget _buildActionButton({required IconData icon, required String tab}) {
     return InkWell(
-      borderRadius: BorderRadius.circular(30.0),
+      splashColor: Colors.transparent, // Elimină efectul de stropire
+      highlightColor: Colors.transparent,
       onTap: () {
         Navigator.push(
           context,
@@ -143,19 +116,10 @@ class _PostInputState extends ConsumerState<PostInput> {
           ),
         );
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey200),
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        child: Row(
-          children: [
-            HeroIcon(icon, size: 20, style: HeroIconStyle.micro),
-            const SizedBox(width: 4),
-            Text(label, style: const TextStyle(fontSize: 12)),
-          ],
-        ),
+      child: Icon(
+        icon,
+        size: 28,
+        color: AppTheme.isDark(context) ? AppTheme.grey700 : AppTheme.grey300,
       ),
     );
   }

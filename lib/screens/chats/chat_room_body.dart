@@ -9,6 +9,7 @@ import 'package:zic_flutter/core/models/user.dart';
 import 'package:zic_flutter/core/providers/rooms_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/core/services/chat_socket_service.dart';
+import 'package:zic_flutter/screens/shared/custom_toast.dart';
 import 'package:zic_flutter/widgets/chats/message_input.dart';
 import 'package:zic_flutter/widgets/chats/message_list.dart';
 
@@ -93,9 +94,14 @@ class _ChatRoomBodyState extends ConsumerState<ChatRoomBody> {
 
     print("messages: ${_messages.length};");
 
-    final unreadMessages = _messages
-      .where((m) => !m.readBy.contains(currentUser.id) && m.senderId != currentUser.id)
-      .toList();
+    final unreadMessages =
+        _messages
+            .where(
+              (m) =>
+                  !m.readBy.contains(currentUser.id) &&
+                  m.senderId != currentUser.id,
+            )
+            .toList();
 
     for (final message in unreadMessages) {
       _socketService.markMessageAsRead(
@@ -154,7 +160,9 @@ class _ChatRoomBodyState extends ConsumerState<ChatRoomBody> {
           onChanged: (text) {
             setState(() {}); // Reconstruiește widget-ul părinte
           },
-          onImagePressed: () {},
+          onImagePressed: () {
+            CustomToast.show(context, "File sharing coming soon... 🤩");
+          },
         ),
       ],
     );

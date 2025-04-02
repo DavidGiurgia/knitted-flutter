@@ -86,108 +86,92 @@ class _PostLinkContentState extends State<PostLinkContent> {
   Widget build(BuildContext context) {
     final style = TextStyle(
       color: AppTheme.foregroundColor(context),
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: FontWeight.w500,
       height: 1.375,
     );
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: widget.postData.textController,
-              onChanged: (value) {
-                widget.validatePost(); // Adaugă această linie
-              },
-              decoration: const InputDecoration(
-                hintText: "Add a comment...",
-                hintStyle: TextStyle(color: Colors.grey),
-                border: InputBorder.none,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_isValidUrl)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14.0),
+                color:
+                    AppTheme.isDark(context)
+                        ? AppTheme.grey900
+                        : AppTheme.grey100,
               ),
-              maxLines: null,
-              keyboardType: TextInputType.multiline,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed:
-                      widget.postData.urlController.text.isEmpty
-                          ? widget.resetPost
-                          : _resetPostWithConfirmation,
-                  child: const Text(
-                    "Remove link",
-                    style: TextStyle(color: Colors.grey),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12.0),
+                child: LinkPreview(
+                  enableAnimation: true,
+                  text: widget.postData.urlController.text,
+                  width: MediaQuery.of(context).size.width,
+                  previewData: _previewData,
+                  onPreviewDataFetched: (data) {
+                    setState(() {
+                      _previewData = data;
+                    });
+                  },
+                  onLinkPressed: (url) => _launchUrl(),
+                  openOnPreviewTitleTap: true,
+                  openOnPreviewImageTap: true,
+                  linkStyle: style,
+                  metadataTextStyle: style.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
                   ),
+                  metadataTitleStyle: style.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  textStyle: style,
                 ),
-              ],
+              ),
             ),
+          const SizedBox(height: 16),
 
-            TextField(
-              controller: widget.postData.urlController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  borderSide: BorderSide(color: Colors.red),
-                ),
-                errorText:
-                    _isValidUrl || widget.postData.urlController.text.isEmpty
-                        ? null
-                        : "Invalid URL",
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.red),
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                ),
-                hintText: 'https://example.com',
-                label: const Text("URL"),
+          TextField(
+            controller: widget.postData.urlController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                borderSide: BorderSide(color: Colors.red),
               ),
+              errorText:
+                  _isValidUrl || widget.postData.urlController.text.isEmpty
+                      ? null
+                      : "Invalid URL",
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red),
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+              hintText: 'https://example.com',
+              label: const Text("URL"),
             ),
-            const SizedBox(height: 16),
-            if (_isValidUrl)
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14.0),
-                  color:
-                      AppTheme.isDark(context)
-                          ? AppTheme.grey900
-                          : AppTheme.grey100,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12.0),
-                  child: LinkPreview(
-                    enableAnimation: true,
-                    text: widget.postData.urlController.text,
-                    width: MediaQuery.of(context).size.width,
-                    previewData: _previewData,
-                    onPreviewDataFetched: (data) {
-                      setState(() {
-                        _previewData = data;
-                      });
-                    },
-                    onLinkPressed: (url) => _launchUrl(),
-                    openOnPreviewTitleTap: true,
-                    openOnPreviewImageTap: true,
-                    linkStyle: style,
-                    metadataTextStyle: style.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    metadataTitleStyle: style.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                    textStyle: style,
-                  ),
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed:
+                    widget.postData.urlController.text.isEmpty
+                        ? widget.resetPost
+                        : _resetPostWithConfirmation,
+                child: const Text(
+                  "Remove link",
+                  style: TextStyle(color: Colors.grey),
                 ),
               ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }

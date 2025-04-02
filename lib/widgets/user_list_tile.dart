@@ -17,7 +17,10 @@ class UserListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String avatarUrl = user.avatarUrl.isNotEmpty ? user.avatarUrl : 'https://example.com/default-avatar.png';
+    final String avatarUrl =
+        user.avatarUrl.isNotEmpty
+            ? user.avatarUrl
+            : 'https://example.com/default-avatar.png';
     return ListTile(
       titleAlignment: ListTileTitleAlignment.center,
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
@@ -36,10 +39,13 @@ class UserListTile extends StatelessWidget {
         ),
       ),
       title: Text(
-        user.username,
+        "@${user.username}",
         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
       ),
-      subtitle: Text(user.fullname, style: TextStyle(fontSize: 16, color: Colors.grey.shade500)),
+      subtitle: Text(
+        user.fullname,
+        style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
+      ),
       trailing: actionWidget,
       onTap: onTap,
     );

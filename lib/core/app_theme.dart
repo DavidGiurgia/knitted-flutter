@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppTheme {
   static const Color primaryColor = Color(0xFFFF6700); // Culoarea principală
@@ -59,4 +61,57 @@ class AppTheme {
       onSurface: Colors.white,
     ),
   );
+}
+
+
+// Riverpod Provider for ThemeMode
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>(
+  (ref) => ThemeModeNotifier(),
+);
+
+class ThemeModeNotifier extends StateNotifier<ThemeMode> {
+  ThemeModeNotifier() : super(ThemeMode.system) {
+    _loadTheme();
+  }
+
+  final String _prefKey = 'app_theme';
+
+  Future<void> toggleTheme() async {
+    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    await _saveTheme();
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    state = mode;
+    await _saveTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final themeString = prefs.getString(_prefKey);
+    if (themeString != null) {
+      state = themeString == 'dark'
+          ? ThemeMode.dark
+          : themeString == 'light'
+              ? ThemeMode.light
+              : ThemeMode.system;
+    }
+  }
+
+  Future<void> _saveTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final themeString = state.toString().split('.').last;
+    await prefs.setString(_prefKey, themeString);
+  }
+
+  ThemeData getThemeData() {
+    switch (state) {
+      case ThemeMode.dark:
+        return AppTheme.darkTheme;
+      case ThemeMode.light:
+        return AppTheme.lightTheme;
+      default:
+        return ThemeData(); //return empty
+    }
+  }
 }
