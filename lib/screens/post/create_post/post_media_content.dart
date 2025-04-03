@@ -29,6 +29,7 @@ class _PostMediaContentState extends State<PostMediaContent> {
     super.initState();
     widget.postData.textController.addListener(_validateForm);
     widget.postData.onMediaTap = getImages;
+    getImages();
   }
 
   Future getImages() async {

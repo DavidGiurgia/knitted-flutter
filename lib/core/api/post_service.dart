@@ -37,7 +37,7 @@ class PostService {
   }
 
   Future<List<Post>> getUserPosts(String userId) async {
-    final url = Uri.parse('$baseUrl/$userId');
+    final url = Uri.parse('$baseUrl/user-feed/$userId');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -54,7 +54,7 @@ class PostService {
   }
 
   Future<List<Post>> getCreatorPosts(String userId) async {
-    final url = Uri.parse('$baseUrl/creator/$userId');
+    final url = Uri.parse('$baseUrl/by-creator/$userId');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -84,6 +84,35 @@ class PostService {
       }
     } catch (e) {
       throw Exception('Failed to load user posts: $e');
+    }
+  }
+
+  //get by id
+  Future<Post> getPostById(String id) async {
+    final url = Uri.parse('$baseUrl/by-id/$id');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        if (response.body.isEmpty) {
+          throw Exception("Empty response from server");
+        }
+
+        final decoded = json.decode(response.body);
+        if (decoded is! Map<String, dynamic>) {
+          throw FormatException('Expected Map but got ${decoded.runtimeType}');
+        }
+
+        return _postFromJson(decoded);
+      } else if (response.statusCode == 404) {
+        throw Exception('Post not found');
+      } else {
+        throw Exception('Failed to load post: ${response.statusCode}');
+      }
+    } on FormatException catch (e) {
+      throw Exception('Invalid post data format: $e');
+    } catch (e) {
+      throw Exception('Failed to load post: $e');
     }
   }
 

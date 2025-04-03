@@ -243,6 +243,9 @@ class _CreatePostState extends ConsumerState<CreatePost> {
       resetPost();
       if (mounted) {
         ref.invalidate(userPostsProvider);
+        if(widget.isReply){
+          ref.invalidate(postRepliesProvider);
+        }
         Navigator.pop(context);
       }
     } catch (error) {
@@ -298,7 +301,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!widget.isReply || widget.replyTo?.anonymousPost == true)
+                  if (_postData.selectedAudience != 'friends' && !widget.isReply || widget.replyTo?.anonymousPost == true)
                     CustomSwitchTile(
                       title: "${widget.isReply ? "Reply" : "Post"} anonymously",
                       value: anonymousPost,

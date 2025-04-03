@@ -43,8 +43,7 @@ class Post {
 
   // Convertire din JSON
   factory Post.fromJson(Map<String, dynamic> json) {
-    final idValue =
-        json.containsKey('_id') && json['_id'] != null ? json['_id'] : '';
+    final idValue = json['_id']?.toString() ?? json['id']?.toString() ?? '';
     switch (json['type']) {
       case 'link':
         return LinkPost.fromJson(json);
@@ -91,5 +90,10 @@ class Post {
       'updatedAt': updatedAt.toIso8601String(),
       'expiresAt': expiresAt?.toIso8601String(),
     };
+  }
+
+  @override
+  String toString() {
+    return 'Post{id: $id, userId: $userId, isReply: $isReply, replyTo: $replyTo, content: $content, type: $type, anonymousPost: $anonymousPost, mentions: $mentions, audience: $audience, createdAt: $createdAt, updatedAt: $updatedAt, expiresAt: $expiresAt}';
   }
 }

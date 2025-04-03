@@ -22,8 +22,10 @@ Future<String> generateUniqueJoinCode() async {
 
   return joinCode;
 }
+
 // Function to format the date string
-String multiFormatDateString(DateTime date, {bool short = false}) { // Change to DateTime
+String multiFormatDateString(DateTime date, {bool short = false}) {
+  // Change to DateTime
   DateTime now = DateTime.now();
 
   Duration diff = now.difference(date);
@@ -48,13 +50,15 @@ String multiFormatDateString(DateTime date, {bool short = false}) { // Change to
 }
 
 // Function to format the date string (Placeholder implementation)
-String formatDateString(DateTime date) { // Change to DateTime
+String formatDateString(DateTime date) {
+  // Change to DateTime
   final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
   return formatter.format(date);
 }
 
 // Function to format the date string with custom options
-String formatDateStringWithOptions(DateTime date) { // Change to DateTime
+String formatDateStringWithOptions(DateTime date) {
+  // Change to DateTime
   final DateFormat dateFormatter = DateFormat('MMM d, yyyy');
   final DateFormat timeFormatter = DateFormat('h:mm a');
 
@@ -64,20 +68,17 @@ String formatDateStringWithOptions(DateTime date) { // Change to DateTime
   return '$formattedDate at $time';
 }
 
-
 String formatTimestampCompact(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
+  final now = DateTime.now();
+  final difference = now.difference(timestamp);
 
-    if (difference.inDays > 0) {
-      return DateFormat('MM/dd/yy').format(timestamp);
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m';
-    } else {
-      return 'now';
-    }
+  if (difference.inDays > 0) {
+    return DateFormat('MM/dd/yy').format(timestamp);
+  } else if (difference.inHours > 0) {
+    return '${difference.inHours}h';
+  } else if (difference.inMinutes > 0) {
+    return '${difference.inMinutes}m';
+  } else {
+    return 'now';
   }
-
-
+}

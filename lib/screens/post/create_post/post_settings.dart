@@ -52,7 +52,7 @@ class _PostSettingsState extends State<PostSettings> {
                   _buildAudienceOption(
                     title: 'Friends',
                     description: 'Your friends on Knitted.',
-                    icon: TablerIcons.users,
+                    icon: TablerIcons.user,
                     isSelected: widget.postData.selectedAudience == 'friends',
                     onTap: () {
                       setState(() {
@@ -122,11 +122,22 @@ class _PostSettingsState extends State<PostSettings> {
                     showArrow: true,
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    padding: const EdgeInsets.only(top: 18.0, left: 12.0),
                     child: const Text(
                       "Your communities",
                       style: TextStyle(fontWeight: FontWeight.w500),
                     ),
+                  ),
+                  _buildAudienceOption(
+                    title: 'Community',
+                    description: 'Post to some community.',
+                    icon: TablerIcons.users,
+                    isSelected: widget.postData.selectedAudience == 'friends',
+                    onTap: () {
+                      setState(() {
+                        widget.postData.selectedAudience = 'friends';
+                      });
+                    },
                   ),
                 ],
               ),
@@ -177,7 +188,7 @@ class _PostSettingsState extends State<PostSettings> {
                 color: Colors.grey,
               ),
             const SizedBox(width: 16),
-            Icon(icon, size: 30, ),
+            Icon(icon, size: 30),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

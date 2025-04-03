@@ -66,11 +66,12 @@ class PollPost extends Post {
   });
 
   factory PollPost.fromJson(Map<String, dynamic> json) {
+    final idValue = json['_id']?.toString() ?? json['id']?.toString() ?? '';
     return PollPost(
-      id: json['id'],
+      id: idValue,
       userId: json['userId'],
       isReply: json['isReply'] ?? false,
-          replyTo: json['replyTo'],
+      replyTo: json['replyTo'],
       content: json['content'],
       type: postTypeMap[json['type']] ?? PostType.text,
       options:

@@ -21,8 +21,9 @@ class LinkPost extends Post {
 
   // Convertire din JSON
   factory LinkPost.fromJson(Map<String, dynamic> json) {
+    final idValue = json['_id']?.toString() ?? json['id']?.toString() ?? '';
     return LinkPost(
-      id: json['id'],
+      id: idValue,
       userId: json['userId'],
       isReply: json['isReply'] ?? false,
           replyTo: json['replyTo'],

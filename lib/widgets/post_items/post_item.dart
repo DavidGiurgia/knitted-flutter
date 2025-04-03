@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:zic_flutter/core/api/post_service.dart';
 import 'package:zic_flutter/core/api/user.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/post.dart';
 import 'package:zic_flutter/core/models/user.dart';
+import 'package:zic_flutter/screens/post/replies_screen.dart';
 import 'package:zic_flutter/widgets/post_items/post_content.dart';
 
 class PostItem extends ConsumerWidget {
@@ -12,7 +15,12 @@ class PostItem extends ConsumerWidget {
   final bool readonly;
   final bool isParentPost;
 
-  const PostItem({super.key, required this.post, this.readonly = false,  this.isParentPost = false});
+  const PostItem({
+    super.key,
+    required this.post,
+    this.readonly = false,
+    this.isParentPost = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,12 +28,54 @@ class PostItem extends ConsumerWidget {
 
     return userFuture.when(
       loading: () => _buildLoadingState(context),
-      error: (error, stack) => Center(child: Text('Error loading user: $error')),
+      error:
+          (error, stack) => Center(child: Text('Error loading user: $error')),
       data: (user) {
         if (user == null) return const SizedBox.shrink();
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PostContent(post: post, user: user, readonly: readonly, isParentPost: isParentPost),
+            // if (post.isReply && post.replyTo != null)
+            //   InkWell(
+            //     splashColor: Colors.transparent,
+            //     highlightColor: Colors.transparent,
+            //     onTap: () async {
+            //       final parentPost = await PostService().getPostById(
+            //         post.replyTo!,
+            //       );
+
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder:
+            //               (context) => RepliesScreen(parentPost: parentPost),
+            //         ),
+            //       );
+            //     },
+            //     child: Padding(
+            //       padding: const EdgeInsets.only(top: 8, left: 25),
+            //       child: Row(
+            //         children: [
+            //           Icon(
+            //             TablerIcons.arrow_back_up,
+            //             size: 16,
+            //             color: Colors.grey,
+            //           ),
+            //           const SizedBox(width: 8),
+            //           Text(
+            //             "Reply to unavailable post",
+            //             style: TextStyle(color: Colors.grey),
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            PostContent(
+              post: post,
+              user: user,
+              readonly: readonly,
+              isParentPost: isParentPost,
+            ),
             const SizedBox(height: 8),
           ],
         );
@@ -55,9 +105,7 @@ class PostItem extends ConsumerWidget {
           ),
           Container(
             height: 300,
-            decoration: BoxDecoration(
-              color: containerColor,
-            ),
+            decoration: BoxDecoration(color: containerColor),
           ),
         ],
       ),

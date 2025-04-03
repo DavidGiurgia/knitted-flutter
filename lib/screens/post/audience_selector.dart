@@ -51,7 +51,7 @@ class AudienceSelector extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(TablerIcons.users),
+            Icon(TablerIcons.user),
             const SizedBox(width: 8),
             Text(
               postData.selectedAudience == "friends"

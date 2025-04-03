@@ -54,10 +54,11 @@ class ImageCropperUtil {
     bool lockAspectRatio = true,
     CropStyle cropStyle = CropStyle.rectangle,
     required BuildContext context,
+    ImageSource source = ImageSource.gallery,
   }) async {
     final ImagePicker picker = ImagePicker();
     final XFile? pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
     );
 
     if (pickedFile != null) {

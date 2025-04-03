@@ -34,7 +34,11 @@ class PostContent extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 2, 0),
-              child: PostAvatar(post: post, user: user, readonly: readonly || isParentPost),
+              child: PostAvatar(
+                post: post,
+                user: user,
+                readonly: readonly || isParentPost,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -42,6 +46,7 @@ class PostContent extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildUserInfo(context, ref),
+                  
                   Padding(
                     padding: EdgeInsets.only(right: 12),
                     child:

@@ -125,7 +125,7 @@ class _TabsLayoutState extends State<TabsLayout> {
                   onTap: () => _onItemTapped(2),
                   child: Center(
                     child: _getIcon(
-                      TablerIcons.users_group,
+                      TablerIcons.users,
                       2,
                     ),
                   ),
