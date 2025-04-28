@@ -68,9 +68,7 @@ class _PostInputState extends ConsumerState<PostInput> {
                         "What's new?",
                         style: TextStyle(
                           color:
-                              AppTheme.isDark(context)
-                                  ? AppTheme.grey700
-                                  : AppTheme.grey300,
+                              Colors.grey,
                           fontSize: 16,
                         ),
                       ),
@@ -87,8 +85,6 @@ class _PostInputState extends ConsumerState<PostInput> {
             padding: const EdgeInsets.only(left: 50.0),
             child: Row(
               children: [
-                _buildActionButton(icon: TablerIcons.spy, tab: 'anonymous'),
-                const SizedBox(width: 16),
                 _buildActionButton(icon: TablerIcons.library_photo, tab: 'media'),
                 const SizedBox(width: 14),
                 _buildActionButton(icon: TablerIcons.camera, tab: 'media'),
@@ -119,7 +115,7 @@ class _PostInputState extends ConsumerState<PostInput> {
       child: Icon(
         icon,
         size: 28,
-        color: AppTheme.isDark(context) ? AppTheme.grey700 : AppTheme.grey300,
+        color: Colors.grey,
       ),
     );
   }

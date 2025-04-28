@@ -49,6 +49,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     return Scaffold(
       appBar: AppBar(
+        scrolledUnderElevation: 0.0,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
@@ -59,7 +60,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               );
             },
             icon: Icon(
-               TablerIcons.lock,
+              TablerIcons.lock_square_rounded_filled,
               color: AppTheme.foregroundColor(context),
             ),
           ),
@@ -72,7 +73,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               );
             },
             icon: Icon(
-               TablerIcons.plus,
+              TablerIcons.plus,
               color: AppTheme.foregroundColor(context),
             ),
           ),
@@ -123,9 +124,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             "@${user.username}",
                             style: TextStyle(
                               fontSize: 18,
-                              color: AppTheme.isDark(context)
-                                  ? Colors.grey.shade200
-                                  : Colors.grey.shade800,
+                              color:
+                                  AppTheme.isDark(context)
+                                      ? Colors.grey.shade200
+                                      : Colors.grey.shade800,
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -134,9 +136,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               user.bio,
                               style: TextStyle(
                                 fontSize: 18,
-                                color: AppTheme.isDark(context)
-                                    ? Colors.grey.shade200
-                                    : Colors.grey.shade800,
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? Colors.grey.shade200
+                                        : Colors.grey.shade800,
                               ),
                             ),
                           const SizedBox(height: 10),
@@ -145,8 +148,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      FriendsSection(user: user),
+                                  builder:
+                                      (context) => FriendsSection(user: user),
                                 ),
                               );
                             },
@@ -158,9 +161,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w400,
-                                    color: AppTheme.isDark(context)
-                                        ? Colors.grey.shade600
-                                        : Colors.grey.shade400,
+                                    color:
+                                        AppTheme.isDark(context)
+                                            ? Colors.grey.shade600
+                                            : Colors.grey.shade400,
                                   ),
                                 ),
                               ],
@@ -172,8 +176,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      const EditProfileScreen(),
+                                  builder:
+                                      (context) => const EditProfileScreen(),
                                 ),
                               );
                             },
@@ -193,11 +197,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 pinned: true,
                 delegate: _SliverAppBarDelegate(
                   tabBar: TabBar(
-                    dividerColor: AppTheme.isDark(context)
-                        ? AppTheme.grey800
-                        : AppTheme.grey200,
+                    dividerColor:
+                        AppTheme.isDark(context)
+                            ? AppTheme.grey800
+                            : AppTheme.grey200,
                     controller: _tabController,
-                    labelColor: Theme.of(context).primaryColor,
+                    indicatorColor: AppTheme.primaryColor,
+                    labelColor: AppTheme.foregroundColor(context),
                     unselectedLabelColor: Colors.grey,
                     tabs: const [
                       Tab(text: 'Posts'),
@@ -205,16 +211,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       Tab(text: 'Media'),
                       Tab(text: 'Mentions'),
                     ],
-                    indicatorSize: TabBarIndicatorSize.tab,
+                    //indicatorSize: TabBarIndicatorSize.tab,
                   ),
                 ),
               ),
             ];
           },
-          body: ProfileTabs(
-            userId: user.id,
-            tabController: _tabController,
-          ),
+          body: ProfileTabs(userId: user.id, tabController: _tabController),
         ),
       ),
     );

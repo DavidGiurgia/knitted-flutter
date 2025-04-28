@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:heroicons/heroicons.dart';
 import 'package:zic_flutter/core/models/user.dart';
 import 'package:zic_flutter/core/providers/friends_provider.dart';
 import 'package:zic_flutter/widgets/user_list_tile.dart';

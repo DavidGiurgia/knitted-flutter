@@ -73,7 +73,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TemporaryChatRoomSection(room: room), // aici adauga un pas intermediar de setare a numelui
+        builder:
+            (context) => TemporaryChatRoomSection(
+              room: room,
+            ), // aici adauga un pas intermediar de setare a numelui
       ),
     );
   }
@@ -150,7 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Center(
                       child: SvgPicture.asset(
-                        'lib/assets/images/ZIC-logo.svg',
+                        'lib/assets/images/Knitted-logo.svg',
                         semanticsLabel: 'ZiC Logo',
                         width: 64,
                       ),

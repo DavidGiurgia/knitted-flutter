@@ -36,6 +36,10 @@ class AppTheme {
     brightness: Brightness.light,
     primaryColor: primaryColor,
     scaffoldBackgroundColor: Colors.white,
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.white,
+      iconTheme: const IconThemeData(color: Colors.black),
+    ),
     fontFamily: 'Poppins',
     colorScheme: ColorScheme.light(
       primary: primaryColor,
@@ -51,6 +55,10 @@ class AppTheme {
     brightness: Brightness.dark,
     primaryColor: primaryColor,
     scaffoldBackgroundColor: grey950,
+    appBarTheme: AppBarTheme(
+      backgroundColor: grey950,
+      iconTheme: const IconThemeData(color: Colors.white),
+    ),
     fontFamily: 'Poppins',
     colorScheme: ColorScheme.dark(
       primary: primaryColor,

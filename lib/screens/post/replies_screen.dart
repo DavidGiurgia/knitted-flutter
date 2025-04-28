@@ -19,10 +19,7 @@ class RepliesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (parentPost.id == null) {
       return Center(
-        child: Text(
-          "Post not found.",
-          style: TextStyle(color: Colors.grey),
-        ),
+        child: Text("Post not found.", style: TextStyle(color: Colors.grey)),
       );
     }
     final postsAsync = ref.watch(postRepliesProvider(parentPost.id!));
@@ -36,40 +33,42 @@ class RepliesScreen extends ConsumerWidget {
             return SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     PostItem(post: parentPost, isParentPost: true),
                     const Padding(
                       padding: EdgeInsets.all(12),
-                      child: Text(
-                        "Most recent replies",
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      child: Text("Replies", style: TextStyle(fontSize: 16)),
                     ),
                     postsAsync.when(
                       data: (posts) {
-                        posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+                        posts.sort(
+                          (a, b) => b.createdAt.compareTo(a.createdAt),
+                        );
                         if (posts.isNotEmpty) {
                           return ListView(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             children: [
-                              ...posts.map((post) => PostItem(post: post)).toList(),
-                              const SizedBox(height: 80), // Invisible space at the end
+                              ...posts.map((post) => PostItem(post: post)),
+                              const SizedBox(
+                                height: 80,
+                              ), // Invisible space at the end
                             ],
                           );
                         } else {
                           return const SizedBox.shrink();
                         }
                       },
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (error, _) => Center(
-                          child: Text('Error loading replies: $error')),
+                      loading:
+                          () =>
+                              const Center(child: CircularProgressIndicator()),
+                      error:
+                          (error, _) => Center(
+                            child: Text('Error loading replies: $error'),
+                          ),
                     ),
                   ],
                 ),
@@ -83,10 +82,8 @@ class RepliesScreen extends ConsumerWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CreatePost(
-                isReply: true,
-                replyTo: parentPost,
-              ),
+              builder:
+                  (context) => CreatePost(isReply: true, replyTo: parentPost),
             ),
           );
         },

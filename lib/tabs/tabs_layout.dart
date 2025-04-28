@@ -34,17 +34,23 @@ class _TabsLayoutState extends State<TabsLayout> {
   }
 
   Widget _getIcon(IconData icon, int index) {
-  return Container(
-    width: 36, // Setează o lățime fixă
-    alignment: Alignment.center,
-    child: Icon(
-      icon,
-      color: _selectedIndex == index ? AppTheme.primaryColor : AppTheme.foregroundColor(context),
-      size: 32,
-    ),
-  );
-}
-
+    return SizedBox(
+      // Changed to SizedBox
+      width: 36, // Keep the fixed width
+      height: 36, // Add a fixed height
+      child: Center(
+        // Center the icon within the SizedBox
+        child: Icon(
+          icon,
+          color:
+              _selectedIndex == index
+                  ? AppTheme.foregroundColor(context)
+                  : Colors.grey,
+          size: 32,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +63,10 @@ class _TabsLayoutState extends State<TabsLayout> {
             border: Border(
               top: BorderSide(
                 width: 0.5,
-                color: AppTheme.isDark(context)
-                    ? Colors.grey.shade900
-                    : Colors.grey.shade100,
+                color:
+                    AppTheme.isDark(context)
+                        ? Colors.grey.shade900
+                        : Colors.grey.shade100,
               ),
             ),
           ),
@@ -70,23 +77,13 @@ class _TabsLayoutState extends State<TabsLayout> {
               Expanded(
                 child: InkWell(
                   onTap: () => _onItemTapped(0),
-                  child: Center(
-                    child: _getIcon(
-                      TablerIcons.home,
-                      0,
-                    ),
-                  ),
+                  child: Center(child: _getIcon(TablerIcons.home, 0)),
                 ),
               ),
               Expanded(
                 child: InkWell(
                   onTap: () => _onItemTapped(1),
-                  child: Center(
-                    child: _getIcon(
-                      TablerIcons.search,
-                      1,
-                    ),
-                  ),
+                  child: Center(child: _getIcon(TablerIcons.search, 1)),
                 ),
               ),
               Expanded(
@@ -106,14 +103,15 @@ class _TabsLayoutState extends State<TabsLayout> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(30.0),
                         border: Border.all(
-                          color: AppTheme.isDark(context)
-                              ? AppTheme.grey800
-                              : AppTheme.grey200,
+                          color:
+                              AppTheme.isDark(context)
+                                  ? AppTheme.grey800
+                                  : AppTheme.grey200,
                         ),
                       ),
                       child: Icon(
                         TablerIcons.plus,
-                        color: AppTheme.foregroundColor(context),
+                        color: Colors.grey[500],
                         size: 28,
                       ),
                     ),
@@ -123,14 +121,19 @@ class _TabsLayoutState extends State<TabsLayout> {
               Expanded(
                 child: InkWell(
                   onTap: () => _onItemTapped(2),
-                  child: Center(
-                    child: _getIcon(
-                      TablerIcons.users,
-                      2,
-                    ),
-                  ),
+                  child: Center(child: _getIcon(TablerIcons.users_group, 2)),
                 ),
               ),
+              // Expanded(
+              //   child: InkWell(
+              //     onTap: () => _onItemTapped(3),
+              //     child: Center(
+              //       child: _getIcon( TablerIcons.user,
+              //         3,
+              //       ),
+              //     ),
+              //   ),
+              // ),
               Expanded(
                 child: InkWell(
                   onTap: () => _onItemTapped(3),
@@ -150,7 +153,7 @@ class _TabsLayoutState extends State<TabsLayout> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppTheme.primaryColor,
+                                    color: AppTheme.foregroundColor(context),
                                     width: 3,
                                   ),
                                 ),
@@ -158,19 +161,23 @@ class _TabsLayoutState extends State<TabsLayout> {
                             AdvancedAvatar(
                               size: 32,
                               image:
-                                  avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                                  avatarUrl != null
+                                      ? NetworkImage(avatarUrl)
+                                      : null,
                               autoTextSize: true,
                               name: userAsync.value?.fullname ?? "!",
                               style: TextStyle(
-                                color: AppTheme.isDark(context)
-                                    ? Colors.white
-                                    : Colors.black,
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? Colors.white
+                                        : Colors.black,
                                 fontWeight: FontWeight.w600,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.isDark(context)
-                                    ? AppTheme.grey800
-                                    : AppTheme.grey200,
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? AppTheme.grey800
+                                        : AppTheme.grey200,
                                 shape: BoxShape.circle,
                               ),
                             ),

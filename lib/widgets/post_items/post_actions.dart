@@ -67,7 +67,7 @@ class _PostActionsState extends ConsumerState<PostActions> {
             );
           },
         ),
-        
+
         // if (widget.post.anonymousPost && widget.post.userId != user.id)
         //   InkWell(
         //     borderRadius: BorderRadius.all(Radius.circular(30)),
@@ -121,7 +121,7 @@ class _PostActionsState extends ConsumerState<PostActions> {
             );
           },
         ),
-        const Spacer(),
+        //const Spacer(),
         InkWell(
           borderRadius: BorderRadius.all(Radius.circular(30)),
           child: Padding(

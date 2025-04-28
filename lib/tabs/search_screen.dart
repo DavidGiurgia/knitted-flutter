@@ -110,8 +110,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     final searchAsync = ref.watch(searchProvider);
     return Scaffold(
-      backgroundColor:
-          AppTheme.isDark(context) ? AppTheme.grey950 : Colors.white,
+      // backgroundColor:
+      //     AppTheme.isDark(context) ? AppTheme.grey950 : Colors.white,
       appBar: AppBar(
         titleSpacing: 0,
         automaticallyImplyLeading: widget.withLeading,
@@ -125,15 +125,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   AppTheme.isDark(context)
                       ? Colors.grey.shade900
                       : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(18),
             ),
             child: Row(
               children: [
-                Icon(
-                  TablerIcons.search,
-                  color: Colors.grey.shade500,
-                  size: 18,
-                ),
+                Icon(TablerIcons.search, color: Colors.grey.shade500, size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
@@ -183,9 +179,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               : Column(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      16,
+                                      16,
+                                      8,
                                     ),
                                     child: Row(
                                       mainAxisAlignment:
@@ -195,18 +193,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                           "Recent",
                                           style: TextStyle(
                                             fontWeight: FontWeight.w500,
-                                            fontSize: 16,
+                                            fontSize: 14,
                                           ),
                                         ),
                                         GestureDetector(
                                           onTap: _clearRecent,
                                           child: Text(
-                                            "Clear all",
-                                            style: TextStyle(
-                                              color: Colors.blueAccent,
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: 14,
-                                            ),
+                                            "Clear",
+                                           style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                          ),
                                           ),
                                         ),
                                       ],

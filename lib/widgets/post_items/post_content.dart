@@ -145,6 +145,8 @@ class PostContent extends ConsumerWidget {
         const Spacer(),
         if (!readonly && !isParentPost)
           InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             onTap: () => _showPostOptions(context, ref),
             child: Padding(

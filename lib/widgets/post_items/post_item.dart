@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:zic_flutter/core/api/post_service.dart';
 import 'package:zic_flutter/core/api/user.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/post.dart';
 import 'package:zic_flutter/core/models/user.dart';
-import 'package:zic_flutter/screens/post/replies_screen.dart';
 import 'package:zic_flutter/widgets/post_items/post_content.dart';
 
 class PostItem extends ConsumerWidget {

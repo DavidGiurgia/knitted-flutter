@@ -59,6 +59,8 @@ class _FriendsSectionState extends ConsumerState<FriendsSection>
           dividerColor:
               AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey200,
           controller: _tabController,
+          labelColor: AppTheme.foregroundColor(context),
+          unselectedLabelColor: Colors.grey,
           tabs: [
             if (showMutualTab)
               Tab(text: "${mutualFriendsAsync.value?.length ?? 0} mutual"),

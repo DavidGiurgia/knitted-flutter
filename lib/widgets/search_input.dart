@@ -58,7 +58,7 @@ class _SearchInputState extends State<SearchInput> {
           color: AppTheme.isDark(context)
               ? Colors.grey.shade900
               : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
           children: [
