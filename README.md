@@ -58,6 +58,9 @@ Currently in development. Final release will follow the public launch of the pla
 
 This project is licensed under the **Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)** License.
 
+![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)
+
+
 ---
 
 ### Contact
