@@ -1,6 +1,6 @@
 ## Knitted - Flutter App for Authentic Connection
 
-**Knitted** is the official Flutter mobile app for the Socialize platform — a bold step toward rethinking what social media should be: meaningful, human, and healthy.
+**Knitted** is the official Flutter mobile app for the knitted-platform — a bold step toward rethinking what social media should be: meaningful, human, and healthy.
 
 ---
 
@@ -64,12 +64,10 @@ This project is licensed under the **Creative Commons Attribution-NonCommercial-
 
 For questions, insights, or private previews:
 
-- Email: [your.email@example.com](mailto\:your.email@example.com)
-- LinkedIn: [LinkedIn Profile](https://linkedin.com/in/yourprofile)
+- Email: [giurgiad@gmail.com](mailto\:giurgiad@gmail.com)
+- LinkedIn: www\.linkedin.com/in/giurgia-david
 
 ---
 
-**Knitted **— Ditch the noise. Keep the human connection.
-
-Actual name: Knitted 
+**Knitted** — Ditch the noise. Keep the human connection.
 
