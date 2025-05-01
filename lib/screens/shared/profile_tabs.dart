@@ -22,13 +22,11 @@ class ProfileTabs extends ConsumerWidget {
       controller: tabController,
       children: [
         // Posts Tab
-        _PostsTabView(posts: posts, showReplies: false, showMedia: false),
-        // Replies Tab
-        _PostsTabView(posts: posts, showReplies: true, showMedia: false),
+        _PostsTabView(posts: posts, showMedia: false),
         // Media Tab
-        _PostsTabView(posts: posts, showReplies: false, showMedia: true),
+        _PostsTabView(posts: posts, showMedia: true),
         // Mentions Tab
-        const Center(child: Text('Mentions content goes here')),
+         _PostsTabView(posts: posts, showMedia: true),
       ],
     );
   }
@@ -36,12 +34,10 @@ class ProfileTabs extends ConsumerWidget {
 
 class _PostsTabView extends StatelessWidget {
   final AsyncValue<List<Post>> posts;
-  final bool showReplies;
   final bool showMedia;
 
   const _PostsTabView({
     required this.posts,
-    required this.showReplies,
     required this.showMedia,
   });
 
@@ -53,9 +49,7 @@ class _PostsTabView extends StatelessWidget {
       data: (posts) {
         // Filter posts based on showReplies and showMedia flags
         final filteredPosts = posts.where((post) {
-          if (showReplies) {
-            return post.isReply;
-          } else if (showMedia) {
+          if (showMedia) {
             return post.type == PostType.media;
           } else {
             return !post.isReply; // show only posts, not replies
@@ -66,9 +60,7 @@ class _PostsTabView extends StatelessWidget {
 
         if (filteredPosts.isEmpty) {
           String message = "No posts yet";
-          if (showReplies) {
-            message = "No replies yet";
-          } else if (showMedia) {
+          if (showMedia) {
             message = "No media posts yet";
           }
           return Center(child: Text(message));

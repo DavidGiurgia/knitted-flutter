@@ -93,7 +93,7 @@ class _FriendshipStatusButtonState
                   color: Colors.grey.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.person_remove_rounded),
+                child: Icon(TablerIcons.user_minus),
               ),
               title: Text(
                 'Unfriend',
@@ -116,7 +116,7 @@ class _FriendshipStatusButtonState
                   color: Colors.red.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.block_rounded, color: Colors.red),
+                child: Icon(TablerIcons.forbid, color: Colors.red),
               ),
               title: Text(
                 'Block',
@@ -142,7 +142,7 @@ class _FriendshipStatusButtonState
                   color: Colors.red.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.report_rounded, color: Colors.red),
+                child: Icon(TablerIcons.alert_square_rounded, color: Colors.red),
               ),
               title: Text(
                 'Report',

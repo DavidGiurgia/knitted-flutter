@@ -38,7 +38,7 @@ class _PostSettingsState extends State<PostSettings> {
                         ),
                         const SizedBox(height: 3),
                         const Text(
-                          "Your post will show up in Feed, on your profile and in search results.",
+                          "Your post will show up in Feed and on your profile.",
                           style: TextStyle(color: Colors.grey),
                         ),
                         const SizedBox(height: 16),
@@ -52,7 +52,7 @@ class _PostSettingsState extends State<PostSettings> {
                   _buildAudienceOption(
                     title: 'Friends',
                     description: 'Your friends on Knitted.',
-                    icon: TablerIcons.user,
+                    icon: TablerIcons.users,
                     isSelected: widget.postData.selectedAudience == 'friends',
                     onTap: () {
                       setState(() {
@@ -131,7 +131,7 @@ class _PostSettingsState extends State<PostSettings> {
                   _buildAudienceOption(
                     title: 'Community',
                     description: 'Post to some community.',
-                    icon: TablerIcons.users,
+                    icon: TablerIcons.users_group,
                     isSelected: widget.postData.selectedAudience == 'friends',
                     onTap: () {
                       setState(() {

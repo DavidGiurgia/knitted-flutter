@@ -121,6 +121,7 @@ class _PostActionsState extends ConsumerState<PostActions> {
             );
           },
         ),
+        
         //const Spacer(),
         InkWell(
           borderRadius: BorderRadius.all(Radius.circular(30)),
@@ -146,6 +147,31 @@ class _PostActionsState extends ConsumerState<PostActions> {
             });
           },
         ),
+        // InkWell(
+        //   borderRadius: BorderRadius.all(Radius.circular(30)),
+        //   child: Padding(
+        //     padding: const EdgeInsets.symmetric(
+        //       vertical: 8.0,
+        //       horizontal: 12.0,
+        //     ),
+        //     child: Icon(
+        //           TablerIcons.dots,
+        //           color: AppTheme.foregroundColor(context),
+        //           size: 20,
+        //         ),
+        //   ),
+        //   onTap: () {
+        //     if (widget.isParentPost) {
+        //       return;
+        //     }
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(
+        //         builder: (context) => RepliesScreen(parentPost: widget.post),
+        //       ),
+        //     );
+        //   },
+        // ),
       ],
     );
   }

@@ -31,7 +31,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this); // Changed tab length
   }
 
   @override
@@ -98,7 +98,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            "@${widget.user.username}",
+                            widget.user.username,
                             style: TextStyle(
                               fontSize: 18,
                               color: AppTheme.isDark(context)
@@ -170,7 +170,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                                     child: FriendshipStatusButton(
                                         user: widget.user)),
                               if (widget.user.friendsIds
-                                  .contains(currentUser.id))
+                                      .contains(currentUser.id) &&
+                                  currentUser.id != widget.user.id)
                                 const SizedBox(width: 6),
                               if (widget.user.friendsIds
                                       .contains(currentUser.id) &&
@@ -219,15 +220,15 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                         ? AppTheme.grey800
                         : AppTheme.grey200,
                     controller: _tabController,
-                    labelColor: Theme.of(context).primaryColor,
+                    indicatorColor: AppTheme.foregroundColor(context),
+                    labelColor: AppTheme.foregroundColor(context),
                     unselectedLabelColor: Colors.grey,
                     tabs: const [
                       Tab(text: 'Posts'),
-                      Tab(text: 'Replies'),
                       Tab(text: 'Media'),
                       Tab(text: 'Mentions'),
                     ],
-                    indicatorSize: TabBarIndicatorSize.tab,
+                    //indicatorSize: TabBarIndicatorSize.tab,
                   ),
                 ),
               ),
@@ -271,3 +272,4 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     return false;
   }
 }
+

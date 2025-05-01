@@ -78,6 +78,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         actions: [
           IconButton(
             onPressed: () {
+               // Show bottom sheet
+            },
+            icon: const Icon(TablerIcons.reorder),
+          ),
+          IconButton(
+            onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ActivityScreen()),

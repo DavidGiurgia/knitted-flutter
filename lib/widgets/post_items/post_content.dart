@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/post.dart';
 import 'package:zic_flutter/core/models/user.dart';
@@ -228,13 +229,13 @@ class PostContent extends ConsumerWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.edit_rounded,
+                    TablerIcons.pencil,
                     color: AppTheme.foregroundColor(context),
                     size: 26,
                   ),
                 ),
                 title: Text(
-                  'Edit post',
+                  'Edit',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
                 ),
                 onTap: () {
@@ -255,7 +256,7 @@ class PostContent extends ConsumerWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.delete_rounded,
+                    TablerIcons.trash,
                     color: AppTheme.foregroundColor(context),
                     size: 26,
                   ),
@@ -282,7 +283,7 @@ class PostContent extends ConsumerWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.close_rounded,
+                    TablerIcons.x,
                     color: AppTheme.foregroundColor(context),
                     size: 26,
                   ),
@@ -309,15 +310,13 @@ class PostContent extends ConsumerWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.person_remove_rounded,
+                    TablerIcons.user_minus,
                     color: AppTheme.foregroundColor(context),
                     size: 26,
                   ),
                 ),
                 title: const Text('Unfriend'),
-                subtitle: Text(
-                  'Remove ${post.anonymousPost ? "this user" : '@${user.username} from friends'}',
-                ),
+                
                 onTap: () {
                   Navigator.pop(context);
                   _confirmUnfriend(context);
@@ -336,7 +335,7 @@ class PostContent extends ConsumerWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.report_rounded,
+                    TablerIcons.alert_square_rounded,
                     color: Colors.red,
                     size: 26,
                   ),
@@ -345,7 +344,6 @@ class PostContent extends ConsumerWidget {
                   'Report',
                   style: TextStyle(color: Colors.red),
                 ),
-                subtitle: const Text('This post is inappropriate'),
                 onTap: () {
                   Navigator.pop(context);
                   _reportPost();
