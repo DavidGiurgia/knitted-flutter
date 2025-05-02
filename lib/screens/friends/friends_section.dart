@@ -59,6 +59,7 @@ class _FriendsSectionState extends ConsumerState<FriendsSection>
           dividerColor:
               AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey200,
           controller: _tabController,
+          indicatorColor: AppTheme.foregroundColor(context),
           labelColor: AppTheme.foregroundColor(context),
           unselectedLabelColor: Colors.grey,
           tabs: [

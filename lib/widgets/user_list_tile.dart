@@ -39,7 +39,7 @@ class UserListTile extends StatelessWidget {
         ),
       ),
       title: Text(
-        "@${user.username}",
+        user.username,
         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
       ),
       subtitle: Text(

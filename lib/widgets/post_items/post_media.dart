@@ -36,16 +36,15 @@ class PostMedia extends StatelessWidget {
         borderRadius: BorderRadius.circular(10.0),
         child: CachedNetworkImage(
           imageUrl: media.url,
-          fit: BoxFit.contain,
+          fit: BoxFit.cover, // Changed to BoxFit.cover
           width: double.infinity,
-          placeholder:
-              (context, url) => Container(
-                color:
-                    AppTheme.isDark(context)
-                        ? Colors.grey[800]
-                        : Colors.grey[200],
-                height: 200,
-              ),
+          height: null, // Added height to match the list view
+          placeholder: (context, url) => Container(
+            color: AppTheme.isDark(context)
+                ? Colors.grey[800]
+                : Colors.grey[200],
+            height: 250, // Added height to match the list view
+          ),
           errorWidget: (context, url, error) => const Icon(Icons.error),
         ),
       ),
@@ -54,40 +53,38 @@ class PostMedia extends StatelessWidget {
 
   Widget _buildMediaList(List<MediaItem> media) {
     return SizedBox(
-      height: 300,
+      height: 250, // Set a fixed height for the image display area
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: media.length + 1, // +1 for the SizedBox
+        itemCount: media.length + 1, // Adaugă 1 pentru spațiul inițial
         itemBuilder: (context, index) {
           if (index == 0) {
-            return const SizedBox(width: 64.0); // Initial spacing
+            return const SizedBox(width: 60); // Spațiul inițial
           }
-          return _buildMediaItem(media[index - 1], media.length > 1);
+          return _buildMediaItem(media[index - 1]);
         },
       ),
     );
   }
 
-  Widget _buildMediaItem(MediaItem media, bool isList) {
-    return InkWell(
-      splashColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      onTap: () {},
-      child: Padding(
-        padding: const EdgeInsets.only(right: 8.0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
+  Widget _buildMediaItem(MediaItem media) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0), // Removed conditional left padding
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          width: 250,  // Added fixed width
+          height: 250, // Added fixed height
           child: CachedNetworkImage(
-            width: isList ? null : double.infinity,
             imageUrl: media.url,
-            fit: isList ? BoxFit.cover : BoxFit.contain,
-            placeholder:
-                (context, url) => Container(
-                  color:
-                      AppTheme.isDark(context)
-                          ? Colors.grey[800]
-                          : Colors.grey[200],
-                ),
+            width: 250,  // Added fixed width, redundant but kept for clarity
+            height: 250, // Added fixed height, redundant but kept for clarity
+            fit: BoxFit.cover, // Use BoxFit.cover
+            placeholder: (context, url) => Container(
+              color: AppTheme.isDark(context)
+                  ? Colors.grey[800]
+                  : Colors.grey[200],
+            ),
             errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
         ),
@@ -95,3 +92,4 @@ class PostMedia extends StatelessWidget {
     );
   }
 }
+

@@ -38,9 +38,9 @@ class RepliesScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     PostItem(post: parentPost, isParentPost: true),
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.all(12),
-                      child: Text("Replies", style: TextStyle(fontSize: 16)),
+                      child: Text( "Replies", style: TextStyle(fontSize: 16)),
                     ),
                     postsAsync.when(
                       data: (posts) {

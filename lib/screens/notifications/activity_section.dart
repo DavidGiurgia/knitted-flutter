@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/api/friends.dart';
 import 'package:zic_flutter/core/api/room_participants.dart';
 import 'package:zic_flutter/core/api/room_service.dart';
@@ -43,7 +44,7 @@ class ActivityScreen extends ConsumerWidget {
               Tab(text: 'Replies'),
               Tab(text: 'Mentions'),
             ],
-            indicatorColor: AppTheme.primaryColor,
+            indicatorColor: AppTheme.foregroundColor(context),
             labelColor: AppTheme.foregroundColor(context),
             unselectedLabelColor: Colors.grey,
           ),
@@ -331,16 +332,16 @@ class _EmptyState extends StatelessWidget {
     final (emptyMessage, emptyIcon) = switch (tab) {
       NotificationTab.all => (
         "No notifications yet",
-        Icons.notifications_off_rounded,
+        TablerIcons.bell,
       ),
       NotificationTab.requests => (
         "No pending requests",
-        Icons.person_add_disabled_rounded,
+        TablerIcons.user_plus,
       ),
-      NotificationTab.replies => ("No replies yet", Icons.reply_rounded),
+      NotificationTab.replies => ("No replies yet", TablerIcons.arrow_back_up),
       NotificationTab.mentions => (
         "No mentions yet",
-        Icons.alternate_email_rounded,
+        TablerIcons.at,
       ),
     };
 

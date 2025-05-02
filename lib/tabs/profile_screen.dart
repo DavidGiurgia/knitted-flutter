@@ -51,20 +51,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       appBar: AppBar(
         scrolledUnderElevation: 0.0,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CreatePost()),
-              );
-            },
-            icon: Icon(
-              TablerIcons.lock_square_rounded_filled,
-              color: AppTheme.foregroundColor(context),
+        title: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SettingsAndActivity(),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                const Icon(TablerIcons.lock, size: 20),
+                const SizedBox(width: 8),
+                Text(user.username, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20),),
+              ],
             ),
           ),
-          const Spacer(),
+        ),
+        actions: [
+          
           IconButton(
             onPressed: () {
               Navigator.push(
@@ -73,7 +82,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               );
             },
             icon: Icon(
-              TablerIcons.plus,
+              TablerIcons.square_rounded_plus,
               color: AppTheme.foregroundColor(context),
             ),
           ),
@@ -119,28 +128,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               fontWeight: FontWeight.w400,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            user.username,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: AppTheme.isDark(context)
-                                  ? Colors.grey.shade200
-                                  : Colors.grey.shade800,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
+                          // const SizedBox(height: 2),
+                          // Text(
+                          //   user.username,
+                          //   style: TextStyle(
+                          //     fontSize: 18,
+                          //     color: AppTheme.isDark(context)
+                          //         ? Colors.grey.shade200
+                          //         : Colors.grey.shade800,
+                          //   ),
+                          // ),
+                          const SizedBox(height: 6),
                           if (user.bio.isNotEmpty)
                             Text(
                               user.bio,
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: AppTheme.isDark(context)
-                                    ? Colors.grey.shade200
-                                    : Colors.grey.shade800,
+                                    ? Colors.grey.shade400
+                                    : Colors.grey.shade600,
                               ),
                             ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 8),
                           GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -183,7 +192,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             type: ButtonType.bordered,
                             size: ButtonSize.small,
                           ),
-                          const SizedBox(height: 24),
+
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
@@ -198,13 +208,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ? AppTheme.grey800
                         : AppTheme.grey200,
                     controller: _tabController,
-                    indicatorColor: AppTheme.primaryColor,
+                    indicatorColor: AppTheme.foregroundColor(context),
                     labelColor: AppTheme.foregroundColor(context),
                     unselectedLabelColor: Colors.grey,
                     tabs: const [
                       Tab(text: 'Posts'),
                       Tab(text: 'Media'),
-                      Tab(text: 'Mentions'),
+                      Tab(text: 'Replies'),
                     ],
                   ),
                 ),

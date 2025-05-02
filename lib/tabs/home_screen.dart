@@ -17,10 +17,11 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   static const String blackLogo = 'lib/assets/images/Knitted-logo.svg';
   static const String whiteLogo = 'lib/assets/images/Knitted-white-logo.svg';
-  
+
   late TabController _tabController;
 
   @override
@@ -54,16 +55,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   Tab(text: 'Friends'),
                   Tab(text: 'Comunity'),
                 ],
-                indicatorColor: AppTheme.primaryColor,
+                indicatorColor: AppTheme.foregroundColor(context),
                 labelColor: AppTheme.foregroundColor(context),
+
+                unselectedLabelColor: Colors.grey,
                 dividerColor:
-                AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey200,
-                 unselectedLabelColor: Colors.grey,
+                    AppTheme.isDark(context)
+                        ? AppTheme.grey800
+                        : AppTheme.grey200,
               ),
               Container(
-                color: AppTheme.isDark(context)
-                    ? AppTheme.grey800
-                    : AppTheme.grey200,
+                color:
+                    AppTheme.isDark(context)
+                        ? AppTheme.grey800
+                        : AppTheme.grey200,
                 height: 0.5,
               ),
             ],
@@ -78,7 +83,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         actions: [
           IconButton(
             onPressed: () {
-               // Show bottom sheet
+              // Show bottom sheet
             },
             icon: const Icon(TablerIcons.reorder),
           ),
@@ -112,13 +117,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               ref.invalidate(userPostsProvider);
             },
             child: ListView(
-              children: [
-                const PostInput(), 
-                FeedPostsList(userId: user.id)
-              ],
+              children: [const PostInput(), FeedPostsList(userId: user.id)],
             ),
           ),
-          
+
           // Second tab - For You
           RefreshIndicator(
             onRefresh: () async {
@@ -127,8 +129,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
             },
             child: ListView(
               children: [
-                //const PostInput(), 
-                FeedPostsList(userId: user.id)
+                //const PostInput(),
+                FeedPostsList(userId: user.id),
               ],
             ),
           ),
@@ -140,10 +142,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
             child: Center(
               child: Text(
                 'Coming soon!',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 20, color: Colors.grey),
               ),
             ),
           ),

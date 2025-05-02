@@ -22,11 +22,11 @@ class ProfileTabs extends ConsumerWidget {
       controller: tabController,
       children: [
         // Posts Tab
-        _PostsTabView(posts: posts, showMedia: false),
+        _PostsTabView(posts: posts, showMedia: false, showReplies: false),
         // Media Tab
-        _PostsTabView(posts: posts, showMedia: true),
-        // Mentions Tab
-         _PostsTabView(posts: posts, showMedia: true),
+        _PostsTabView(posts: posts, showMedia: true, showReplies: false),
+        // Replies Tab
+        _PostsTabView(posts: posts, showMedia: false, showReplies: true),
       ],
     );
   }
@@ -35,10 +35,12 @@ class ProfileTabs extends ConsumerWidget {
 class _PostsTabView extends StatelessWidget {
   final AsyncValue<List<Post>> posts;
   final bool showMedia;
+  final bool showReplies;
 
   const _PostsTabView({
     required this.posts,
     required this.showMedia,
+    required this.showReplies,
   });
 
   @override
@@ -47,12 +49,14 @@ class _PostsTabView extends StatelessWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(child: Text('Error: $error')),
       data: (posts) {
-        // Filter posts based on showReplies and showMedia flags
+        // Filter posts based on showMedia and showReplies flags
         final filteredPosts = posts.where((post) {
           if (showMedia) {
             return post.type == PostType.media;
+          } else if (showReplies) {
+            return post.isReply;
           } else {
-            return !post.isReply; // show only posts, not replies
+            return !post.isReply; // Show only original posts in "Posts" tab
           }
         }).toList();
 
@@ -62,15 +66,18 @@ class _PostsTabView extends StatelessWidget {
           String message = "No posts yet";
           if (showMedia) {
             message = "No media posts yet";
+          } else if (showReplies) {
+            message = "No replies yet.";
           }
           return Center(child: Text(message));
         }
 
         return ListView.builder(
           itemCount: filteredPosts.length,
-          itemBuilder: (context, index) => PostItem(post: filteredPosts[index]),
+          itemBuilder: (context, index) => PostItem(post: filteredPosts[index], profileLink: false,),
         );
       },
     );
   }
 }
+

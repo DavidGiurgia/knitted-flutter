@@ -51,7 +51,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor(context),
       appBar: AppBar(
-        title: Text(widget.user.fullname),
+        title: Text(widget.user.username),
         actions: [
           IconButton(
             icon: Icon(
@@ -96,28 +96,19 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                               fontWeight: FontWeight.w400,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            widget.user.username,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: AppTheme.isDark(context)
-                                  ? Colors.grey.shade200
-                                  : Colors.grey.shade800,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
+                          if (widget.user.bio.isNotEmpty)
+                          const SizedBox(height: 4),
                           if (widget.user.bio.isNotEmpty)
                             Text(
                               widget.user.bio,
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: AppTheme.isDark(context)
-                                    ? Colors.grey.shade200
-                                    : Colors.grey.shade800,
+                                    ? Colors.grey.shade400
+                                    : Colors.grey.shade600,
                               ),
                             ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 8),
                           GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -205,13 +196,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                                 ),
                             ],
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
+              if(widget.user.friendsIds.contains(currentUser.id) || widget.user.id == currentUser.id)
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _SliverAppBarDelegate(
@@ -226,18 +218,17 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                     tabs: const [
                       Tab(text: 'Posts'),
                       Tab(text: 'Media'),
-                      Tab(text: 'Mentions'),
+                      Tab(text: 'Replies'),
                     ],
-                    //indicatorSize: TabBarIndicatorSize.tab,
                   ),
                 ),
               ),
             ];
           },
-          body: ProfileTabs(
+          body: widget.user.friendsIds.contains(currentUser.id) || widget.user.id == currentUser.id ? ProfileTabs(
             userId: widget.user.id,
             tabController: _tabController,
-          ),
+          ) : const SizedBox.shrink(),
         ),
       ),
     );

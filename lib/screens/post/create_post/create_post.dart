@@ -311,7 +311,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                     ),
 
                   if (widget.isReply && widget.replyTo != null)
-                    PostItem(post: widget.replyTo!, readonly: true),
+                    PostItem(post: widget.replyTo!, actionButtons: false),
 
                   PostInputArea(
                     postData: _postData,

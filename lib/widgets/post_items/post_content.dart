@@ -14,14 +14,16 @@ import 'post_type_specific_content.dart';
 class PostContent extends ConsumerWidget {
   final Post post;
   final User user;
-  final bool readonly;
+  final bool profileLink;
+  final bool actionButtons;
   final bool isParentPost;
 
   const PostContent({
     super.key,
     required this.post,
     required this.user,
-    this.readonly = false,
+    this.profileLink = true,
+    this.actionButtons = true,
     this.isParentPost = false,
   });
 
@@ -38,7 +40,7 @@ class PostContent extends ConsumerWidget {
               child: PostAvatar(
                 post: post,
                 user: user,
-                readonly: readonly || isParentPost,
+                readonly: !profileLink,
               ),
             ),
             const SizedBox(width: 10),
@@ -60,9 +62,7 @@ class PostContent extends ConsumerWidget {
                               ),
                             )
                             : Text(
-                              post.anonymousPost
-                                  ? "From [group.name]"
-                                  : "@${user.username}",
+                             "Your friend",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.grey500,
@@ -77,7 +77,7 @@ class PostContent extends ConsumerWidget {
 
         PostTypeSpecificContent(post: post),
         const SizedBox(height: 8),
-        if (!readonly)
+        if (actionButtons)
           Padding(
             padding: const EdgeInsets.only(left: 64.0, right: 12),
             child: PostActions(post: post, isParentPost: isParentPost),
@@ -104,7 +104,7 @@ class PostContent extends ConsumerWidget {
                 InkWell(
                   enableFeedback: false,
                   onTap: () {
-                    if (readonly) return;
+                    if (!profileLink) return;
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -129,7 +129,6 @@ class PostContent extends ConsumerWidget {
                   ),
                 ),
 
-              if (!readonly)
                 Text(
                   " ${formatTimestampCompact(post.createdAt)}",
                   style: TextStyle(
@@ -144,7 +143,7 @@ class PostContent extends ConsumerWidget {
           ),
         ),
         const Spacer(),
-        if (!readonly && !isParentPost)
+        if (!isParentPost && actionButtons)
           InkWell(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,

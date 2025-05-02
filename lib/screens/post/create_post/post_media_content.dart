@@ -85,21 +85,21 @@ class _PostMediaContentState extends State<PostMediaContent> {
               child:
                   widget.postData.images.length > 1
                       ? ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount:
-                            widget.postData.images.length +
-                            1, // +1 pentru SizedBox
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return const SizedBox(
-                              width: 50.0,
-                            ); // Spațiul inițial
-                          }
-                          return _buildImageItem(
-                            index - 1,
-                          ); // -1 pentru a corecta indexul
-                        },
-                      )
+                          scrollDirection: Axis.horizontal,
+                          itemCount:
+                              widget.postData.images.length +
+                              1, // +1 pentru SizedBox
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              return const SizedBox(
+                                width: 50.0,
+                              ); // Spațiul inițial
+                            }
+                            return _buildImageItem(
+                              index - 1,
+                            ); // -1 pentru a corecta indexul
+                          },
+                        )
                       : _buildImageItem(0),
             ),
           if (widget.postData.images.isEmpty)
@@ -140,49 +140,48 @@ class _PostMediaContentState extends State<PostMediaContent> {
   }
 
   Widget _buildImageItem(int index) {
-    return InkWell(
-      splashColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      onTap: () {},
-      child: Padding(
-        padding: EdgeInsets.only(
-          right: 8.0,
-          left: widget.postData.images.length > 1 ? 0 : 50
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Stack(
-            children: [
-              Image.file(
-                widget.postData.images[index],
-                width:
-                    widget.postData.images.length > 1 ? null : double.infinity,
-                fit:
-                    widget.postData.images.length > 1
-                        ? BoxFit.cover
-                        : BoxFit.contain,
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: CircleAvatar(
-                  backgroundColor: Colors.black54,
-                  radius: 16,
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                    onPressed: () => removeImage(index),
+  final isMultipleImages = widget.postData.images.length > 1;
+  return InkWell(
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
+    onTap: () {},
+    child: Padding(
+      padding: EdgeInsets.only(
+        right: 8.0,
+        left: isMultipleImages ? 0 : 50,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Stack(
+          children: [
+            Image.file(
+              widget.postData.images[index],
+              width: isMultipleImages ? 250 : null,
+              height: isMultipleImages ? 300 : null,
+              fit: isMultipleImages ? BoxFit.cover : BoxFit.contain,
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: CircleAvatar(
+                backgroundColor: Colors.black54,
+                radius: 16,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 16,
                   ),
+                  onPressed: () => removeImage(index),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }
+}
+
