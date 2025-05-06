@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:zic_flutter/auth/join_room_screen.dart';
 import 'package:zic_flutter/auth/register_screen.dart';
-import 'package:zic_flutter/core/api/room_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
-import 'package:zic_flutter/screens/chats/temporary_chat_room.dart';
 import 'package:zic_flutter/screens/shared/custom_toast.dart';
 import 'package:zic_flutter/tabs/tabs_layout.dart';
 import 'package:zic_flutter/widgets/button.dart';
 import 'package:zic_flutter/widgets/input.dart';
-import 'package:zic_flutter/widgets/join_room_input.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -22,18 +21,18 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _codeController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   void _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    if (email.isEmpty || password.isEmpty) {
-      CustomToast.show(context, "Please fill in all fields");
-      return;
-    }
+
     final success = await ref
         .read(userProvider.notifier)
         .login(email, password);
+
     if (success) {
       Navigator.pushReplacement(
         context,
@@ -48,54 +47,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  void _joinGroup() async {
-    String code = _codeController.text.trim();
-    if (code.length != 7) {
-      CustomToast.show(
-        context,
-        "Invalid code format. Code must be 7 characters.",
-        color: Colors.red,
-      );
-      return;
-    }
-    final room = await RoomService.getRoomByCode(code);
-    if (room == null) {
-      CustomToast.show(
-        context,
-        'Sorry, there is no such room active right now!',
-      );
-      return;
-    }
-    // Curățăm input-ul după join.
-    _codeController.clear();
-
-    // Navighează către camera respectivă.
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => TemporaryChatRoomSection(
-              room: room,
-            ), // aici adauga un pas intermediar de setare a numelui
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProvider);
+    final theme = Theme.of(context);
+
     if (userAsync.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
     if (userAsync.hasError) {
-      // Afiseaza un mesaj de eroare daca autentificarea a esuat
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Error: ${userAsync.error}")));
       });
     }
-    // Check if the user is logged in and navigate to the TabsLayout
+
     if (userAsync.hasValue && userAsync.value != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
@@ -104,104 +72,187 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
       });
     }
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Partea de sus: Join Group
-              Container(
-                color: AppTheme.primaryColor,
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Joining a private group?",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.backgroundColor(context),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "No account needed",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                        color:
-                            AppTheme.isDark(context)
-                                ? Colors.black54
-                                : Colors.white70,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    JoinTemporaryRoomInput(
-                      controller: _codeController,
-                      onJoin: _joinGroup,
-                    ),
-                  ],
-                ),
-              ),
 
-              // Partea de jos: Login
+    return Scaffold(
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight:
+                MediaQuery.of(context).size.height -
+                MediaQuery.of(context).padding.top -
+                kToolbarHeight,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 180),
+                  SvgPicture.asset(
+                    AppTheme.isDark(context)
+                        ? 'lib/assets/images/Knitted-white-logo.svg'
+                        : 'lib/assets/images/Knitted-logo.svg',
+                    semanticsLabel: 'App Logo',
+                    height: 28,
+                  ),
+                  const SizedBox(height: 100),
+      
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        CustomBorderedInput(
+                          controller: _emailController,
+                          hintText: "",
+                          label: "Email",
+                          fontSize: 18,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            if (!value.contains('@')) {
+                              return 'Please enter a valid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        CustomBorderedInput(
+                          controller: _passwordController,
+                          hintText: "",
+                          isPassword: true,
+                          label: "Password",
+      
+                          fontSize: 18,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            if (value.length < 1) {
+                              return 'Password must be at least 6 characters';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () {
+                            // Add forgot password functionality
+                          },
+                          child: Text(
+                            "Forgot password?",
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.foregroundColor(context),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        CustomButton(
+                          onPressed: _login,
+                          text: 'Log In',
+                          isFullWidth: true,
+                          bgColor: AppTheme.primaryColor,
+                          isLoading: userAsync.isLoading,
+                          borderRadius: 12,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(28, 60, 28, 28),
+                padding: const EdgeInsets.only(bottom: 40, top: 24),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: SvgPicture.asset(
-                        'lib/assets/images/Knitted-logo.svg',
-                        semanticsLabel: 'ZiC Logo',
-                        width: 64,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: theme.dividerColor.withOpacity(0.3),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            "or continue with",
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: theme.dividerColor.withOpacity(0.3),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 42),
-                    const Text(
-                      "Log in",
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildSocialButton(
+                          icon: TablerIcons.brand_google,
+                          onPressed: () {},
+                        ),
+                        const SizedBox(width: 16),
+                        _buildSocialButton(
+                          icon: TablerIcons.brand_facebook,
+                          onPressed: () {},
+                        ),
+                        const SizedBox(width: 16),
+                        _buildSocialButton(
+                          icon: TablerIcons.brand_apple,
+                          onPressed: () {},
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    CustomBorderedInput(
-                      controller: _emailController,
-                      hintText: "Enter your email",
-                      label: "Email",
-                      fontSize: 18,
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Don't have an account? ",
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        GestureDetector(
+                          onTap:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const RegisterScreen(),
+                                ),
+                              ),
+                          child: Text(
+                            "Sign up",
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    CustomBorderedInput(
-                      controller: _passwordController,
-                      hintText: "Enter your password",
-                      isPassword: true,
-                      label: "Password",
-                      fontSize: 18,
-                    ),
-                    const SizedBox(height: 20),
-                    CustomButton(
-                      onPressed: _login,
-                      text: 'Login',
-                      isFullWidth: true,
-                      bgColor: AppTheme.primaryColor,
-                      isLoading: userAsync.isLoading,
-                    ),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 16),
                     CustomButton(
                       onPressed:
                           () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const RegisterScreen(),
+                              builder: (_) => const JoinRoomScreen(),
                             ),
                           ),
-                      text: "Create new account",
+                      text: "Join a room",
                       isFullWidth: true,
-                      type: ButtonType.light,
-                      bgColor: AppTheme.primaryColor,
+                      type: ButtonType.bordered,
+      
+                      borderRadius: 12,
                     ),
                   ],
                 ),
@@ -209,6 +260,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSocialButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 56,
+        height: 56,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+        child: Icon(icon),
       ),
     );
   }

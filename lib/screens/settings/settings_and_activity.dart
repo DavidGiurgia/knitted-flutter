@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroicons/heroicons.dart';
-
 import 'package:zic_flutter/auth/login_screen.dart';
-import 'package:zic_flutter/core/app_theme.dart';
+import 'package:zic_flutter/core/providers/theme_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/widgets/button.dart';
 
@@ -18,7 +17,11 @@ class SettingsAndActivity extends ConsumerStatefulWidget {
 class _SettingsAndActivityState extends ConsumerState<SettingsAndActivity> {
   @override
   Widget build(BuildContext context) {
-    
+    final themeMode = ref.watch(themeProvider);
+    final isDark =
+        themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.dark);
     return Scaffold(
       appBar: AppBar(title: const Text('Settings and Activity')),
       body: Center(
@@ -36,13 +39,9 @@ class _SettingsAndActivityState extends ConsumerState<SettingsAndActivity> {
               heroIcon: HeroIcons.arrowLeftEndOnRectangle,
               size: ButtonSize.large,
             ),
-            CustomButton(
-              onPressed: () async {
-                await ref.read(themeModeProvider.notifier).toggleTheme();
-              },
-              isIconOnly: true,
-              heroIcon: HeroIcons.moon,
-              size: ButtonSize.large,
+            IconButton(
+              icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+              onPressed: () => ref.read(themeProvider.notifier).toggleTheme(),
             ),
           ],
         ),

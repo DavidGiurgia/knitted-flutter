@@ -122,7 +122,7 @@ class _PostActionsState extends ConsumerState<PostActions> {
           },
         ),
         
-        //const Spacer(),
+        const Spacer(),
         InkWell(
           borderRadius: BorderRadius.all(Radius.circular(30)),
           child: Padding(
@@ -137,7 +137,6 @@ class _PostActionsState extends ConsumerState<PostActions> {
                   color: AppTheme.foregroundColor(context),
                   size: 20,
                 ),
-                //Text(isSaved ? " Saved":" Save"),
               ],
             ),
           ),

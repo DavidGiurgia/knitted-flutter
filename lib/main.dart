@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zic_flutter/auth/auth_wrapper.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:zic_flutter/core/providers/theme_provider.dart';
 import 'package:zic_flutter/core/services/chat_socket_service.dart';
 
 Future<void> main() async {
@@ -14,32 +15,30 @@ Future<void> main() async {
   try {
     await ChatSocketService().connect(baseUrl); // Wait for connection
   } catch (e) {
-    print('Failed to connect to WebSocket: $e');
+    debugPrint('Failed to connect to WebSocket: $e');
   }
+
+  // Forțează orientarea portrait (opțional)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
     return MaterialApp(
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       debugShowCheckedModeBanner: false,
-      home: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: AppTheme.backgroundColor(context),
-          statusBarIconBrightness:
-              AppTheme.isDark(context) ? Brightness.light : Brightness.dark,
-          systemNavigationBarColor: AppTheme.backgroundColor(context),
-          systemNavigationBarIconBrightness:
-              AppTheme.isDark(context) ? Brightness.light : Brightness.dark,
-        ),
-        child: const AuthWrapper(),
-      ),
+      home: const AuthWrapper(),
     );
   }
 }

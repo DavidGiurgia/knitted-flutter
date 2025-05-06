@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,18 +33,21 @@ class AppTheme {
     return Theme.of(context).brightness == Brightness.dark;
   }
 
-  static ThemeData lightTheme = ThemeData(
+  static ThemeData get lightTheme => ThemeData(
     brightness: Brightness.light,
     primaryColor: primaryColor,
     scaffoldBackgroundColor: Colors.white,
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.white,
-      iconTheme: const IconThemeData(color: Colors.black),
+      foregroundColor: Colors.black,
+      elevation: 0,
+      systemOverlayStyle: SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
     ),
-    fontFamily: 'Poppins',
     colorScheme: ColorScheme.light(
       primary: primaryColor,
-      secondary: Color(0xFF3B4E68),
+      secondary: primaryColor.withOpacity(0.8),
       surface: Colors.white,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
@@ -51,18 +55,21 @@ class AppTheme {
     ),
   );
 
-  static ThemeData darkTheme = ThemeData(
+  static ThemeData get darkTheme => ThemeData(
     brightness: Brightness.dark,
     primaryColor: primaryColor,
     scaffoldBackgroundColor: grey950,
     appBarTheme: AppBarTheme(
       backgroundColor: grey950,
-      iconTheme: const IconThemeData(color: Colors.white),
+      foregroundColor: Colors.white,
+      elevation: 0,
+      systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
     ),
-    fontFamily: 'Poppins',
     colorScheme: ColorScheme.dark(
       primary: primaryColor,
-      secondary: Color(0xFF253141),
+      secondary: primaryColor.withOpacity(0.8),
       surface: Colors.black,
       onPrimary: Colors.black,
       onSecondary: Colors.black,
@@ -70,7 +77,6 @@ class AppTheme {
     ),
   );
 }
-
 
 // Riverpod Provider for ThemeMode
 final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>(
@@ -87,20 +93,23 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   Future<void> toggleTheme() async {
     state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
     await _saveTheme();
+    _updateSystemChrome();
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
     await _saveTheme();
+    _updateSystemChrome();
   }
 
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final themeString = prefs.getString(_prefKey);
     if (themeString != null) {
-      state = themeString == 'dark'
-          ? ThemeMode.dark
-          : themeString == 'light'
+      state =
+          themeString == 'dark'
+              ? ThemeMode.dark
+              : themeString == 'light'
               ? ThemeMode.light
               : ThemeMode.system;
     }
@@ -121,5 +130,23 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
       default:
         return ThemeData(); //return empty
     }
+  }
+
+  void _updateSystemChrome() {
+    final isDark = state == ThemeMode.dark || 
+        (state == ThemeMode.system && 
+         WidgetsBinding.instance.window.platformBrightness == Brightness.dark);
+    
+    SystemChrome.setSystemUIOverlayStyle(
+      isDark
+          ? SystemUiOverlayStyle.light.copyWith(
+              statusBarColor: Colors.transparent,
+              systemNavigationBarColor: AppTheme.grey950,
+            )
+          : SystemUiOverlayStyle.dark.copyWith(
+              statusBarColor: Colors.transparent,
+              systemNavigationBarColor: Colors.white,
+            ),
+    );
   }
 }

@@ -5,6 +5,7 @@ import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/tabs/tabs_layout.dart';
 import 'package:zic_flutter/widgets/button.dart';
+import 'package:zic_flutter/widgets/input.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -14,40 +15,31 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  final PageController _pageController = PageController();
   final TextEditingController _fullnameController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  int _currentStep = 0;
+  final _formKey = GlobalKey<FormState>();
   bool _usernameAvailable = false;
+  bool _isCheckingUsername = false;
 
-  void _checkUsernameAvailability() async {
-    // Here you would typically call an API to check if username is available
-    // For now, we'll just simulate a check
+  Future<void> _checkUsernameAvailability() async {
+    if (_usernameController.text.trim().isEmpty) return;
+
+    setState(() => _isCheckingUsername = true);
+    await Future.delayed(const Duration(seconds: 1)); // Simulate API call
+
     setState(() {
       _usernameAvailable = _usernameController.text.trim().isNotEmpty;
+      //check if username is available 
+      _isCheckingUsername = false;
     });
-
-    if (_usernameAvailable) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      setState(() => _currentStep++);
-    }
   }
 
   void _register() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all fields")),
-      );
-      return;
-    }
+    if (!_formKey.currentState!.validate() || _isCheckingUsername || !_usernameAvailable) return;
 
-    ref
+    final success = await ref
         .read(userProvider.notifier)
         .register(
           _fullnameController.text.trim(),
@@ -55,15 +47,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           _emailController.text.trim(),
           _passwordController.text.trim(),
         );
+
+    if (success && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const TabsLayout()),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProvider);
+    final theme = Theme.of(context);
+
+    if (userAsync.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
+        automaticallyImplyLeading: true,
         title: SvgPicture.asset(
           AppTheme.isDark(context)
               ? 'lib/assets/images/Knitted-white-logo.svg'
@@ -72,209 +77,137 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           height: 24,
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            
-
-            // Page view for registration steps
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 40),
+              // Text(
+              //   "Create your account",
+              //   style: theme.textTheme.headlineMedium?.copyWith(
+              //     fontWeight: FontWeight.w700,
+              //   ),
+              // ),
+              // const SizedBox(height: 8),
+              Text(
+                "Join our community today",
+                
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.isDark(context) ? Colors.grey[200] : Colors.grey[900],
+                ),
+              ),
+              const SizedBox(height: 40),
+              CustomBorderedInput(
+                controller: _fullnameController,
+                hintText: "Enter your full name",
+                label: "Full Name",
+                prefixIcon: Icons.person_outline,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              CustomBorderedInput(
+                controller: _usernameController,
+                hintText: "Choose a username",
+                label: "Username",
+                prefixIcon: Icons.alternate_email,
+      
+                onChanged: (value) async {
+                  await _checkUsernameAvailability();
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please choose a username';
+                  }
+                  if (!_usernameAvailable) {
+                    return 'Please check username availability';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              CustomBorderedInput(
+                controller: _emailController,
+                hintText: "Enter your email",
+                label: "Email",
+                prefixIcon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  if (!value.contains('@')) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              CustomBorderedInput(
+                controller: _passwordController,
+                hintText: "Create a password",
+                label: "Password",
+                prefixIcon: Icons.lock_outline,
+                isPassword: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a password';
+                  }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+              CustomButton(
+                onPressed: _register,
+                text: 'Register',
+                isFullWidth: true,
+                bgColor: AppTheme.primaryColor,
+                isLoading: userAsync.isLoading,
+                borderRadius: 12,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Step 1: Username selection
-                  _buildUsernameStep(),
-
-                  // Step 2: Email and password
-                  _buildAccountStep(),
-
-                  // Step 3: Full name and final registration
-                  _buildProfileStep(userAsync),
+                  Text(
+                    "Already have an account? ",
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Text(
+                      "Log in",
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildUsernameStep() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Choose your username',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _usernameController,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: "Username",
-              suffixIcon:
-                  _usernameController.text.isNotEmpty
-                      ? IconButton(
-                        icon: const Icon(Icons.check_circle),
-                        onPressed: () {},
-                      )
-                      : null,
-            ),
-            onChanged: (value) => setState(() {}),
-          ),
-          const SizedBox(height: 8),
-          if (_usernameController.text.isNotEmpty)
-            Text(
-              _usernameAvailable
-                  ? 'Username available!'
-                  : 'Checking availability...',
-              style: TextStyle(
-                color: _usernameAvailable ? Colors.green : Colors.grey,
-              ),
-            ),
-          const SizedBox(height: 32),
-          CustomButton(
-            onPressed: _checkUsernameAvailability,
-            text: 'Continue',
-            isFullWidth: true,
-            bgColor: AppTheme.primaryColor,
-            isLoading: false,
-            size: ButtonSize.small,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAccountStep() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Create your account',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _emailController,
-            decoration: const InputDecoration(
-              labelText: "Email",
-              border: OutlineInputBorder(),
-            ),
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _passwordController,
-            decoration: const InputDecoration(
-              labelText: "Password",
-              border: OutlineInputBorder(),
-            ),
-            obscureText: true,
-          ),
-          const SizedBox(height: 32),
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  _pageController.previousPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                  setState(() => _currentStep--);
-                },
-                icon: const Icon(Icons.arrow_back),
-              ),
-              const SizedBox(width: 100),
-              Expanded(
-                child: CustomButton(
-                  onPressed: () {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                    setState(() => _currentStep++);
-                  },
-                  text: 'Continue',
-                  isFullWidth: true,
-                  bgColor: AppTheme.primaryColor,
-                  size: ButtonSize.small,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileStep(AsyncValue userAsync) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Complete your profile',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _fullnameController,
-            decoration: const InputDecoration(labelText: "Full Name"),
-          ),
-          const SizedBox(height: 32),
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  _pageController.previousPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                  setState(() => _currentStep--);
-                },
-                icon: const Icon(Icons.arrow_back),
-              ),
-              const SizedBox(width: 100),
-              Expanded(
-                child: CustomButton(
-                  onPressed: _register,
-                  text: 'Register',
-                  isFullWidth: true,
-                  bgColor: AppTheme.primaryColor,
-                  isLoading: userAsync.isLoading,
-                  size: ButtonSize.small,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void didUpdateWidget(covariant RegisterScreen oldWidget) {
-    final userAsync = ref.watch(userProvider);
-    if (userAsync.hasValue) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const TabsLayout()),
-      );
-    }
-    super.didUpdateWidget(oldWidget);
-  }
-
   @override
   void dispose() {
-    _pageController.dispose();
     _fullnameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
