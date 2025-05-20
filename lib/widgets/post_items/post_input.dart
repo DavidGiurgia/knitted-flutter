@@ -21,7 +21,7 @@ class _PostInputState extends ConsumerState<PostInput> {
       return SizedBox.shrink();
     }
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -39,7 +39,7 @@ class _PostInputState extends ConsumerState<PostInput> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PostAvatar(post: null, user: user),
-              const SizedBox(width: 10),
+              const SizedBox(width: 6),
               Expanded(
                 child: InkWell(
                   splashColor:
@@ -67,8 +67,9 @@ class _PostInputState extends ConsumerState<PostInput> {
                       Text(
                         "What's new?",
                         style: TextStyle(
-                          color:
-                              Colors.grey,
+                          color: AppTheme.foregroundColor(
+                            context,
+                          ).withValues(alpha: 0.6),
                           fontSize: 16,
                         ),
                       ),
@@ -82,10 +83,13 @@ class _PostInputState extends ConsumerState<PostInput> {
 
           // Action Buttons
           Padding(
-            padding: const EdgeInsets.only(left: 50.0),
+            padding: const EdgeInsets.only(left: 48.0),
             child: Row(
               children: [
-                _buildActionButton(icon: TablerIcons.library_photo, tab: 'media'),
+                _buildActionButton(
+                  icon: TablerIcons.library_photo,
+                  tab: 'media',
+                ),
                 const SizedBox(width: 14),
                 _buildActionButton(icon: TablerIcons.camera, tab: 'media'),
                 const SizedBox(width: 14),
@@ -112,11 +116,7 @@ class _PostInputState extends ConsumerState<PostInput> {
           ),
         );
       },
-      child: Icon(
-        icon,
-        size: 28,
-        color: Colors.grey,
-      ),
+      child: Icon(icon, size: 28, color: AppTheme.foregroundColor(context).withValues(alpha: 0.6)),
     );
   }
 }

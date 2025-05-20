@@ -22,6 +22,8 @@ class MediaPost extends Post {
     required super.id,
     super.isReply,
     super.replyTo,
+    super.isFromCommunity,
+    super.communityId,
     required super.userId,
     required super.content,
     required super.type,
@@ -42,6 +44,8 @@ class MediaPost extends Post {
       userId: json['userId'],
       isReply: json['isReply'] ?? false,
       replyTo: json['replyTo'],
+      isFromCommunity: json['isFromCommunity'] ?? false,
+      communityId: json['communityId'],
       content: json['content'],
       type: postTypeMap[json['type']] ?? PostType.text,
       media:

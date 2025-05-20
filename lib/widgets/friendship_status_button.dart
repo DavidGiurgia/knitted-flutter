@@ -39,7 +39,7 @@ class _FriendshipStatusButtonState
     try {
       if (action == "add") {
         await FriendsService.request(userId, widget.user.id);
-      } else if (action == "cancel") {
+      } else if (action == "pending") {
         await FriendsService.cancelFriendRequest(userId, widget.user.id);
       } else if (action == "accept") {
         await FriendsService.acceptFriendRequest(userId, widget.user.id);
@@ -190,7 +190,7 @@ class _FriendshipStatusButtonState
                 ? showFriendOptions
                 : () => handleFriendRequest(
                   hasSentRequest
-                      ? "cancel"
+                      ? "pending"
                       : hasIncomingRequest
                       ? "accept"
                       : isBlocked
@@ -202,16 +202,16 @@ class _FriendshipStatusButtonState
                 ? isFriend
                     ? "Friends"
                     : hasSentRequest
-                    ? "Requested"
+                    ? "Pending"
                     : hasIncomingRequest
                     ? "Accept"
                     : isBlocked
                     ? "Unblock"
-                    : "Add friend"
+                    : "Add"
                 : isFriend
                 ? "Friends"
                 : hasSentRequest
-                ? "Cancel request"
+                ? "Pending"
                 : hasIncomingRequest
                 ? "Accept request"
                 : isBlocked
@@ -233,8 +233,8 @@ class _FriendshipStatusButtonState
                 : null,
         bgColor:
             isFriend || isBlocked
-                ? AppTheme.foregroundColor(context)
-                : AppTheme.primaryColor,
+                ? AppTheme.foregroundColor(context).withValues(alpha: 0.5)
+                : AppTheme.foregroundColor(context),
       ),
     );
   }

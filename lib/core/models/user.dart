@@ -11,8 +11,6 @@ class User {
   final List<String> blockedUsers;
   final String avatarUrl;
   final String avatarPublicId;
-  final String coverUrl;
-  final String coverPublicId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -29,8 +27,6 @@ class User {
     required this.blockedUsers,
     required this.avatarUrl,
     required this.avatarPublicId,
-    required this.coverUrl,
-    required this.coverPublicId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -50,8 +46,7 @@ class User {
       blockedUsers: List<String>.from(json['blockedUsers'] ?? []),
       avatarUrl: json['avatarUrl'] ?? '',
       avatarPublicId: json['avatarPublicId'] ?? '',
-      coverUrl: json['coverUrl'] ?? '',
-      coverPublicId: json['coverPublicId'] ?? '',
+
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
     );
@@ -72,20 +67,19 @@ class User {
       'blockedUsers': blockedUsers,
       'avatarUrl': avatarUrl,
       'avatarPublicId': avatarPublicId,
-      'coverUrl': coverUrl,
-      'coverPublicId': coverPublicId,
+
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
   static User defaultUser() {
-     return User(
+    return User(
       id: '',
       username: '',
       fullname: 'Unknown',
       email: '',
-      bio:  '',
+      bio: '',
       role: 'user',
       friendsIds: [],
       friendRequests: [],
@@ -93,8 +87,7 @@ class User {
       blockedUsers: [],
       avatarUrl: '',
       avatarPublicId: '',
-      coverUrl: '',
-      coverPublicId: '',
+
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

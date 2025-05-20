@@ -37,6 +37,20 @@ class PostItem extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (post.isFromCommunity && post.communityId != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8, left: 25),
+                child: Row(
+                  children: [
+                    Icon(TablerIcons.users_group, size: 16, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Text(
+                      post.communityId!,
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
             if (post.isReply && post.replyTo != null)
               InkWell(
                 splashColor: Colors.transparent,
@@ -79,7 +93,6 @@ class PostItem extends ConsumerWidget {
               actionButtons: actionButtons,
               isParentPost: isParentPost,
             ),
-            const SizedBox(height: 8),
           ],
         );
       },

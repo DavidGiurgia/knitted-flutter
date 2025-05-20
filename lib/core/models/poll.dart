@@ -54,6 +54,8 @@ class PollPost extends Post {
     required super.userId,
     super.isReply,
     super.replyTo,
+    super.isFromCommunity,
+    super.communityId,
     required super.content,
     required super.type,
     this.options = const [],
@@ -72,6 +74,8 @@ class PollPost extends Post {
       userId: json['userId'],
       isReply: json['isReply'] ?? false,
       replyTo: json['replyTo'],
+      isFromCommunity: json['isFromCommunity'] ?? false,
+      communityId: json['communityId'],
       content: json['content'],
       type: postTypeMap[json['type']] ?? PostType.text,
       options:

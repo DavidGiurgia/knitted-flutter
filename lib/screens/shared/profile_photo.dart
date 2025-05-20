@@ -5,12 +5,10 @@ import 'package:zic_flutter/core/app_theme.dart';
 
 class ProfilePhoto extends StatelessWidget {
   final String imagePath;
-  final bool isAvatar;
 
   const ProfilePhoto({
     super.key,
     required this.imagePath,
-    required this.isAvatar,
   });
 
   @override
@@ -25,24 +23,17 @@ class ProfilePhoto extends StatelessWidget {
         ),
       ),
       body: Container(
-        // Modificarea este aici
-        color: AppTheme.grey900, // Setează culoarea fundalului direct
+        color: AppTheme.grey900,
         child: Center(
           child: InteractiveViewer(
-            child:
-                isAvatar
-                    ? ImageWidget(
-                      imagePath: imagePath,
-                      size: 300,
-                      fit: BoxFit.cover,
-                      isAvatar: isAvatar,
-                    )
-                    : ImageWidget(
-                      imagePath: imagePath,
-                      size: double.infinity,
-                      fit: BoxFit.contain,
-                      isAvatar: isAvatar,
-                    ),
+            clipBehavior: Clip.none,
+            child: SizedBox( // Added SizedBox to control initial size
+              width: 300,  // Adjust these values to change the initial size of the circle
+              height: 300,
+              child: ClipOval(
+                child: ImageWidget(imagePath: imagePath),
+              ),
+            ),
           ),
         ),
       ),
@@ -52,16 +43,12 @@ class ProfilePhoto extends StatelessWidget {
 
 class ImageWidget extends StatelessWidget {
   final String imagePath;
-  final double size;
   final BoxFit fit;
-  final bool isAvatar;
 
   const ImageWidget({
     super.key,
     required this.imagePath,
-    required this.size,
-    this.fit = BoxFit.cover,
-    required this.isAvatar,
+    this.fit = BoxFit.scaleDown,
   });
 
   @override
@@ -72,9 +59,6 @@ class ImageWidget extends StatelessWidget {
     } else {
       image = Image.file(File(imagePath), fit: fit);
     }
-
-    return isAvatar
-        ? ClipOval(child: SizedBox(width: size, height: size, child: image))
-        : SizedBox(width: size, height: size, child: image);
+    return image;
   }
 }

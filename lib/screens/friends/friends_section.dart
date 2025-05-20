@@ -56,8 +56,7 @@ class _FriendsSectionState extends ConsumerState<FriendsSection>
       appBar: AppBar(
         title: Text(widget.user?.fullname ?? "Unknown"),
         bottom: TabBar(
-          dividerColor:
-              AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey200,
+          dividerColor: Colors.grey.withValues(alpha: 0.1),
           controller: _tabController,
           indicatorColor: AppTheme.foregroundColor(context),
           labelColor: AppTheme.foregroundColor(context),

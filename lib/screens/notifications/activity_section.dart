@@ -32,8 +32,10 @@ class ActivityScreen extends ConsumerWidget {
           title: const Text("Activity"),
           backgroundColor: AppTheme.backgroundColor(context),
           bottom: TabBar(
-            dividerColor:
-                AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey200,
+            isScrollable: true,
+            //indicatorSize: TabBarIndicatorSize.tab,
+            tabAlignment: TabAlignment.center,
+            dividerColor: Colors.grey.withValues(alpha: 0.1),
             onTap: (index) {
               ref.read(currentNotificationTabProvider.notifier).state =
                   NotificationTab.values[index];
@@ -330,19 +332,13 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (emptyMessage, emptyIcon) = switch (tab) {
-      NotificationTab.all => (
-        "No notifications yet",
-        TablerIcons.bell,
-      ),
+      NotificationTab.all => ("No notifications yet", TablerIcons.bell),
       NotificationTab.requests => (
         "No pending requests",
         TablerIcons.user_plus,
       ),
       NotificationTab.replies => ("No replies yet", TablerIcons.arrow_back_up),
-      NotificationTab.mentions => (
-        "No mentions yet",
-        TablerIcons.at,
-      ),
+      NotificationTab.mentions => ("No mentions yet", TablerIcons.at),
     };
 
     return Center(

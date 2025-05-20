@@ -17,6 +17,8 @@ class Post {
   String userId;
   bool isReply;
   String? replyTo;
+  bool isFromCommunity;
+  String? communityId;
   String content;
   PostType type;
   bool anonymousPost;
@@ -31,6 +33,8 @@ class Post {
     required this.userId,
     this.isReply = false,
     this.replyTo,
+    this.isFromCommunity = false,
+    this.communityId,
     required this.content,
     required this.type,
     this.anonymousPost = false,
@@ -57,6 +61,8 @@ class Post {
           userId: json['userId'],
           isReply: json['isReply'] ?? false,
           replyTo: json['replyTo'],
+          isFromCommunity: json['isFromCommunity'] ?? false,
+          communityId: json['communityId'],
           content: json['content'],
           type: PostType.values.byName(json['type']),
           anonymousPost: json['anonymousPost'] ?? false,
@@ -81,6 +87,8 @@ class Post {
       'userId': userId,
       'isReply': isReply,
       'replyTo': replyTo,
+      'isFromCommunity': isFromCommunity,
+      'communityId': communityId,
       'content': content,
       'type': type.name.toLowerCase(),
       'anonymousPost': anonymousPost,
@@ -94,6 +102,6 @@ class Post {
 
   @override
   String toString() {
-    return 'Post{id: $id, userId: $userId, isReply: $isReply, replyTo: $replyTo, content: $content, type: $type, anonymousPost: $anonymousPost, mentions: $mentions, audience: $audience, createdAt: $createdAt, updatedAt: $updatedAt, expiresAt: $expiresAt}';
+    return 'Post{id: $id, userId: $userId, isReply: $isReply, replyTo: $replyTo, isFromCommunity: $isFromCommunity, communityId: $communityId content: $content, type: $type, anonymousPost: $anonymousPost, mentions: $mentions, audience: $audience, createdAt: $createdAt, updatedAt: $updatedAt, expiresAt: $expiresAt}';
   }
 }

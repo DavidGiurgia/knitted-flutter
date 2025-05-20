@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zic_flutter/core/models/post.dart';
 import 'package:zic_flutter/core/providers/post_provider.dart';
 import 'package:zic_flutter/widgets/post_items/post_item.dart';
 
 class FeedPostsList extends ConsumerWidget {
   final String userId;
+  final bool Function(Post post)? filter;
+  final int Function(Post a, Post b)? sort;
 
-  const FeedPostsList({super.key, required this.userId});
+  const FeedPostsList({
+    super.key, 
+    required this.userId,
+    this.filter,
+    this.sort,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -14,32 +22,47 @@ class FeedPostsList extends ConsumerWidget {
 
     return postsAsync.when(
       data: (posts) {
-        posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        // Apply filter if provided
+        final filteredPosts = filter != null 
+            ? posts.where(filter!).toList() 
+            : posts;
+        
+        // Apply sort if provided, otherwise default to newest first
+        filteredPosts.sort(sort ?? (a, b) => b.createdAt.compareTo(a.createdAt));
 
-        if (posts.isNotEmpty) {
+        if (filteredPosts.isNotEmpty) {
           return ListView.builder(
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: posts.length,
-            itemBuilder: (context, index) => PostItem(post: posts[index]),
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: filteredPosts.length,
+            itemBuilder: (context, index) => PostItem(post: filteredPosts[index]),
           );
         } else {
-          return _buildEmptyState();
+          return _buildEmptyState(filter: filter);
         }
       },
-      loading: () => Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) => Center(child: Text('Error loading posts: $error')),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState({bool Function(Post post)? filter}) {
+    String message;
+    
+    if (filter == null) {
+      message = 'No posts available.';
+    } else {
+      // Customize empty state message based on filter type
+      message = 'Nothing here yet.';
+    }
+
     return Padding(
       padding: const EdgeInsets.only(top: 12.0),
       child: Center(
         child: Text(
-          'Start following people and see their posts here.',
+          message,
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey),
+          style: const TextStyle(color: Colors.grey),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_avatar/flutter_advanced_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
@@ -9,9 +10,10 @@ import 'package:zic_flutter/screens/post/create_post/create_post.dart';
 import 'package:zic_flutter/screens/settings/settings_and_activity.dart';
 import 'package:zic_flutter/screens/shared/edit_profile.dart';
 import 'package:zic_flutter/screens/friends/friends_section.dart';
+import 'package:zic_flutter/screens/shared/profile_photo.dart';
 import 'package:zic_flutter/screens/shared/profile_tabs.dart';
+import 'package:zic_flutter/utils/silver_appbar_delegate.dart';
 import 'package:zic_flutter/widgets/button.dart';
-import 'package:zic_flutter/widgets/profile_header.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -27,7 +29,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // Changed length to 3
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+    ); // Changed length to 3
   }
 
   @override
@@ -51,29 +56,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       appBar: AppBar(
         scrolledUnderElevation: 0.0,
         automaticallyImplyLeading: false,
-        title: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SettingsAndActivity(),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                const Icon(TablerIcons.lock, size: 20),
-                const SizedBox(width: 8),
-                Text(user.username, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20),),
-              ],
+
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CreatePost()),
+              );
+            },
+            icon: Icon(
+              TablerIcons.lock,
+              color: AppTheme.foregroundColor(context),
             ),
           ),
-        ),
-        actions: [
-          
+          const Spacer(),
           IconButton(
             onPressed: () {
               Navigator.push(
@@ -112,105 +109,146 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    ProfileHeader(user: user),
-                    const SizedBox(height: 28),
-                    Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 2,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start, // Align items to the start
                         children: [
-                          Text(
-                            user.fullname,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          // const SizedBox(height: 2),
-                          // Text(
-                          //   user.username,
-                          //   style: TextStyle(
-                          //     fontSize: 18,
-                          //     color: AppTheme.isDark(context)
-                          //         ? Colors.grey.shade200
-                          //         : Colors.grey.shade800,
-                          //   ),
-                          // ),
-                          const SizedBox(height: 6),
-                          if (user.bio.isNotEmpty)
-                            Text(
-                              user.bio,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppTheme.isDark(context)
-                                    ? Colors.grey.shade400
-                                    : Colors.grey.shade600,
-                              ),
-                            ),
-                          const SizedBox(height: 8),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      FriendsSection(user: user),
-                                ),
-                              );
-                            },
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                const SizedBox(height: 12),
                                 Text(
-                                  "${friends?.length ?? 0} friends",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                    color: AppTheme.isDark(context)
-                                        ? Colors.grey.shade600
-                                        : Colors.grey.shade400,
+                                  user.fullname,
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
+                                Text(
+                                  user.username,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                if (user.bio.isNotEmpty)
+                                  Text(
+                                    user.bio,
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                const SizedBox(height: 8),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                FriendsSection(user: user),
+                                      ),
+                                    );
+                                  },
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "${friends?.length ?? 0} friends",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w400,
+                                          color:
+                                              AppTheme.isDark(context)
+                                                  ? Colors.grey.shade600
+                                                  : Colors.grey.shade400,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          CustomButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const EditProfileScreen(),
-                                ),
-                              );
+                          const SizedBox(width: 16), // Add some spacing
+                          GestureDetector(
+                            onTap: () {
+                              if (user.avatarUrl != "") {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => ProfilePhoto(
+                                          imagePath: user.avatarUrl,
+                                        ),
+                                  ),
+                                );
+                              }
                             },
-                            text: 'Edit Profile',
-                            isFullWidth: true,
-                            type: ButtonType.bordered,
-                            size: ButtonSize.small,
+                            child: AdvancedAvatar(
+                              size: 64,
+                              image: NetworkImage(user.avatarUrl),
+                              autoTextSize: true,
+                              name: user.fullname,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? AppTheme.grey200
+                                        : AppTheme.grey800,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? AppTheme.grey800
+                                        : AppTheme.grey200,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
                           ),
-
-                          const SizedBox(height: 20),
                         ],
                       ),
-                    ),
-                  ],
+                      CustomButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const EditProfileScreen(),
+                            ),
+                          );
+                        },
+                        text: 'Edit Profile',
+                        isFullWidth: true,
+                        type: ButtonType.bordered,
+                        size: ButtonSize.small,
+                      ),
+                      const SizedBox(height: 6),
+                    ],
+                  ),
                 ),
               ),
               SliverPersistentHeader(
                 pinned: true,
-                delegate: _SliverAppBarDelegate(
+                delegate: SliverAppBarDelegate(
                   tabBar: TabBar(
-                    dividerColor: AppTheme.isDark(context)
-                        ? AppTheme.grey800
-                        : AppTheme.grey200,
                     controller: _tabController,
+                    dividerColor: Colors.grey.withValues(alpha: 0.1),
                     indicatorColor: AppTheme.foregroundColor(context),
                     labelColor: AppTheme.foregroundColor(context),
                     unselectedLabelColor: Colors.grey,
+                    //indicatorSize: TabBarIndicatorSize.tab,
                     tabs: const [
                       Tab(text: 'Posts'),
                       Tab(text: 'Media'),
@@ -227,33 +265,3 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 }
-
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar tabBar;
-
-  const _SliverAppBarDelegate({required this.tabBar});
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: tabBar,
-    );
-  }
-
-  @override
-  double get maxExtent => tabBar.preferredSize.height;
-
-  @override
-  double get minExtent => tabBar.preferredSize.height;
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
-  }
-}
-

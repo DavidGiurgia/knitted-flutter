@@ -38,25 +38,13 @@ class _PostActionsState extends ConsumerState<PostActions> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        InkWell(
-          borderRadius: BorderRadius.all(Radius.circular(30)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 8.0,
-              horizontal: 12.0,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  TablerIcons.arrow_back_up,
-                  color: AppTheme.foregroundColor(context),
-                  size: 20,
-                ),
-                Text(" Reply"),
-              ],
-            ),
+        IconButton(
+          icon: Icon(
+            TablerIcons.arrow_back_up,
+            color: AppTheme.foregroundColor(context).withValues(alpha: 0.7),
+            size: 20,
           ),
-          onTap: () {
+          onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -67,30 +55,6 @@ class _PostActionsState extends ConsumerState<PostActions> {
             );
           },
         ),
-
-        // if (widget.post.anonymousPost && widget.post.userId != user.id)
-        //   InkWell(
-        //     borderRadius: BorderRadius.all(Radius.circular(30)),
-        //     child: Padding(
-        //       padding: const EdgeInsets.symmetric(
-        //         vertical: 8.0,
-        //         horizontal: 12.0,
-        //       ),
-        //       child: Row(
-        //         children: [
-        //           Icon(
-        //             TablerIcons.hash,
-        //             color: AppTheme.foregroundColor(context),
-        //             size: 20,
-        //           ),
-        //           const Text(" Chat"),
-        //         ],
-        //       ),
-        //     ),
-        //     onTap: () {
-        //       // Navigare către secțiunea de comentarii
-        //     },
-        //   ),
         InkWell(
           borderRadius: BorderRadius.all(Radius.circular(30)),
           child: Padding(
@@ -102,10 +66,19 @@ class _PostActionsState extends ConsumerState<PostActions> {
               children: [
                 Icon(
                   TablerIcons.brand_line,
-                  color: AppTheme.foregroundColor(context),
+                  color: AppTheme.foregroundColor(
+                    context,
+                  ).withValues(alpha: 0.7),
                   size: 20,
                 ),
-                Text(" $repliesCount"),
+                Text(
+                  " $repliesCount",
+                  style: TextStyle(
+                    color: AppTheme.foregroundColor(
+                      context,
+                    ).withValues(alpha: 0.7),
+                  ),
+                ),
               ],
             ),
           ),
@@ -121,57 +94,231 @@ class _PostActionsState extends ConsumerState<PostActions> {
             );
           },
         ),
-        
-        const Spacer(),
-        InkWell(
-          borderRadius: BorderRadius.all(Radius.circular(30)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 8.0,
-              horizontal: 12.0,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  isSaved ? TablerIcons.bookmark_filled : TablerIcons.bookmark,
-                  color: AppTheme.foregroundColor(context),
-                  size: 20,
-                ),
-              ],
-            ),
+
+        IconButton(
+          icon: Icon(
+            isSaved ? TablerIcons.bookmark_filled : TablerIcons.bookmark,
+            color: AppTheme.foregroundColor(context).withValues(alpha: 0.7),
+            size: 20,
           ),
-          onTap: () {
+          onPressed: () {
             setState(() {
               isSaved = !isSaved;
             });
           },
         ),
-        // InkWell(
-        //   borderRadius: BorderRadius.all(Radius.circular(30)),
-        //   child: Padding(
-        //     padding: const EdgeInsets.symmetric(
-        //       vertical: 8.0,
-        //       horizontal: 12.0,
-        //     ),
-        //     child: Icon(
-        //           TablerIcons.dots,
-        //           color: AppTheme.foregroundColor(context),
-        //           size: 20,
-        //         ),
-        //   ),
-        //   onTap: () {
-        //     if (widget.isParentPost) {
-        //       return;
-        //     }
-        //     Navigator.push(
-        //       context,
-        //       MaterialPageRoute(
-        //         builder: (context) => RepliesScreen(parentPost: widget.post),
-        //       ),
-        //     );
-        //   },
-        // ),
+        IconButton(
+          icon: Icon(
+            TablerIcons.dots,
+            color: AppTheme.foregroundColor(context).withValues(alpha: 0.7),
+            size: 20,
+          ),
+          onPressed: () => _showPostOptions(context, ref),
+        ),
       ],
     );
+  }
+
+  void _showPostOptions(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.read(userProvider).value;
+    if (currentUser == null) return;
+
+    final bool isCurentUserPost = widget.post.userId == currentUser.id;
+    showModalBottomSheet(
+      backgroundColor:
+          AppTheme.isDark(context) ? AppTheme.grey900 : Colors.white,
+      context: context,
+      builder: (context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 5,
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            if (isCurentUserPost && widget.post.anonymousPost)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 0,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.visibility_rounded,
+                    color: AppTheme.foregroundColor(context),
+                    size: 26,
+                  ),
+                ),
+                title: Text(
+                  'Reveal identity',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                ),
+                subtitle: Text('Make your name visible on this post'),
+                onTap: () {
+                  Navigator.pop(context);
+                  //_editPost();
+                },
+              ),
+            if (isCurentUserPost)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 0,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    TablerIcons.pencil,
+                    color: AppTheme.foregroundColor(context),
+                    size: 26,
+                  ),
+                ),
+                title: Text(
+                  'Edit',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  //_editPost();
+                },
+              ),
+            if (isCurentUserPost)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 0,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    TablerIcons.trash,
+                    color: AppTheme.foregroundColor(context),
+                    size: 26,
+                  ),
+                ),
+                title: Text(
+                  'Delete',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  //_deletePost();
+                },
+              ),
+            if (!isCurentUserPost)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 0,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    TablerIcons.x,
+                    color: AppTheme.foregroundColor(context),
+                    size: 26,
+                  ),
+                ),
+                title: Text(
+                  'Hide',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _hidePost();
+                },
+              ),
+            if (!isCurentUserPost)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 0,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    TablerIcons.user_minus,
+                    color: AppTheme.foregroundColor(context),
+                    size: 26,
+                  ),
+                ),
+                title: const Text('Unfriend'),
+
+                onTap: () {
+                  Navigator.pop(context);
+                  // _unfriendUser();
+                },
+              ),
+            if (!isCurentUserPost)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 0,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    TablerIcons.alert_square_rounded,
+                    color: Colors.red,
+                    size: 26,
+                  ),
+                ),
+                title: const Text(
+                  'Report',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _reportPost();
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        );
+      },
+    );
+  }
+
+  // Add these helper methods to the PostContent class:
+  void _hidePost() {
+    // Implement hide post functionality
+    debugPrint('Hiding post ${widget.post.id}');
+    // You might want to add this to a provider or call an API
+  }
+
+  void _reportPost() {
+    // Implement report post functionality
+    debugPrint('Reporting post ${widget.post.id}');
+    // You might want to add this to a provider or call an API
   }
 }

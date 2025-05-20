@@ -87,6 +87,24 @@ class PostService {
     }
   }
 
+  // get by community 
+  Future<List<Post>> getCommunityPosts(String communityId) async {
+    final url = Uri.parse('$baseUrl/community/$communityId');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((postJson) => _postFromJson(postJson)).toList();
+      } else if (response.statusCode == 404) {
+        return [];
+      } else {
+        throw Exception('Failed to load user posts: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to load user posts: $e');
+    }
+  }
+
   //get by id
   Future<Post> getPostById(String id) async {
     final url = Uri.parse('$baseUrl/by-id/$id');

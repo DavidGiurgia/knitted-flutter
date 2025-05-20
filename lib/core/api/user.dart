@@ -36,11 +36,10 @@ class UserService {
 
   static Future<void> updateUser(
     String userId,
+    String fullname,
     String bio,
     String avatarUrl,
     String avatarPublicId,
-    String coverUrl,
-    String coverPublicId,
   ) async {
     try {
       await http.post(
@@ -48,10 +47,9 @@ class UserService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'bio': bio,
+          'fullname': fullname,
           'avatarUrl': avatarUrl,
           'avatarPublicId': avatarPublicId,
-          'coverUrl': coverUrl,
-          'coverPublicId': coverPublicId,
         }),
       );
     } catch (error) {
