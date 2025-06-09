@@ -1,88 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:zic_flutter/core/app_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zic_flutter/screens/comunities/create_community.dart';
 import 'package:zic_flutter/screens/comunities/your_communities.dart';
+import 'package:zic_flutter/screens/shared/custom_toast.dart';
 
-class CommunitiesScreen extends StatefulWidget {
+class CommunitiesScreen extends ConsumerStatefulWidget {
   const CommunitiesScreen({super.key});
 
   @override
-  State<CommunitiesScreen> createState() => _CommunitiesScreenState();
+  ConsumerState<CommunitiesScreen> createState() => _CommunitiesScreenState();
 }
 
-class _CommunitiesScreenState extends State<CommunitiesScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _scrollController.dispose(); // Dispose the scroll controller
-    super.dispose();
-  }
-
+class _CommunitiesScreenState extends ConsumerState<CommunitiesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NestedScrollView(
-        controller: _scrollController,
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              title: Text(
-                'Communities',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              actions: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(TablerIcons.search),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(TablerIcons.dots_vertical),
-                ),
-              ],
-              floating: true,
-              scrolledUnderElevation: 0.0,
-              pinned: true, 
-              bottom: TabBar(
-                controller: _tabController,
-                dividerColor: AppTheme.isDark(context)
-                    ? AppTheme.grey800
-                    : AppTheme.grey200,
-                indicatorColor: AppTheme.foregroundColor(context),
-                labelColor: AppTheme.foregroundColor(context),
-                unselectedLabelColor: Colors.grey,
-                tabs: const [
-                  Tab(text: "Home"),
-                  Tab(text: "Explore"),
+      // AppBar clasic, simplu, non-scrollabil.
+      appBar: AppBar(
+        automaticallyImplyLeading: false, // Nu arată săgeata înapoi implicit
+        title: Text('Communities'),
+
+        actions: [
+          
+          // Icon pentru căutare
+          IconButton(
+            onPressed: () {
+              // TODO: Implementează funcționalitatea de căutare
+              CustomToast.show(context, 'Search functionality coming soon!');
+            },
+            icon: const Icon(TablerIcons.search),
+          ),
+          PopupMenuButton(
+            itemBuilder:
+                (context) => [
+                   PopupMenuItem(
+                    value: 'create',
+                    child: Row(
+                      children: [
+                        const Icon(TablerIcons.plus, size: 20),
+                        const SizedBox(width: 8),
+                        Text('Create new community'),
+                      ],
+                    ),
+                    onTap: () => _createNewCommunity(context),
+                  ),
+                  const PopupMenuItem(
+                    value: 'discover',
+                    child: Row(
+                      children: [
+                        Icon(TablerIcons.compass, size: 20),
+                        SizedBox(width: 8),
+                        Text('Discover communities'),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: const [
-            YourCommunities(),
-            Center(
-              child: Text("Explore Communities (Coming Soon!)"),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+      body:
+          const YourCommunities(), // YourCommunities gestionează acum întreaga listă scrollabilă
     );
   }
+}
+
+// Funcție pentru navigarea la ecranul de creare a unei noi comunități.
+void _createNewCommunity(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const CreateCommunity()),
+  );
 }

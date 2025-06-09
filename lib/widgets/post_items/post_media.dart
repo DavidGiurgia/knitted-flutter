@@ -58,7 +58,7 @@ class PostMedia extends StatelessWidget {
 
   Widget _buildSingleMedia(MediaItem media, BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 64.0, right: 12),
+      padding: const EdgeInsets.only(left: 60.0, right: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10.0),
         child: ConstrainedBox(

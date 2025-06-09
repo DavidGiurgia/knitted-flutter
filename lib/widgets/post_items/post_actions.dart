@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-
+import 'package:zic_flutter/core/api/post_service.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/models/post.dart';
 import 'package:zic_flutter/core/providers/post_provider.dart';
@@ -38,13 +38,18 @@ class _PostActionsState extends ConsumerState<PostActions> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        IconButton(
-          icon: Icon(
-            TablerIcons.arrow_back_up,
-            color: AppTheme.foregroundColor(context).withValues(alpha: 0.7),
-            size: 20,
+        InkWell(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(
+              TablerIcons.arrow_back_up,
+              color: AppTheme.foregroundColor(context).withValues(alpha: 0.8),
+              size: 20,
+            ),
           ),
-          onPressed: () {
+          onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -55,28 +60,28 @@ class _PostActionsState extends ConsumerState<PostActions> {
             );
           },
         ),
+        const SizedBox(width: 20),
         InkWell(
-          borderRadius: BorderRadius.all(Radius.circular(30)),
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 8.0,
-              horizontal: 12.0,
-            ),
+            padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
                 Icon(
                   TablerIcons.brand_line,
                   color: AppTheme.foregroundColor(
                     context,
-                  ).withValues(alpha: 0.7),
+                  ).withValues(alpha: 0.8),
                   size: 20,
                 ),
                 Text(
                   " $repliesCount",
                   style: TextStyle(
+                    fontSize: 14,
                     color: AppTheme.foregroundColor(
                       context,
-                    ).withValues(alpha: 0.7),
+                    ).withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -94,26 +99,37 @@ class _PostActionsState extends ConsumerState<PostActions> {
             );
           },
         ),
-
-        IconButton(
-          icon: Icon(
-            isSaved ? TablerIcons.bookmark_filled : TablerIcons.bookmark,
-            color: AppTheme.foregroundColor(context).withValues(alpha: 0.7),
-            size: 20,
+        const SizedBox(width: 20),
+        InkWell(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(
+              isSaved ? TablerIcons.bookmark_filled : TablerIcons.bookmark,
+              color: AppTheme.foregroundColor(context).withValues(alpha: 0.8),
+              size: 20,
+            ),
           ),
-          onPressed: () {
+          onTap: () {
             setState(() {
               isSaved = !isSaved;
             });
           },
         ),
-        IconButton(
-          icon: Icon(
-            TablerIcons.dots,
-            color: AppTheme.foregroundColor(context).withValues(alpha: 0.7),
-            size: 20,
+        const SizedBox(width: 20),
+        InkWell(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(
+              TablerIcons.dots,
+              color: AppTheme.foregroundColor(context).withValues(alpha: 0.8),
+              size: 20,
+            ),
           ),
-          onPressed: () => _showPostOptions(context, ref),
+          onTap: () => _showPostOptions(context, ref),
         ),
       ],
     );
@@ -166,7 +182,7 @@ class _PostActionsState extends ConsumerState<PostActions> {
                 subtitle: Text('Make your name visible on this post'),
                 onTap: () {
                   Navigator.pop(context);
-                  //_editPost();
+                  _revealIdentity();
                 },
               ),
             if (isCurentUserPost)
@@ -193,7 +209,7 @@ class _PostActionsState extends ConsumerState<PostActions> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  //_editPost();
+                  _editPost();
                 },
               ),
             if (isCurentUserPost)
@@ -218,36 +234,9 @@ class _PostActionsState extends ConsumerState<PostActions> {
                   'Delete',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  //_deletePost();
-                },
-              ),
-            if (!isCurentUserPost)
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 26,
-                  vertical: 0,
-                ),
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    TablerIcons.x,
-                    color: AppTheme.foregroundColor(context),
-                    size: 26,
-                  ),
-                ),
-                title: Text(
-                  'Hide',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _hidePost();
+                  await _deletePost();
                 },
               ),
             if (!isCurentUserPost)
@@ -288,6 +277,31 @@ class _PostActionsState extends ConsumerState<PostActions> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
+                    TablerIcons.forbid,
+                    color: Colors.red,
+                    size: 26,
+                  ),
+                ),
+                title: const Text('Block', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _reportPost();
+                },
+              ),
+            const SizedBox(height: 8),
+            if (!isCurentUserPost)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 0,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
                     TablerIcons.alert_square_rounded,
                     color: Colors.red,
                     size: 26,
@@ -309,11 +323,27 @@ class _PostActionsState extends ConsumerState<PostActions> {
     );
   }
 
-  // Add these helper methods to the PostContent class:
-  void _hidePost() {
-    // Implement hide post functionality
-    debugPrint('Hiding post ${widget.post.id}');
-    // You might want to add this to a provider or call an API
+  Future<void> _revealIdentity() async {
+    await PostService.revealIdentity(widget.post.id!);
+    ref.invalidate(creatorPostsProvider);
+  }
+
+  Future<void> _deletePost() async {
+    debugPrint('deleting post ${widget.post.id}');
+    await PostService.deletePost(widget.post.id!);
+    ref.invalidate(creatorPostsProvider);
+  }
+
+  void _editPost() {
+    // navigate to edit post screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreatePost(
+          postToEdit: widget.post,
+        ),
+      ),
+    );
   }
 
   void _reportPost() {

@@ -76,17 +76,24 @@ class _PostLinkPreviewState extends State<PostLinkPreview> {
   }
 
   Future<void> _launchURL(BuildContext context, String url) async {
-    try {
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not launch URL')));
-      }
-    } catch (e) {
-      debugPrint("Error launching URL: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')));
-    }
+  final uri = Uri.tryParse(url);
+  if (uri == null || !(uri.isScheme('http') || uri.isScheme('https'))) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Invalid URL')),
+    );
+    return;
   }
+  try {
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch URL')));
+    }
+  } catch (e) {
+    debugPrint("Error launching URL: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: ${e.toString()}')));
+  }
+}
 }

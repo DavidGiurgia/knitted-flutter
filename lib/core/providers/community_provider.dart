@@ -94,6 +94,8 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
     bool onlyAdminsCanPost = false,
     bool allowAnonymousPosts = false,
     List<String> rules = const [],
+    String bannerUrl = '',
+    String bannerPublicId = '',
   }) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
@@ -104,6 +106,8 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
         onlyAdminsCanPost: onlyAdminsCanPost,
         allowAnonymousPosts: allowAnonymousPosts,
         rules: rules,
+        bannerUrl: bannerUrl,
+        bannerPublicId: bannerPublicId,
       );
 
       // Handle null response (shouldn't happen with proper error handling)
@@ -177,3 +181,9 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
         return CommunityNotifier(ref);
       });
 }
+
+
+final communityByIdProvider = FutureProvider.family.autoDispose<Community?, String>((ref, id) async {
+  if (id.isEmpty) return null;
+  return CommunityService.getCommunityById(id);
+});

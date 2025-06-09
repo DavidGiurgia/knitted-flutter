@@ -41,7 +41,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     await NotificationService.markNotificationAsRead(widget.notification.id);
     try {
       final senderId = widget.notification.senderId;
-      if (senderId != "knitted_team") {
+      if (senderId != "troop_team") {
         final fetchedSender = await UserService.fetchUserById(senderId);
         final room = await RoomService.getRoomById(
           widget.notification.data['chatRoomId'] ?? "",
@@ -203,16 +203,10 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
               name: sender?.fullname,
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color:
-                    AppTheme.isDark(context)
-                        ? AppTheme.grey200
-                        : AppTheme.grey800,
+                color: AppTheme.foregroundColor(context).withValues(alpha: 0.2),
               ),
               decoration: BoxDecoration(
-                color:
-                    AppTheme.isDark(context)
-                        ? AppTheme.grey800
-                        : AppTheme.grey200,
+                color: AppTheme.foregroundColor(context).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
             ),
@@ -223,21 +217,29 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
                 children: [
                   if (isLoading) ...[
                     Container(
-                      height: 10,
-                      width: 100,
-                      color:
-                          AppTheme.isDark(context)
-                              ? AppTheme.grey800
-                              : AppTheme.grey200,
+                      width: 100, // Made narrower
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: AppTheme.foregroundColor(
+                          context,
+                        ).withValues(alpha: 0.2), // Used withOpacity for alpha
+                        borderRadius: BorderRadius.circular(
+                          16,
+                        ), // Made more rounded
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      height: 10,
-                      width: 150,
-                      color:
-                          AppTheme.isDark(context)
-                              ? AppTheme.grey800
-                              : AppTheme.grey200,
+                      width: 140, // Made narrower
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: AppTheme.foregroundColor(
+                          context,
+                        ).withValues(alpha: 0.2), // Used withOpacity for alpha
+                        borderRadius: BorderRadius.circular(
+                          16,
+                        ), // Made more rounded
+                      ),
                     ),
                   ] else ...[
                     Row(
@@ -255,7 +257,10 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
                           timestamp,
                           style: TextStyle(
                             fontSize: 16,
-                            color: AppTheme.isDark(context) ? Colors.grey[700] : Colors.grey[400],
+                            color:
+                                AppTheme.isDark(context)
+                                    ? Colors.grey[700]
+                                    : Colors.grey[400],
                           ),
                         ),
                       ],
@@ -265,7 +270,10 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
                       _getNotificationSubtitle(),
                       style: TextStyle(
                         fontSize: 16,
-                        color: AppTheme.isDark(context) ? Colors.grey[700] : Colors.grey[400],
+                        color:
+                            AppTheme.isDark(context)
+                                ? Colors.grey[700]
+                                : Colors.grey[400],
                       ),
                     ),
                   ],

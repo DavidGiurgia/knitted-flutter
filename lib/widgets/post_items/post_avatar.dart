@@ -21,8 +21,8 @@ class PostAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 40,
-      height: 40,
+      width: 38,
+      height: 38,
       child:
           (post != null && post!.anonymousPost)
               ? _buildAnonymousAvatar(context)
@@ -39,7 +39,7 @@ class PostAvatar extends StatelessWidget {
         ),
       ),
       child: CircleAvatar(
-        radius: 20,
+        radius: 19,
         backgroundColor: AppTheme.backgroundColor(context),
         child: Icon(
            TablerIcons.spy,
@@ -64,7 +64,7 @@ class PostAvatar extends StatelessWidget {
         );
       },
       child: AdvancedAvatar(
-        size: 40,
+        size: 38,
         image: NetworkImage(user.avatarUrl),
         autoTextSize: true,
         name: user.fullname,

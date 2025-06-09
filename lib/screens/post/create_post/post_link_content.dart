@@ -1,89 +1,90 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:validators/validators.dart';
 import 'package:flutter_link_previewer/flutter_link_previewer.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' show PreviewData;
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/screens/post/create_post/post_data.dart';
+import 'package:zic_flutter/screens/post/create_post/post_create_state.dart';
+import 'package:zic_flutter/screens/shared/custom_toast.dart';
 
-class PostLinkContent extends StatefulWidget {
-  final VoidCallback resetPost;
-  final PostData postData;
-  final VoidCallback validatePost;
-
-  const PostLinkContent({
-    super.key,
-    required this.resetPost,
-    required this.postData,
-    required this.validatePost,
-  });
+class PostLinkContent extends ConsumerStatefulWidget {
+  const PostLinkContent({super.key});
 
   @override
-  State<PostLinkContent> createState() => _PostLinkContentState();
+  ConsumerState<PostLinkContent> createState() => _PostLinkContentState();
 }
 
-class _PostLinkContentState extends State<PostLinkContent> {
+class _PostLinkContentState extends ConsumerState<PostLinkContent> {
   bool _isValidUrl = false;
   PreviewData? _previewData;
 
   @override
   void initState() {
     super.initState();
-    widget.postData.urlController.addListener(_validateUrl);
+    ref
+        .read(postCreationNotifierProvider)
+        .urlController
+        .addListener(_validateUrl);
+    _validateUrl();
+  }
+
+  @override
+  void dispose() {
+    // Remove listener to prevent memory leaks
+    ref
+        .read(postCreationNotifierProvider)
+        .urlController
+        .removeListener(_validateUrl);
+    super.dispose();
   }
 
   void _validateUrl() {
+    final notifier = ref.read(postCreationNotifierProvider.notifier);
+    final currentUrlText =
+        ref.read(postCreationNotifierProvider).urlController.text;
     setState(() {
-      _isValidUrl = isURL(widget.postData.urlController.text);
+      _isValidUrl = isURL(currentUrlText);
       if (!_isValidUrl) {
         _previewData = null;
       }
-
-      widget.validatePost();
+      notifier.validatePost(); // Declanșează validarea globală
     });
   }
 
   Future<void> _launchUrl() async {
+    final currentUrlText =
+        ref.read(postCreationNotifierProvider).urlController.text;
     if (_isValidUrl) {
-      final Uri url = Uri.parse(widget.postData.urlController.text);
+      final Uri url = Uri.parse(currentUrlText);
       if (await canLaunchUrl(url)) {
         await launchUrl(url);
       } else {
-        throw 'Could not launch ${widget.postData.urlController.text}';
+        if (context.mounted) {
+          CustomToast.show(context, 'Could not launch $currentUrlText');
+        }
       }
     }
   }
 
-  // Function to reset the post with confirmation
-  void _resetPostWithConfirmation() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Confirm"),
-            content: const Text("Are you sure you want to remove this link?"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(), // Cancel
-                child: const Text(
-                  "Cancel",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  widget.resetPost(); // Reset
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-                child: const Text("Remove"),
-              ),
-            ],
-          ),
-    );
+  // Function to reset the link-related data in the notifier
+  void _resetLink() {
+    final notifier = ref.read(postCreationNotifierProvider.notifier);
+    // Resetează câmpurile relevante prin notifier
+    notifier.updateField('url', '');
+    notifier.updateField('selectedPostType', 'text');
+
+    setState(() {
+      _previewData = null;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Observă starea notifier-ului pentru a reacționa la schimbări
+    final postCreationState = ref.watch(postCreationNotifierProvider);
+    final currentUrlText = postCreationState.urlController.text;
+
     final style = TextStyle(
       color: AppTheme.foregroundColor(context),
       fontSize: 14,
@@ -107,7 +108,7 @@ class _PostLinkContentState extends State<PostLinkContent> {
                 borderRadius: BorderRadius.circular(12.0),
                 child: LinkPreview(
                   enableAnimation: true,
-                  text: widget.postData.urlController.text,
+                  text: currentUrlText,
                   width: MediaQuery.of(context).size.width,
                   previewData: _previewData,
                   onPreviewDataFetched: (data) {
@@ -137,16 +138,22 @@ class _PostLinkContentState extends State<PostLinkContent> {
           const SizedBox(height: 16),
 
           TextField(
-            controller: widget.postData.urlController,
+            controller: postCreationState.urlController,
             decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(10)),
                 borderSide: BorderSide(color: Colors.red),
               ),
               errorText:
-                  _isValidUrl || widget.postData.urlController.text.isEmpty
-                      ? null
-                      : "Invalid URL",
+                  (postCreationState.validationMessage != null &&
+                          postCreationState.validationMessage!.contains(
+                            "URL",
+                          ) &&
+                          !postCreationState.isValid)
+                      ? postCreationState.validationMessage
+                      : (_isValidUrl || currentUrlText.isEmpty
+                          ? null
+                          : "Invalid URL"),
               focusedErrorBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.red),
                 borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -160,10 +167,7 @@ class _PostLinkContentState extends State<PostLinkContent> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
-                onPressed:
-                    widget.postData.urlController.text.isEmpty
-                        ? widget.resetPost
-                        : _resetPostWithConfirmation,
+                onPressed: _resetLink,
                 child: const Text(
                   "Remove link",
                   style: TextStyle(color: Colors.grey),

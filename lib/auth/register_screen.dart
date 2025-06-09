@@ -31,13 +31,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     setState(() {
       _usernameAvailable = _usernameController.text.trim().isNotEmpty;
-      //check if username is available 
+      //check if username is available
       _isCheckingUsername = false;
     });
   }
 
   void _register() async {
-    if (!_formKey.currentState!.validate() || _isCheckingUsername || !_usernameAvailable) return;
+    if (!_formKey.currentState!.validate() ||
+        _isCheckingUsername ||
+        !_usernameAvailable) {
+      return;
+    }
 
     final success = await ref
         .read(userProvider.notifier)
@@ -71,8 +75,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         automaticallyImplyLeading: true,
         title: SvgPicture.asset(
           AppTheme.isDark(context)
-              ? 'lib/assets/images/Knitted-white-logo.svg'
-              : 'lib/assets/images/Knitted-logo.svg',
+              ? 'lib/assets/images/Troop-white.svg'
+              : 'lib/assets/images/Troop-black.svg',
           semanticsLabel: 'App Logo',
           height: 24,
         ),
@@ -95,11 +99,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               // const SizedBox(height: 8),
               Text(
                 "Join our community today",
-                
+
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.isDark(context) ? Colors.grey[200] : Colors.grey[900],
+                  color:
+                      AppTheme.isDark(context)
+                          ? Colors.grey[200]
+                          : Colors.grey[900],
                 ),
               ),
               const SizedBox(height: 40),
@@ -121,7 +128,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 hintText: "Choose a username",
                 label: "Username",
                 prefixIcon: Icons.alternate_email,
-      
+
                 onChanged: (value) async {
                   await _checkUsernameAvailability();
                 },
@@ -174,7 +181,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 onPressed: _register,
                 text: 'Register',
                 isFullWidth: true,
-                bgColor: AppTheme.primaryColor,
+                bgColor: AppTheme.foregroundColor(context),
                 isLoading: userAsync.isLoading,
                 borderRadius: 12,
               ),

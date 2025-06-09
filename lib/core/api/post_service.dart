@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:zic_flutter/core/models/link.dart';
@@ -7,172 +8,144 @@ import 'package:zic_flutter/core/models/poll.dart';
 import 'package:zic_flutter/core/models/post.dart';
 
 class PostService {
-  static final String baseUrl = '${dotenv.env['BASE_URL']}/post';
+  static String? baseUrl = dotenv.env['BASE_URL'];
+  static const storage = FlutterSecureStorage();
 
-  // Creare postare
-  Future<Post> createPost(Post post) async {
-    final url = Uri.parse('$baseUrl/create');
+  // Helper method for auth headers
+  static Future<Map<String, String>> _authHeaders() async {
+    final token = await storage.read(key: 'auth_token');
+    if (token == null) {
+      throw Exception('No authentication token found');
+    }
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
 
+  // Helper method to handle API responses
+  static dynamic _handleResponse(http.Response response) {
+    final responseBody = json.decode(response.body);
+    
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return responseBody['data']; // Return the data part of successful responses
+    } else {
+      final errorMessage = responseBody['message'] ?? 'Request failed with status ${response.statusCode}';
+      throw Exception(errorMessage);
+    }
+  }
+
+  // Create post
+  static Future<Post> createPost(Post post) async {
+    final url = Uri.parse('$baseUrl/posts');
     try {
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(post.toJson()),
+        headers: await _authHeaders(),
+        body: json.encode(post.toCreateJson()),
       );
-
-      if (response.statusCode >= 200 || response.statusCode < 300) {
-        if (response.body.isEmpty) {
-          throw Exception("Empty response from server");
-        }
-        final data = json.decode(response.body);
-        return _postFromJson(
-          data,
-        ); // În funcție de tipul postării, poți crea o instanță specifică
-      } else {
-        throw Exception('Failed to create post (${response.statusCode})');
-      }
+      final responseData = _handleResponse(response);
+      return _postFromJson(responseData);
     } catch (e) {
-      throw Exception('Failed to create post: $e');
+      throw Exception('Failed to create post: ${e.toString()}');
     }
   }
 
-  Future<List<Post>> getUserPosts(String userId) async {
-    final url = Uri.parse('$baseUrl/user-feed/$userId');
+  static Future<List<Post>> getUserPosts() async {
+    final url = Uri.parse('$baseUrl/posts/feed');
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((postJson) => _postFromJson(postJson)).toList();
-      } else if (response.statusCode == 404) {
-        return [];
-      } else {
-        throw Exception('Failed to load user posts: ${response.statusCode}');
-      }
+      final response = await http.get(url, headers: await _authHeaders());
+      final responseData = _handleResponse(response) as List<dynamic>;
+      return responseData.map((postJson) => _postFromJson(postJson)).toList();
     } catch (e) {
-      throw Exception('Failed to load user posts: $e');
+      throw Exception('Failed to load user posts: ${e.toString()}');
     }
   }
 
-  Future<List<Post>> getCreatorPosts(String userId) async {
-    final url = Uri.parse('$baseUrl/by-creator/$userId');
+  static Future<List<Post>> getCreatorPosts(String userId) async {
+    final url = Uri.parse('$baseUrl/posts/creator/$userId');
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((postJson) => _postFromJson(postJson)).toList();
-      } else if (response.statusCode == 404) {
-        return [];
-      } else {
-        throw Exception('Failed to load user posts: ${response.statusCode}');
-      }
+      final response = await http.get(url, headers: await _authHeaders());
+      final responseData = _handleResponse(response) as List<dynamic>;
+      return responseData.map((postJson) => _postFromJson(postJson)).toList();
     } catch (e) {
-      throw Exception('Failed to load user posts: $e');
+      throw Exception('Failed to load creator posts: ${e.toString()}');
     }
   }
 
-  Future<List<Post>> getPostReplies(String postId) async {
-    final url = Uri.parse('$baseUrl/replies/$postId');
+  static Future<List<Post>> getPostReplies(String postId) async {
+    final url = Uri.parse('$baseUrl/posts/$postId/replies');
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((postJson) => _postFromJson(postJson)).toList();
-      } else if (response.statusCode == 404) {
-        return [];
-      } else {
-        throw Exception('Failed to load user posts: ${response.statusCode}');
-      }
+      final response = await http.get(url, headers: await _authHeaders());
+      final responseData = _handleResponse(response) as List<dynamic>;
+      return responseData.map((postJson) => _postFromJson(postJson)).toList();
     } catch (e) {
-      throw Exception('Failed to load user posts: $e');
+      throw Exception('Failed to load post replies: ${e.toString()}');
     }
   }
 
-  // get by community 
-  Future<List<Post>> getCommunityPosts(String communityId) async {
-    final url = Uri.parse('$baseUrl/community/$communityId');
+  static Future<List<Post>> getCommunityPosts(String communityId) async {
+    final url = Uri.parse('$baseUrl/posts/community/$communityId');
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((postJson) => _postFromJson(postJson)).toList();
-      } else if (response.statusCode == 404) {
-        return [];
-      } else {
-        throw Exception('Failed to load user posts: ${response.statusCode}');
-      }
+      final response = await http.get(url, headers: await _authHeaders());
+      final responseData = _handleResponse(response) as List<dynamic>;
+      return responseData.map((postJson) => _postFromJson(postJson)).toList();
     } catch (e) {
-      throw Exception('Failed to load user posts: $e');
+      throw Exception('Failed to load community posts: ${e.toString()}');
     }
   }
 
-  //get by id
-  Future<Post> getPostById(String id) async {
-    final url = Uri.parse('$baseUrl/by-id/$id');
+  static Future<Post> getPostById(String id) async {
+    final url = Uri.parse('$baseUrl/posts/$id');
     try {
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        if (response.body.isEmpty) {
-          throw Exception("Empty response from server");
-        }
-
-        final decoded = json.decode(response.body);
-        if (decoded is! Map<String, dynamic>) {
-          throw FormatException('Expected Map but got ${decoded.runtimeType}');
-        }
-
-        return _postFromJson(decoded);
-      } else if (response.statusCode == 404) {
-        throw Exception('Post not found');
-      } else {
-        throw Exception('Failed to load post: ${response.statusCode}');
-      }
-    } on FormatException catch (e) {
-      throw Exception('Invalid post data format: $e');
+      final response = await http.get(url, headers: await _authHeaders());
+      final responseData = _handleResponse(response);
+      return _postFromJson(responseData);
     } catch (e) {
-      throw Exception('Failed to load post: $e');
+      throw Exception('Failed to load post: ${e.toString()}');
     }
   }
 
-  // Actualizează un post
-  Future<Post> updatePost(String id, Post post) async {
-    final url = Uri.parse('$baseUrl/$id');
+  static Future<Post> revealIdentity(String id) async {
+    final url = Uri.parse('$baseUrl/posts/$id/reveal');
+    try {
+      final response = await http.patch(url, headers: await _authHeaders());
+      final responseData = _handleResponse(response);
+      return _postFromJson(responseData);
+    } catch (e) {
+      throw Exception('Failed to reveal identity: ${e.toString()}');
+    }
+  }
 
+  static Future<Post> updatePost(String id, Post post) async {
+    final url = Uri.parse('$baseUrl/posts/$id');
     try {
       final response = await http.put(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: await _authHeaders(),
         body: json.encode(post.toJson()),
       );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return Post.fromJson(data);
-      } else {
-        throw Exception('Failed to update post');
-      }
+      final responseData = _handleResponse(response);
+      return _postFromJson(responseData);
     } catch (e) {
-      throw Exception('Failed to update post: $e');
+      throw Exception('Failed to update post: ${e.toString()}');
     }
   }
 
-  // Șterge un post
-  Future<void> deletePost(String id) async {
-    final url = Uri.parse('$baseUrl/$id');
+  static Future<void> deletePost(String id) async {
+    final url = Uri.parse('$baseUrl/posts/$id');
     try {
-      final response = await http.delete(url);
-      if (response.statusCode != 200) {
-        throw Exception('Failed to delete post: ${response.statusCode}');
-      }
+      final response = await http.delete(url, headers: await _authHeaders());
+      _handleResponse(response); // Will throw if not successful
     } catch (e) {
-      throw Exception('Failed to delete post: $e');
+      throw Exception('Failed to delete post: ${e.toString()}');
     }
   }
 
-  Post _postFromJson(Map<String, dynamic> json) {
+  static Post _postFromJson(Map<String, dynamic> json) {
     final type = json['type']?.toString().toLowerCase().trim();
     if (type == null || !postTypeMap.containsKey(type)) {
-      throw Exception('Invalid post type: $type'); // Or throw an exception
+      throw Exception('Invalid post type: $type');
     }
     switch (postTypeMap[type]) {
       case PostType.link:

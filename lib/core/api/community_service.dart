@@ -30,6 +30,8 @@ class CommunityService {
     bool onlyAdminsCanPost = false,
     bool allowAnonymousPosts = false,
     List<String> rules = const [],
+    String bannerUrl = '',
+    String bannerPublicId = '',
   }) async {
     final url = Uri.parse('$baseUrl/communities');
     try {
@@ -42,6 +44,8 @@ class CommunityService {
           'onlyAdminsCanPost': onlyAdminsCanPost,
           'allowAnonymousPosts': allowAnonymousPosts,
           'rules': rules,
+          'bannerUrl': bannerUrl, // Optional, can be set later
+          'bannerPublicId': bannerPublicId, // Optional, can be set later
         }),
       );
 

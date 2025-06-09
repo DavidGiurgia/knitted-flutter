@@ -1,29 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
-import 'package:zic_flutter/core/models/user.dart';
-import 'package:zic_flutter/screens/post/create_post/post_data.dart';
+import 'package:zic_flutter/screens/post/create_post/post_create_state.dart';
 import 'package:zic_flutter/screens/post/create_post/post_settings.dart';
 
-class AudienceSelector extends StatelessWidget {
-  final PostData postData;
-  final User user;
-
-  const AudienceSelector({
-    super.key,
-    required this.postData,
-    required this.user,
-  });
+class AudienceSelector extends ConsumerWidget {
+  const AudienceSelector({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final postCreationState = ref.watch(postCreationNotifierProvider);
+
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PostSettings(postData: postData, user: user),
-          ),
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (context) => const PostSettingsBottomSheet(),
         );
       },
       child: Container(
@@ -51,12 +46,16 @@ class AudienceSelector extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(TablerIcons.user),
+            Icon(
+              postCreationState.selectedAudience != "friends"
+                  ? TablerIcons.users_group
+                  : TablerIcons.users,
+            ),
             const SizedBox(width: 8),
             Text(
-              postData.selectedAudience == "friends"
+              postCreationState.selectedAudience == "friends"
                   ? "To your friends"
-                  : "To some of your friends",
+                  : postCreationState.selectedCommunity?.name ?? "Unknown community",
               style: TextStyle(fontSize: 16),
             ),
           ],

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:zic_flutter/core/models/community.dart';
 
 class PostData {
   final TextEditingController textController = TextEditingController();
@@ -10,11 +11,10 @@ class PostData {
     TextEditingController(text: "No"),
   ];
   final List<File> images = [];
-  final List<File> videos = [];
   String selectedOption = 'text';
   String commentControl = 'everyone'; // Valoarea implicită
   String selectedAudience = 'friends';
-  List<String> audienceList = [];
+  Community? selectedCommunity;
 
   VoidCallback? onMediaTap;
 
@@ -24,7 +24,6 @@ class PostData {
       controller.text = "";
     }
     images.clear();
-    videos.clear();
     selectedOption = 'text';
   }
 

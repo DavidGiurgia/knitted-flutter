@@ -107,13 +107,13 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment:
                             CrossAxisAlignment
-                                .start, // Align items to the start
+                                .end, // Align items to the start
                         children: [
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 12),
+                                //const SizedBox(height: 12),
                                 Text(
                                   widget.user.fullname,
                                   style: const TextStyle(
@@ -128,44 +128,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                                     fontWeight: FontWeight.w400,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                if (widget.user.bio.isNotEmpty)
-                                  Text(
-                                    widget.user.bio,
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                const SizedBox(height: 8),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) => FriendsSection(
-                                              user: widget.user,
-                                            ),
-                                      ),
-                                    );
-                                  },
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        "${friends.length} friends",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          color:
-                                              AppTheme.isDark(context)
-                                                  ? Colors.grey.shade600
-                                                  : Colors.grey.shade400,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
                               ],
                             ),
                           ),
@@ -207,6 +169,41 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                           ),
                         ],
                       ),
+
+                      if (widget.user.bio.isNotEmpty) const SizedBox(height: 8),
+                      if (widget.user.bio.isNotEmpty)
+                        Text(widget.user.bio, style: TextStyle(fontSize: 16)),
+
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      FriendsSection(user: widget.user),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "${friends.length} friends",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color:
+                                    AppTheme.isDark(context)
+                                        ? Colors.grey.shade600
+                                        : Colors.grey.shade400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
 
                       Row(
                         children: [

@@ -88,8 +88,9 @@ flutter:
     - lib/assets/fonts/Poppins-SemiBold.ttf
     - lib/assets/fonts/Poppins-Bold.ttf
     - lib/assets/fonts/Poppins-ExtraBold.ttf
-    - lib/assets/images/Knitted-logo.svg
-    - lib/assets/images/Knitted-white-logo.svg
+    - lib/assets/images/Troop-black.svg
+    - lib/assets/images/Troop-white.svg
+
 
 
   fonts:

@@ -29,10 +29,7 @@ class ChatListTile extends ConsumerWidget {
           content: const Text('Are you sure you want to delete this chat?'),
           actions: <Widget>[
             TextButton(
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: AppTheme.foregroundColor(context)),
-              ),
+              child: Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -116,16 +113,33 @@ class ChatListTile extends ConsumerWidget {
   Widget _buildEmptyAvatar(BuildContext context) {
     return CircleAvatar(
       radius: 25,
-      backgroundColor:
-          AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey100,
+      backgroundColor: AppTheme.foregroundColor(context).withValues(alpha: 0.2),
     );
   }
 
   ListTile _buildLoadingState(BuildContext context) {
     return ListTile(
       leading: _buildEmptyAvatar(context),
-      title: const Text("Loading..."),
-      subtitle: const Text("Fetching chat data..."),
+      title: Container(
+        width: 40, // Made narrower
+        height: 16,
+        decoration: BoxDecoration(
+          color: AppTheme.foregroundColor(
+            context,
+          ).withValues(alpha: 0.2), // Used withOpacity for alpha
+          borderRadius: BorderRadius.circular(16), // Made more rounded
+        ),
+      ),
+      subtitle: Container(
+        width: 80, // Made narrower
+        height: 14,
+        decoration: BoxDecoration(
+          color: AppTheme.foregroundColor(
+            context,
+          ).withValues(alpha: 0.2), // Used withOpacity for alpha
+          borderRadius: BorderRadius.circular(16), // Made more rounded
+        ),
+      ),
     );
   }
 
@@ -205,8 +219,7 @@ class ChatListTile extends ConsumerWidget {
     Color textColor = Colors.grey;
 
     if (difference.inHours >= 1) {
-      timeText =
-          "${difference.inHours} h";
+      timeText = "${difference.inHours} h";
     } else if (difference.inMinutes >= 1) {
       timeText = "${difference.inMinutes} m";
       textColor = Colors.red;
@@ -262,11 +275,7 @@ class ChatListTile extends ConsumerWidget {
         radius: 25,
         backgroundColor:
             AppTheme.isDark(context) ? AppTheme.grey800 : AppTheme.grey100,
-        child: Icon(
-          TablerIcons.hash,
-          size: 30,
-          color: AppTheme.primaryColor,
-        ),
+        child: Icon(TablerIcons.hash, size: 30, color: AppTheme.primaryColor),
       );
     } else if (otherParticipants.length > 1) {
       return CircleAvatar(

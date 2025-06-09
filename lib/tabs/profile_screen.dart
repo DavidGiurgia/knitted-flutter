@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:zic_flutter/core/app_theme.dart';
 import 'package:zic_flutter/core/providers/friends_provider.dart';
-import 'package:zic_flutter/core/providers/post_provider.dart';
 import 'package:zic_flutter/core/providers/user_provider.dart';
 import 'package:zic_flutter/screens/post/create_post/create_post.dart';
 import 'package:zic_flutter/screens/settings/settings_and_activity.dart';
@@ -99,168 +98,154 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(friendsProvider(null));
-          ref.invalidate(userProvider);
-          ref.invalidate(creatorPostsProvider(user.id));
-        },
-        child: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 2,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start, // Align items to the start
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 12),
-                                Text(
-                                  user.fullname,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 2,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.end, // Align items to the start
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                user.fullname,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                Text(
-                                  user.username,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                  ),
+                              ),
+                              Text(
+                                user.username,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
                                 ),
-                                const SizedBox(height: 2),
-                                if (user.bio.isNotEmpty)
-                                  Text(
-                                    user.bio,
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                const SizedBox(height: 8),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) =>
-                                                FriendsSection(user: user),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16), // Add some spacing
+                        GestureDetector(
+                          onTap: () {
+                            if (user.avatarUrl != "") {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => ProfilePhoto(
+                                        imagePath: user.avatarUrl,
                                       ),
-                                    );
-                                  },
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        "${friends?.length ?? 0} friends",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w400,
-                                          color:
-                                              AppTheme.isDark(context)
-                                                  ? Colors.grey.shade600
-                                                  : Colors.grey.shade400,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
-                                const SizedBox(height: 16),
-                              ],
+                              );
+                            }
+                          },
+                          child: AdvancedAvatar(
+                            size: 64,
+                            image: NetworkImage(user.avatarUrl),
+                            autoTextSize: true,
+                            name: user.fullname,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color:
+                                  AppTheme.isDark(context)
+                                      ? AppTheme.grey200
+                                      : AppTheme.grey800,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  AppTheme.isDark(context)
+                                      ? AppTheme.grey800
+                                      : AppTheme.grey200,
+                              shape: BoxShape.circle,
                             ),
                           ),
-                          const SizedBox(width: 16), // Add some spacing
-                          GestureDetector(
-                            onTap: () {
-                              if (user.avatarUrl != "") {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => ProfilePhoto(
-                                          imagePath: user.avatarUrl,
-                                        ),
-                                  ),
-                                );
-                              }
-                            },
-                            child: AdvancedAvatar(
-                              size: 64,
-                              image: NetworkImage(user.avatarUrl),
-                              autoTextSize: true,
-                              name: user.fullname,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    AppTheme.isDark(context)
-                                        ? AppTheme.grey200
-                                        : AppTheme.grey800,
-                              ),
-                              decoration: BoxDecoration(
-                                color:
-                                    AppTheme.isDark(context)
-                                        ? AppTheme.grey800
-                                        : AppTheme.grey200,
-                                shape: BoxShape.circle,
-                              ),
+                        ),
+                      ],
+                    ),
+
+                    if (user.bio.isNotEmpty) const SizedBox(height: 8),
+                    if (user.bio.isNotEmpty)
+                      Text(user.bio, style: TextStyle(fontSize: 16)),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FriendsSection(user: user),
+                          ),
+                        );
+                      },
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${friends?.length ?? 0} friends",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color:
+                                  AppTheme.isDark(context)
+                                      ? Colors.grey.shade600
+                                      : Colors.grey.shade400,
                             ),
                           ),
                         ],
                       ),
-                      CustomButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const EditProfileScreen(),
-                            ),
-                          );
-                        },
-                        text: 'Edit Profile',
-                        isFullWidth: true,
-                        type: ButtonType.bordered,
-                        size: ButtonSize.small,
-                      ),
-                      const SizedBox(height: 6),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+                    CustomButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const EditProfileScreen(),
+                          ),
+                        );
+                      },
+                      text: 'Edit Profile',
+                      isFullWidth: true,
+                      type: ButtonType.bordered,
+                      size: ButtonSize.small,
+                    ),
+                    const SizedBox(height: 6),
+                  ],
                 ),
               ),
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: SliverAppBarDelegate(
-                  tabBar: TabBar(
-                    controller: _tabController,
-                    dividerColor: Colors.grey.withValues(alpha: 0.1),
-                    indicatorColor: AppTheme.foregroundColor(context),
-                    labelColor: AppTheme.foregroundColor(context),
-                    unselectedLabelColor: Colors.grey,
-                    //indicatorSize: TabBarIndicatorSize.tab,
-                    tabs: const [
-                      Tab(text: 'Posts'),
-                      Tab(text: 'Media'),
-                      Tab(text: 'Replies'),
-                    ],
-                  ),
+            ),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: SliverAppBarDelegate(
+                tabBar: TabBar(
+                  controller: _tabController,
+                  dividerColor: Colors.grey.withValues(alpha: 0.1),
+                  indicatorColor: AppTheme.foregroundColor(context),
+                  labelColor: AppTheme.foregroundColor(context),
+                  unselectedLabelColor: Colors.grey,
+                  //indicatorSize: TabBarIndicatorSize.tab,
+                  tabs: const [
+                    Tab(text: 'Posts'),
+                    Tab(text: 'Media'),
+                    Tab(text: 'Replies'),
+                  ],
                 ),
               ),
-            ];
-          },
-          body: ProfileTabs(userId: user.id, tabController: _tabController),
-        ),
+            ),
+          ];
+        },
+        body: ProfileTabs(userId: user.id, tabController: _tabController),
       ),
     );
   }

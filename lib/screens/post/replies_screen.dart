@@ -38,29 +38,36 @@ class RepliesScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     PostItem(post: parentPost, isParentPost: true),
-                    Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Text( "Replies", style: TextStyle(fontSize: 16)),
-                    ),
+
                     postsAsync.when(
                       data: (posts) {
                         posts.sort(
                           (a, b) => b.createdAt.compareTo(a.createdAt),
                         );
-                        if (posts.isNotEmpty) {
-                          return ListView(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: [
-                              ...posts.map((post) => PostItem(post: post)),
-                              const SizedBox(
-                                height: 80,
-                              ), // Invisible space at the end
-                            ],
-                          );
-                        } else {
-                          return const SizedBox.shrink();
-                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                "${posts.length} replies",
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                            if (posts.isNotEmpty)
+                              ListView(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: [
+                                  ...posts.map((post) => PostItem(post: post)),
+                                  const SizedBox(
+                                    height: 80,
+                                  ), // Invisible space at the end
+                                ],
+                              ),
+                          ],
+                        );
                       },
                       loading:
                           () =>

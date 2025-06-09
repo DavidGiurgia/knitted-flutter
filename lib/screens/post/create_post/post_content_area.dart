@@ -1,48 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:zic_flutter/screens/post/create_post/post_data.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zic_flutter/screens/post/create_post/post_create_state.dart';
 import 'package:zic_flutter/screens/post/create_post/post_media_content.dart';
 import 'package:zic_flutter/screens/post/create_post/post_link_content.dart';
 import 'package:zic_flutter/screens/post/create_post/post_poll_content.dart';
 
-class PostContentArea extends StatelessWidget {
-  final PostData postData; // Use PostData
-  final VoidCallback resetPost;
-  final VoidCallback validatePost;
+class PostContentArea extends ConsumerWidget {
 
-  const PostContentArea({
-    super.key,
-    required this.postData, // Use PostData
-    required this.resetPost,
-    required this.validatePost,
-  });
+  const PostContentArea({super.key});
+
 
   @override
-  Widget build(BuildContext context) {
-    switch (postData.selectedOption) {
+  Widget build(BuildContext context, WidgetRef ref) {
+     // Observă starea notifier-ului pentru a obține selectedPostType
+    final postCreationState = ref.watch(postCreationNotifierProvider);
+
+    switch (postCreationState.selectedPostType) {
       case 'link':
         return Padding(
           padding: const EdgeInsets.only(left: 50.0),
-          child: PostLinkContent(
-            resetPost: resetPost,
-            postData: postData,
-            validatePost: validatePost,
-          ),
+          child: PostLinkContent(),
         );
       case 'poll':
         return Padding(
           padding: const EdgeInsets.only(left: 50.0),
-          child: PostPollContent(
-            resetPost: resetPost,
-            postData: postData,
-            validatePost: validatePost,
-          ),
+          child: PostPollContent(),
         );
       case 'media':
-        return PostMediaContent(
-          resetPost: resetPost,
-          postData: postData,
-          validatePost: validatePost,
-        );
+        return PostMediaContent( );
       default:
         return SizedBox.shrink();
     }

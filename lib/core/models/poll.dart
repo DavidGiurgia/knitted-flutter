@@ -61,7 +61,6 @@ class PollPost extends Post {
     this.options = const [],
     super.anonymousPost,
     super.mentions,
-    super.audience,
     required super.createdAt,
     required super.updatedAt,
     super.expiresAt,
@@ -85,7 +84,6 @@ class PollPost extends Post {
           [],
       anonymousPost: json['anonymousPost'] ?? false,
       mentions: List<String>.from(json['mentions'] ?? []),
-      audience: List<String>.from(json['audience'] ?? []),
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
       expiresAt:
@@ -97,6 +95,14 @@ class PollPost extends Post {
   Map<String, dynamic> toJson() {
     return {
       ...super.toJson(),
+      'options': options.map((e) => e.toJson()).toList(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toCreateJson() {
+    return {
+      ...super.toCreateJson(),
       'options': options.map((e) => e.toJson()).toList(),
     };
   }

@@ -20,6 +20,7 @@ class CommunityTabBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return TabBar(
       controller: tabController,
+      //indicatorSize: TabBarIndicatorSize.tab,
       isScrollable:
           communities.length >
           3, // Devine scrollable doar dacă sunt multe tab-uri
@@ -34,7 +35,7 @@ class CommunityTabBar extends ConsumerWidget implements PreferredSizeWidget {
       labelColor: AppTheme.foregroundColor(context),
       indicatorColor: AppTheme.foregroundColor(context),
       dividerColor: Colors.grey.withValues(alpha: 0.1),
-      unselectedLabelColor: Colors.grey,
+      unselectedLabelColor: AppTheme.isDark(context) ? Colors.grey.shade800 : Colors.grey.shade400,
     );
   }
 }

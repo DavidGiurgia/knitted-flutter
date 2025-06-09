@@ -27,12 +27,6 @@ class _TabsLayoutState extends State<TabsLayout> {
     const ProfileScreen(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   Widget _getIcon(IconData icon, int index) {
     return SizedBox(
       // Changed to SizedBox
@@ -50,6 +44,14 @@ class _TabsLayoutState extends State<TabsLayout> {
         ),
       ),
     );
+  }
+
+  void _onItemTapped(int index) {
+    // Elimină focusul de pe orice câmp de text înainte de a schimba tab-ul
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
@@ -140,7 +142,7 @@ class _TabsLayoutState extends State<TabsLayout> {
                   builder: (context, ref, child) {
                     final userAsync = ref.watch(userProvider);
                     final String? avatarUrl = userAsync.value?.avatarUrl;
-    
+
                     return Center(
                       child: Stack(
                         alignment: Alignment.center,

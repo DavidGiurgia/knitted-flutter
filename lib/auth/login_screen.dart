@@ -93,8 +93,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 180),
                   SvgPicture.asset(
                     AppTheme.isDark(context)
-                        ? 'lib/assets/images/Knitted-white-logo.svg'
-                        : 'lib/assets/images/Knitted-logo.svg',
+                        ? 'lib/assets/images/Troop-white.svg'
+                        : 'lib/assets/images/Troop-black.svg',
                     semanticsLabel: 'App Logo',
                     height: 28,
                   ),
@@ -154,7 +154,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           onPressed: _login,
                           text: 'Log In',
                           isFullWidth: true,
-                          bgColor: AppTheme.primaryColor,
+                          bgColor: AppTheme.foregroundColor(context),
                           isLoading: userAsync.isLoading,
                           borderRadius: 12,
                         ),

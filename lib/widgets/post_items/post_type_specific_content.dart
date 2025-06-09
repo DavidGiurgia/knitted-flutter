@@ -15,12 +15,12 @@ class PostTypeSpecificContent extends StatelessWidget {
       switch (post.type) {
         case PostType.link:
           return Padding(
-            padding: const EdgeInsets.fromLTRB(64.0, 0, 12, 0),
+            padding: const EdgeInsets.fromLTRB(60.0, 0, 12, 0),
             child: PostLinkPreview(post: post),
           );
         case PostType.poll:
           return Padding(
-            padding: const EdgeInsets.fromLTRB(64.0, 0, 12, 0),
+            padding: const EdgeInsets.fromLTRB(60.0, 0, 12, 0),
             child: PostPoll(post: post),
           );
         case PostType.media:

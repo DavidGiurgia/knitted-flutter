@@ -23,7 +23,6 @@ class Post {
   PostType type;
   bool anonymousPost;
   List<String> mentions;
-  List<String> audience;
   final DateTime createdAt;
   final DateTime updatedAt;
   DateTime? expiresAt;
@@ -39,7 +38,6 @@ class Post {
     required this.type,
     this.anonymousPost = false,
     this.mentions = const [],
-    this.audience = const [],
     required this.createdAt,
     required this.updatedAt,
     this.expiresAt,
@@ -67,7 +65,6 @@ class Post {
           type: PostType.values.byName(json['type']),
           anonymousPost: json['anonymousPost'] ?? false,
           mentions: List<String>.from(json['mentions'] ?? []),
-          audience: List<String>.from(json['audience'] ?? []),
           createdAt:
               DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
           updatedAt:
@@ -78,6 +75,19 @@ class Post {
                   : null,
         );
     }
+  }
+
+  Map<String, dynamic> toCreateJson() {
+    return {
+      'isReply': isReply,
+      'replyTo': replyTo,
+      'isFromCommunity': isFromCommunity,
+      'communityId': communityId,
+      'content': content,
+      'type': type.name.toLowerCase(),
+      'anonymousPost': anonymousPost,
+      'mentions': mentions,
+    };
   }
 
   // Convertire în JSON
@@ -93,15 +103,66 @@ class Post {
       'type': type.name.toLowerCase(),
       'anonymousPost': anonymousPost,
       'mentions': mentions,
-      'audience': audience,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'expiresAt': expiresAt?.toIso8601String(),
     };
   }
 
+  //copyWith
+  Post copyWith({
+    String? id,
+    String? userId,
+    bool? isReply,
+    String? replyTo,
+    bool? isFromCommunity,
+    String? communityId,
+    String? content,
+    PostType? type,
+    bool? anonymousPost,
+    List<String>? mentions,
+    List<String>? audience,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? expiresAt,
+  }) {
+    return Post(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      isReply: isReply ?? this.isReply,
+      replyTo: replyTo ?? this.replyTo,
+      isFromCommunity: isFromCommunity ?? this.isFromCommunity,
+      communityId: communityId ?? this.communityId,
+      content: content ?? this.content,
+      type: type ?? this.type,
+      anonymousPost: anonymousPost ?? this.anonymousPost,
+      mentions: mentions ?? this.mentions,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      expiresAt: expiresAt ?? this.expiresAt,
+    );
+  }
+
+  //empty model
+  static Post empty({anonymousPost = false}) {
+    return Post(
+      id: '',
+      userId: '',
+      isReply: false,
+      replyTo: null,
+      isFromCommunity: false,
+      communityId: null,
+      content: '',
+      type: PostType.text,
+      anonymousPost: anonymousPost,
+      mentions: [],
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
+
   @override
   String toString() {
-    return 'Post{id: $id, userId: $userId, isReply: $isReply, replyTo: $replyTo, isFromCommunity: $isFromCommunity, communityId: $communityId content: $content, type: $type, anonymousPost: $anonymousPost, mentions: $mentions, audience: $audience, createdAt: $createdAt, updatedAt: $updatedAt, expiresAt: $expiresAt}';
+    return 'Post{id: $id, userId: $userId, isReply: $isReply, replyTo: $replyTo, isFromCommunity: $isFromCommunity, communityId: $communityId content: $content, type: $type, anonymousPost: $anonymousPost, mentions: $mentions, createdAt: $createdAt, updatedAt: $updatedAt, expiresAt: $expiresAt}';
   }
 }

@@ -35,7 +35,7 @@ class AppTheme {
 
   static ThemeData get lightTheme => ThemeData(
     brightness: Brightness.light,
-    primaryColor: primaryColor,
+    primaryColor: Colors.black,
     scaffoldBackgroundColor: Colors.white,
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.white,
@@ -46,7 +46,7 @@ class AppTheme {
       ),
     ),
     colorScheme: ColorScheme.light(
-      primary: primaryColor,
+      primary: Colors.black,
       secondary: primaryColor.withOpacity(0.8),
       surface: Colors.white,
       onPrimary: Colors.white,
@@ -57,7 +57,7 @@ class AppTheme {
 
   static ThemeData get darkTheme => ThemeData(
     brightness: Brightness.dark,
-    primaryColor: primaryColor,
+    primaryColor: Colors.white,
     scaffoldBackgroundColor: grey950,
     appBarTheme: AppBarTheme(
       backgroundColor: grey950,
@@ -68,7 +68,7 @@ class AppTheme {
       ),
     ),
     colorScheme: ColorScheme.dark(
-      primary: primaryColor,
+      primary: Colors.white,
       secondary: primaryColor.withOpacity(0.8),
       surface: Colors.black,
       onPrimary: Colors.black,

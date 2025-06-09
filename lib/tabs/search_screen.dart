@@ -24,6 +24,7 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+   final FocusNode _searchFocusNode = FocusNode();
   List<User> _recentSearches = [];
   bool _loadingRecent = true;
   late String userId;
@@ -41,6 +42,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void dispose() {
     _searchController.removeListener(_onSearchTextChanged);
     _searchController.dispose();
+    _searchFocusNode.dispose(); 
     super.dispose();
   }
 
@@ -134,6 +136,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 Expanded(
                   child: TextField(
                     controller: _searchController,
+                    focusNode: _searchFocusNode,
                     onChanged: _onSearchChanged,
                     style: const TextStyle(
                       fontSize: 15,
@@ -181,7 +184,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(
                                       16,
-                                      16,
+                                      20,
                                       16,
                                       8,
                                     ),
@@ -192,8 +195,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                         Text(
                                           "Recent",
                                           style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
                                           ),
                                         ),
                                         GestureDetector(
@@ -201,8 +204,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                           child: Text(
                                             "Clear",
                                            style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
                                           ),
                                           ),
                                         ),

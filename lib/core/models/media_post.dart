@@ -30,7 +30,6 @@ class MediaPost extends Post {
     this.media = const [],
     super.anonymousPost,
     super.mentions,
-    super.audience,
     required super.createdAt,
     required super.updatedAt,
     super.expiresAt,
@@ -55,7 +54,6 @@ class MediaPost extends Post {
           [],
       anonymousPost: json['anonymousPost'] ?? false,
       mentions: List<String>.from(json['mentions'] ?? []),
-      audience: List<String>.from(json['audience'] ?? []),
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
       expiresAt:
@@ -68,6 +66,14 @@ class MediaPost extends Post {
   Map<String, dynamic> toJson() {
     return {
       ...super.toJson(),
+      'media': media.map((item) => item.toJson()).toList(),
+    };
+  }
+  
+  @override
+  Map<String, dynamic> toCreateJson() {
+    return {
+      ...super.toCreateJson(),
       'media': media.map((item) => item.toJson()).toList(),
     };
   }

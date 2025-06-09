@@ -17,15 +17,14 @@ class UserListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String avatarUrl =
-        user.avatarUrl.isNotEmpty
-            ? user.avatarUrl
-            : 'https://example.com/default-avatar.png';
+    final String avatarUrl = user.avatarUrl.isNotEmpty ? user.avatarUrl : '';
     return ListTile(
+      dense: true, // Reduce înălțimea implicită
+      visualDensity: VisualDensity.compact, // Aduce elementele mai aproape
       titleAlignment: ListTileTitleAlignment.center,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      contentPadding: EdgeInsets.only( left: 16,  ),
       leading: AdvancedAvatar(
-        size: 52,
+        size: 38,
         image: NetworkImage(avatarUrl),
         autoTextSize: true,
         name: user.fullname,
@@ -40,7 +39,7 @@ class UserListTile extends StatelessWidget {
       ),
       title: Text(
         user.username,
-        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
       ),
       subtitle: Text(
         user.fullname,
