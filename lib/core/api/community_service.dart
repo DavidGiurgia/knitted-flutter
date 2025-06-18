@@ -44,8 +44,8 @@ class CommunityService {
           'onlyAdminsCanPost': onlyAdminsCanPost,
           'allowAnonymousPosts': allowAnonymousPosts,
           'rules': rules,
-          'bannerUrl': bannerUrl, // Optional, can be set later
-          'bannerPublicId': bannerPublicId, // Optional, can be set later
+          'bannerUrl': bannerUrl,
+          'bannerPublicId': bannerPublicId, 
         }),
       );
 
