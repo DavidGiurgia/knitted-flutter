@@ -1,85 +1,88 @@
-## Knitted - Flutter App for Authentic Connection
+# 🚀 Troop: Reimagining Social Connection
 
-**Knitted** is the official Flutter mobile app for the knitted-platform — a social media alternative designed to support healthier, more intentional online interaction.
+## Tired of the Toxic Scroll? We Built a Better Way.
 
----
+Let's be real: modern social media often feels less "social" and more like a never-ending popularity contest mixed with an anxiety generator. At Troop, we believe technology should bring us closer, not pull us apart or leave us feeling inadequate.
 
-### Vision & Purpose
+**Troop is our answer:** A personal project born from a desire for a healthier, more authentic online space. Forget the algorithms, the public "likes," and the pressure to perform. Troop is about genuine connections, private conversations, and a feed that serves *you*, not advertisers.
 
-Today's mainstream social platforms often encourage:
+## ✨ Our Vision: Social Media, De-Stressed
 
-- **Addiction through endless scrolling**
-- **Toxic validation loops via likes and popularity metrics**
-- **Shallow, non-authentic interactions**
-- **Aggressive content algorithms** pushing irrelevant or harmful media
+Our core vision is simple: **put the user back in control of their social experience.** We're not chasing viral trends or endless engagement metrics. Instead, we're building a platform where you can truly connect with your real-life circles, share authentically, and feel good about your online interactions.
 
-**Socialize** is different. This platform is designed to support:
+## 🎯 What Makes Troop Different?
 
-- **Real, authentic connections** over metrics and influence
-- **Intentional engagement** rather than passive consumption
-- **A safe digital space**, free from manipulative design patterns
-- **Privacy and user control** at the core of the experience
+We've designed Troop from the ground up to tackle the biggest issues with mainstream social platforms:
 
-The Flutter app brings this vision to life with a clean interface, real-time communication, and secure interaction — all powered by a backend you control.
+* **Your Circles, Your Rules:** No more broadcasting to the entire internet. With Troop, you define your social circles (think "Family," "Close Friends," "Work Buddies") and choose exactly who sees your posts. Your content, your audience, every time.
 
----
+* **The End of the Popularity Contest:** We ditched public "likes," follower counts, and trending topics. Your value isn't a number. Share what truly matters to you, without the pressure of external validation.
 
-### What the App Offers
+* **Ephemeral Chats for Real Talk:** Need a quick, private, and temporary chat? Our unique ephemeral chat rooms let you connect instantly via a simple code or link. No accounts needed, no permanent history. Perfect for spontaneous discussions, quick collabs, or truly anonymous conversations.
 
-- **Simple, distraction-free UI**
-- **Authentication with encrypted passwords and JWT tokens**
-- **Real-time chat** via Socket.io
-- **Responsive and fluid navigation across devices**
-- **Direct connection with a custom NestJS & MongoDB backend**
+* **Optional Anonymity, Built-In:** In specific contexts (like within certain communities), you can choose to post or message anonymously. Speak your mind freely, offer honest feedback, or discuss sensitive topics without exposing your identity.
 
-This is not just a mobile frontend — it's part of a complete ecosystem that respects users.
+* **Your Feed, Your Way (No Algorithms!):** Your feed is purely chronological and unfiltered. See posts only from your chosen circles and communities. No sneaky algorithms deciding what you see, no sponsored content, just the stuff from the people you care about.
 
----
+* **Real Friendships, Not Just Connections:** We encourage meaningful connections. Our friendship system is mutual (both parties accept), and we've even set a friendly limit to encourage deeper, more manageable social bonds.
 
-### Why It Matters
+## 🛠️ Tech Under the Hood
 
-Socialize Mobile invites users into a healthier digital environment. It encourages slower, intentional interaction with others. There are no "likes", no algorithmic rabbit holes, and no popularity contests — just people, conversations, and connection.
+Troop is built with modern, scalable technologies to ensure a smooth and secure experience:
 
----
+* **Backend:** Powering everything is **NestJS** (a robust Node.js framework) and **MongoDB** for flexible data storage. We use **JWT** for secure authentication and **WebSockets (Socket.IO)** for real-time chat magic. Our backend is deployed via **Railway** for stability and scalability.
 
-### App Screenshots
+* **Mobile App (Flutter):** Our beautiful mobile app is crafted with **Flutter**, allowing us to deliver a consistent, high-performance experience on both iOS and Android from a single codebase.
 
-#### Seamless Login & Private Community Entry
-Kickstarting your experience! This screen offers easy login for existing users and a clear pathway to create a new account. Additionally, users can directly join private, focused communities by entering a unique code, fostering more intimate and beneficial interactions.
+* **Web App:** The web interface, currently focused on quick access to ephemeral chat rooms, is built with **Next.js** and styled with **Tailwind CSS**.
 
-<img src="https://github.com/user-attachments/assets/ff6c41d1-1a32-4e5d-9dd9-21eb07c0967f" width="300" />
+## 📸 Screenshots
 
-#### Sleek Dark Mode for Enhanced Focus
-Experience the app in a sophisticated dark mode.
+### 🌟 Core Experience
+<div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px;">
+  <div style="flex: 1; min-width: 300px;">
+    <img src="/public/login_light-dark.png" width="80%" alt="Troop Login Screen"/>
+    <h4>Seamless Onboarding</h4>
+    <p>Clean, distraction-free entry with light/dark mode support. Join existing chats instantly with unique codes or create your private space.</p>
+  </div>
+  
+  <div style="flex: 1; min-width: 300px;">
+    <img src="/public/feed-good.png" width="80%" alt="Troop Feed"/>
+    <h4>Human-Centric Feed</h4>
+    <p>Chronological, algorithm-free content from your circles. Switch between Friends, Communities, or custom groups with one tap.</p>
+  </div>
+</div>
 
-<img src="https://github.com/user-attachments/assets/b4f28263-fde0-40ce-bcd4-1505616fbfd8" width="300" />
+### 🏡 Community Focus
+<div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px;">
+  <div style="flex: 1; min-width: 300px;">
+    <img src="/public/Communities.png" width="80%" alt="Community Management"/>
+    <h4>Intentional Communities</h4>
+    <p>Create purpose-driven spaces with custom rules and admin controls. No random members - just people who share your passions.</p>
+  </div>
+  
+  <div style="flex: 1; min-width: 300px;">
+    <img src="/public/create_post-group.png" width="80%" alt="Post Creation"/>
+    <h4>Context-Aware Sharing</h4>
+    <p>Choose exactly which circle sees each post. Share workout tips with fitness friends and art with creatives - all from one account.</p>
+  </div>
+</div>
 
-#### Your Personalized Space: Simple & Elegant Profile
-A glimpse into your personal hub.
+### 🔒 Privacy First
+<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+  <div style="flex: 1; min-width: 300px;">
+    <img src="/public/temporary_chat-group.png" width="80%" alt="Ephemeral Chat"/>
+    <h4>Disappearing Conversations</h4>
+    <p>24-hour encrypted chats with optional anonymity. Perfect for sensitive discussions or spontaneous brainstorming.</p>
+  </div>
+  
+  <div style="flex: 1; min-width: 300px;">
+    <img src="/public/profile-good.png" width="80%" alt="Profile Management"/>
+    <h4>Granular Control</h4>
+    <p>Curate your digital identity with private profiles and friend approvals. Share different aspects of yourself with different circles.</p>
+  </div>
+</div>
 
-<img src="https://github.com/user-attachments/assets/214d2657-9cb9-4180-b2bf-908a28be8c6d" width="300" />
-
-#### Share Your Thoughts: Intuitive Post Creation
-Express yourself effortlessly!
-
-<img src="https://github.com/user-attachments/assets/7ae4eb1a-a4fa-47a7-a4b3-e3e0f7ddb005" width="300" />
-
-#### Bring Your Posts to Life with Media
-Elevate your sharing experience.
-
-<img src="https://github.com/user-attachments/assets/6d281277-7397-4842-bc34-b7eb8b383fd3" width="300" />
-
-<img src="https://github.com/user-attachments/assets/ef3b3d19-ba40-4775-ac6b-3f3a36379231" width="300" />
-
-#### Start Connecting: Direct Messaging Made Easy
-Initiate one-on-one conversations effortlessly.
-
-<img src="https://github.com/user-attachments/assets/488b2c98-229b-43a9-a3ac-f6fe9f02dff1" width="300" />
-
-#### Instant Connection: Introducing Temporary Chats
-Need a quick, focused discussion?
-
-<img src="https://github.com/user-attachments/assets/8bc57907-f3cb-406e-9e6e-7183f7e911a8" width="300" />
 
 ---
 
@@ -109,7 +112,3 @@ For questions, insights, or private previews:
 
 - Email: [giurgiad@gmail.com](mailto:giurgiad@gmail.com)
 - LinkedIn: www.linkedin.com/in/giurgia-david
-
----
-
-**Knitted** — Ditch the noise. Keep the human connection.
